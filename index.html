@@ -1,0 +1,1263 @@
+<!DOCTYPE html>
+<html lang="en)
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Gooblet Forest Collector 3D</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght=500;700&display=swap" rel="stylesheet">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+
+<style>
+body{
+    margin:0;
+    overflow:hidden;
+    font-family:'Fredoka', sans-serif;
+    background:#87d37c;
+    user-select: none;
+}
+
+#gameContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+#startScreen{
+    position:absolute;
+    inset:0;
+    background: radial-gradient(circle at top,#b9ffb0,#7dd86e 60%,#5fb553);
+    display:flex;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    z-index:50;
+    overflow:hidden;
+}
+
+.leaf{
+    position:absolute;
+    width:60px;
+    height:60px;
+    background:#6cc65f;
+    border-radius:60% 40% 60% 40%;
+    opacity:0.25;
+    animation:floatLeaf linear infinite;
+}
+
+@keyframes floatLeaf{
+    from{ transform:translateY(-100px) rotate(0deg); }
+    to{ transform:translateY(110vh) rotate(360deg); }
+}
+
+#gameTitle{
+    font-size:82px;
+    color:white;
+    text-shadow: 0 4px 0 #4f9a46, 0 8px 20px rgba(0,0,0,0.25);
+    animation:wobble 3s ease-in-out infinite;
+    margin-bottom:20px;
+    z-index:2;
+}
+
+#subtitle{
+    font-size:24px;
+    color:#efffe9;
+    margin-bottom:40px;
+    z-index:2;
+    text-align: center;
+}
+
+@keyframes wobble{
+    0%{ transform:rotate(-3deg) scale(1); }
+    50%{ transform:rotate(3deg) scale(1.03); }
+    100%{ transform:rotate(-3deg) scale(1); }
+}
+
+.menuButton{
+    width:280px;
+    padding:18px;
+    margin:12px;
+    font-size:30px;
+    border:none;
+    border-radius:22px;
+    cursor:pointer;
+    background:white;
+    color:#4f9a46;
+    font-family:'Fredoka', sans-serif;
+    font-weight:700;
+    box-shadow:0 8px 0 #5fb553;
+    transition:0.15s;
+    z-index:2;
+}
+
+.menuButton:hover{ transform:translateY(-3px) scale(1.03); }
+.menuButton:active{ transform:translateY(4px); box-shadow:0 3px 0 #5fb553; }
+
+#ui{
+    position:absolute;
+    top:12px;
+    left:12px;
+    display:none;
+    gap:12px;
+    flex-direction:column;
+    z-index:20;
+}
+
+.playerCard{
+    background:rgba(255,255,255,0.9);
+    padding:14px 18px;
+    border-radius:20px;
+    color:#2c5f2a;
+    min-width:230px;
+    box-shadow:0 6px 18px rgba(0,0,0,0.2);
+    border:4px solid #7dd86e;
+}
+
+.playerTitle{ font-size:24px; font-weight:700; margin-bottom:5px; }
+.stat{ font-size:18px; }
+
+#levelDisplay {
+    position:absolute;
+    top:12px;
+    left:50%;
+    transform:translateX(-50%);
+    background:rgba(255,255,255,0.9);
+    padding:12px 24px;
+    border-radius:20px;
+    color:#2c5f2a;
+    font-size:22px;
+    font-weight:700;
+    box-shadow:0 6px 18px rgba(0,0,0,0.2);
+    border:4px solid #7dd86e;
+    display:none;
+    z-index:20;
+}
+
+.shopButton{
+    position:absolute;
+    top:12px;
+    padding:14px 22px;
+    border:none;
+    border-radius:18px;
+    cursor:pointer;
+    color:white;
+    font-size:20px;
+    font-family:'Fredoka', sans-serif;
+    background:#58a84f;
+    box-shadow:0 5px 0 #3e7e38;
+    z-index:20;
+    display:none;
+}
+
+#shopButton1{ right:15px; }
+#shopButton2{ right:170px; }
+#menuButton{ right:325px; background:#6dbd63; }
+
+.shop{
+    position:absolute;
+    top:70px;
+    width:240px;
+    max-height:60vh;
+    overflow-y:auto;
+    background:rgba(255,255,255,0.95);
+    border-radius:20px;
+    padding:15px;
+    display:none;
+    z-index:20;
+    box-shadow:0 8px 20px rgba(0,0,0,0.25);
+    border:4px solid #7dd86e;
+}
+
+#shop1{ right:15px; }
+#shop2{ right:170px; }
+.shop h2{ margin-top:0; color:#3d7c38; }
+
+.shopItem{
+    width:100%;
+    margin-top:8px;
+    padding:12px;
+    border:none;
+    border-radius:14px;
+    cursor:pointer;
+    background:#6bc461;
+    color:white;
+    font-size:17px;
+    font-family:'Fredoka', sans-serif;
+}
+.shopItem:hover{ background:#5aae50; }
+
+#settingsScreen{
+    position:absolute;
+    inset:0;
+    background:rgba(20,40,20,0.92);
+    display:none;
+    flex-direction:column;
+    justify-content:center;
+    align-items:center;
+    z-index:100;
+}
+
+.settingsPanel{
+    width:420px;
+    max-width:90%;
+    background:white;
+    border-radius:28px;
+    padding:30px;
+    text-align:center;
+    box-shadow:0 10px 30px rgba(0,0,0,0.35);
+    border:5px solid #7dd86e;
+}
+
+.settingsTitle{ font-size:42px; color:#4f9a46; margin-bottom:20px; }
+.settingRow{ margin:18px 0; font-size:22px; color:#2c5f2a; }
+
+.settingButton{
+    margin-top:10px;
+    padding:12px 20px;
+    border:none;
+    border-radius:16px;
+    background:#66bb5a;
+    color:white;
+    font-size:20px;
+    cursor:pointer;
+    font-family:'Fredoka', sans-serif;
+}
+.settingButton:hover{ background:#58a84f; }
+</style>
+</head>
+<body>
+
+<div id="startScreen">
+    <div class="leaf" style="left:10%; animation-duration:9s;"></div>
+    <div class="leaf" style="left:25%; animation-duration:12s;"></div>
+    <div class="leaf" style="left:40%; animation-duration:10s;"></div>
+    <div class="leaf" style="left:60%; animation-duration:14s;"></div>
+    <div class="leaf" style="left:80%; animation-duration:11s;"></div>
+
+    <div id="gameTitle">Gooblet Forest 3D</div>
+
+    <div id="subtitle">
+        <span id="subtitleText">Cute forest adventures 🌿</span>
+        <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:20px;">
+            <button id="easyButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy')">Easy 🌱</button>
+            <button id="easyMediumButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy-medium')">Easy Medium 🐤</button>
+            <button id="mediumButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'medium')">Medium 🐔</button>
+            <button id="hardButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'hard')">Hard ⚠️</button>
+        </div>
+        <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:10px;">
+            <button id="mpMediumButton" class="menuButton" style="width:250px; font-size:24px;" onclick="startGame(true,'medium')">Multiplayer Medium</button>
+            <button id="mpHardButton" class="menuButton" style="width:250px; font-size:24px;" onclick="startGame(true,'hard')">Multiplayer Hard</button>
+            <button class="menuButton" id="settingsButton" onclick="openSettings()">Settings ⚙️</button>
+        </div>
+    </div>
+</div>
+
+<div id="ui">
+    <div class="playerCard">
+        <div class="playerTitle">Player 1</div>
+        <div class="stat">Coins: <span id="coinCount1">0</span></div>
+        <div class="stat">Speed: <span id="speedLevel1">1</span></div>
+    </div>
+    <div class="playerCard" id="player2Card" style="display:none;">
+        <div class="playerTitle">Player 2</div>
+        <div class="stat">Coins: <span id="coinCount2">0</span></div>
+        <div class="stat">Speed: <span id="speedLevel2">1</span></div>
+    </div>
+</div>
+
+<div id="levelDisplay">Level 1</div>
+
+<button class="shopButton" id="shopButton1">P1 Shop</button>
+<button class="shopButton" id="shopButton2">P2 Shop</button>
+<button class="shopButton" id="menuButton">Menu</button>
+
+<div class="shop" id="shop1">
+    <h2>Player 1 Shop</h2>
+    <button class="shopItem" onclick="buySpeed(player)">Speed Upgrade</button>
+    <button class="shopItem" onclick="buySkin(player,'#ff3333',5)">Red Skin (5)</button>
+    <button class="shopItem" onclick="buySkin(player,'#3333ff',8)">Blue Skin (8)</button>
+    <button class="shopItem" onclick="buySkin(player,'#aa33ff',12)">Purple Skin (12)</button>
+    <button class="shopItem" onclick="buySkin(player,'#ffd700',18)">Gold Skin (18)</button>
+    <button class="shopItem" onclick="buySkin(player,'#ff7f7f',20)">Strawberry Skin (20)</button>
+    <button class="shopItem" onclick="buySkin(player,'#7fb8ff',24)">Ocean Skin (24)</button>
+    <button class="shopItem" onclick="buySkin(player,'#b58cff',28)">Dream Skin (28)</button>
+    <button class="shopItem" onclick="buySkin(player,'#ffe066',35)">Golden Glow Skin (35)</button>
+</div>
+
+<div class="shop" id="shop2">
+    <h2>Player 2 Shop</h2>
+    <button class="shopItem" onclick="buySpeed(player2)">Speed Upgrade</button>
+    <button class="shopItem" onclick="buySkin(player2,'#ff3333',5)">Red Skin (5)</button>
+    <button class="shopItem" onclick="buySkin(player2,'#3333ff',8)">Blue Skin (8)</button>
+    <button class="shopItem" onclick="buySkin(player2,'#aa33ff',12)">Purple Skin (12)</button>
+    <button class="shopItem" onclick="buySkin(player2,'#ffd700',18)">Gold Skin (18)</button>
+    <button class="shopItem" onclick="buySkin(player2,'#ff7f7f',20)">Strawberry Skin (20)</button>
+    <button class="shopItem" onclick="buySkin(player2,'#7fb8ff',24)">Ocean Skin (24)</button>
+    <button class="shopItem" onclick="buySkin(player2,'#b58cff',28)">Dream Skin (28)</button>
+    <button class="shopItem" onclick="buySkin(player2,'#ffe066',35)">Golden Glow Skin (35)</button>
+</div>
+
+<div id="settingsScreen">
+    <div class="settingsPanel">
+        <div class="settingsTitle">Settings ⚙️</div>
+        <div class="settingRow">
+            <span id="musicLabel">Music:</span> <span id="musicStatus">ON</span><br>
+            <button id="toggleMusicButton" class="settingButton" onclick="toggleMusic()">Toggle Music</button>
+        </div>
+        <div class="settingRow">
+           <span id="particleLabel">Particles:</span> <span id="particleStatus">ON</span><br>
+           <button id="toggleParticlesButton" class="settingButton" onclick="toggleParticles()">Toggle Particles</button>
+        </div>
+        <div class="settingRow">
+            <span id="fullscreenLabel">Fullscreen</span><br>
+            <button id="fullscreenButton" class="settingButton" onclick="toggleFullscreen()">Toggle Fullscreen</button>
+        </div>
+        <div class="settingRow">
+            <span id="languageLabel">Language</span><br><br>
+            <button class="settingButton" onclick="setLanguage('en')">English</button>
+            <button class="settingButton" onclick="setLanguage('es')">Español</button>
+            <button class="settingButton" onclick="setLanguage('fr')">Français</button>
+            <button class="settingButton" onclick="setLanguage('jp')">日本語</button>
+        </div>
+        <button class="menuButton" id="backButton" style="width:220px; font-size:24px;" onclick="closeSettings()">Back</button>
+        <div style="margin-top: 15px; display: flex; gap: 5px;">
+            <button class="shopItem" style="background:#cc3333;" onclick="buyWin(player)">P1 WIN GAME (100)</button>
+            <button class="shopItem" style="background:#cc3333;" onclick="buyWin(player2)">P2 WIN GAME (100)</button>
+        </div>
+    </div>
+</div>
+
+<div id="gameContainer"></div>
+
+<script>
+// --- THREE.JS SETUP ENVIRONMENT ---
+const container = document.getElementById("gameContainer");
+const scene = new THREE.Scene();
+
+// Camera setup
+const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.shadowMap.enabled = true;
+container.appendChild(renderer.domElement);
+
+// Lighting
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+
+const dirLight = new THREE.DirectionalLight(0xffffff, 0.8);
+dirLight.position.set(200, 400, 200);
+dirLight.castShadow = true;
+dirLight.shadow.mapSize.width = 1024;
+dirLight.shadow.mapSize.height = 1024;
+dirLight.shadow.camera.near = 0.5;
+dirLight.shadow.camera.far = 1500;
+const d = 500;
+dirLight.shadow.camera.left = -d;
+dirLight.shadow.camera.right = d;
+dirLight.shadow.camera.top = d;
+dirLight.shadow.camera.bottom = -d;
+scene.add(dirLight);
+
+// --- GAME LOGIC STRUCTURES ---
+const startScreen = document.getElementById("startScreen");
+const ui = document.getElementById("ui");
+const player2Card = document.getElementById("player2Card");
+const shopButton1 = document.getElementById("shopButton1");
+const shopButton2 = document.getElementById("shopButton2");
+const menuButton = document.getElementById("menuButton");
+const shop1 = document.getElementById("shop1");
+const shop2 = document.getElementById("shop2");
+
+let multiplayer = false;
+let gameStarted = false;
+let gamePaused = false;
+let difficulty = 'easy';
+let chickenEnabled = false;
+let chickenSpeed = 0;
+let musicEnabled = true;
+const bgMusic = new Audio("https://notificationsounds.com/storage/sounds/file-sounds-1150-pristine.mp3");
+bgMusic.loop = true;
+bgMusic.volume = 0.7;
+let particlesEnabled = true;
+let currentLanguage = 'en';
+
+let currentLevel = 1;
+let coinsCollectedThisLevel = 0;
+let coinsNeededForNextLevel = 10;
+let levelUpTimer = 0;
+
+let platforms = [];
+let hazards = [];
+let platforms3D = [];
+let hazards3D = [];
+let trees3D = [];
+let winGoal = { x: 0, y: 0, w: 0, h: 0 };
+let goalMesh = null;
+
+// Virtual bounds mapped directly from the original layout
+const arenaWidth = 1400;
+const arenaHeight = 800;
+
+const levelThemes = [
+    { skyTop: 0xb8f3ff, skyBottom: 0x86d36f, ground: 0x63b255, trunk: 0x7a4d27, leaves: 0x3c8c35, leafParticle: 0x5cae4f },
+    { skyTop: 0xffeaa7, skyBottom: 0xfab1a0, ground: 0xe17055, trunk: 0x5c3d24, leaves: 0xd63031, leafParticle: 0xff7675 },
+    { skyTop: 0xa29bfe, skyBottom: 0xffeaa7, ground: 0x6c5ce7, trunk: 0x2d3436, leaves: 0xfd79a8, leafParticle: 0xfd79a8 },
+    { skyTop: 0x0f172a, skyBottom: 0x1e293b, ground: 0x0f766e, trunk: 0x111827, leaves: 0x14b8a6, leafParticle: 0x2dd4bf },
+    { skyTop: 0xff9f43, skyBottom: 0xee5253, ground: 0x10ac84, trunk: 0x576574, leaves: 0x1dd1a1, leafParticle: 0x1dd1a1 },
+    { skyTop: 0xa0e0ff, skyBottom: 0xe0f7ff, ground: 0x2980b9, trunk: 0x34495e, leaves: 0x2980b9, leafParticle: 0x3498db },
+    { skyTop: 0x2c3e50, skyBottom: 0xe74c3c, ground: 0x7f8c8d, trunk: 0x2c3e50, leaves: 0xc0392b, leafParticle: 0xe67e22 }
+];
+
+function getTheme() {
+    const index = (currentLevel - 1) % levelThemes.length;
+    return levelThemes[index];
+}
+
+const translations = {
+    en:{ title:'Gooblet Forest 3D', subtitle:'Cute forest adventures 🌿', settings:'Settings ⚙️', music:'Music:', particles:'Particles:', fullscreen:'Fullscreen', fullscreenButton:'Toggle Fullscreen', toggleMusic:'Toggle Music', toggleParticles:'Toggle Particles', back:'Back', p1shop:'P1 Shop', p2shop:'P2 Shop', menu:'Menu', easy:'Easy 🌱', easyMedium:'Easy Medium 🐤', medium:'Medium 🐔', hard:'Hard ⚠️', mpMedium:'Multiplayer Medium', mpHard:'Multiplayer Hard', language:'Language', level:'Level' },
+    es:{ title:'Bosque Gooblet 3D', subtitle:'Aventuras lindas del bosque 🌿', settings:'Configuración ⚙️', music:'Música:', particles:'Partículas:', fullscreen:'Pantalla completa', fullscreenButton:'Cambiar pantalla completa', toggleMusic:'Alternar música', toggleParticles:'Alternar partículas', back:'Atrás', p1shop:'Tienda J1', p2shop:'Tienda J2', menu:'Menú', easy:'Fácil 🌱', easyMedium:'Medio Fácil 🐤', medium:'Medio 🐔', hard:'Difícil ⚠️', mpMedium:'Multijugador Medio', mpHard:'Multijugador Difícil', language:'Idioma', level:'Nivel' },
+    fr:{ title:'Forêt Gooblet 3D', subtitle:'Mignonnes aventures en forêt 🌿', settings:'Paramètres ⚙️', music:'Musique :', particles:'Particules :', fullscreen:'Plein écran', fullscreenButton:'Basculer plein écran', toggleMusic:'Activer musique', toggleParticles:'Activer particules', back:'Retour', p1shop:'Boutique J1', p2shop:'Boutique J2', menu:'Menu', easy:'Facile 🌱', easyMedium:'Moyen Facile 🐤', medium:'Moyen 🐔', hard:'Difficile ⚠️', mpMedium:'Multijoueur Moyen', mpHard:'Multijoueur Difficile', language:'Langue', level:'Niveau' },
+    jp:{ title:'グーブレットの森 3D', subtitle:'かわいい森の冒険 🌿', settings:'設定 ⚙️', music:'音楽:', particles:'パーティクル:', fullscreen:'フルスクリーン', fullscreenButton:'フルスクリーン切替', toggleMusic:'音楽を切替', toggleParticles:'パーティクル切替', back:'戻る', p1shop:'P1ショップ', p2shop:'P2ショップ', menu:'メニュー', easy:'かんたん 🌱', easyMedium:'かんたんふつう 🐤', medium:'ふつう 🐔', hard:'むずかしい ⚠️', mpMedium:'マルチプレイヤー 普通', mpHard:'マルチプレイヤー 難しい', language:'言語', level:'レベル' }
+};
+
+function setLanguage(lang){
+    currentLanguage = lang;
+    const t = translations[lang];
+    document.getElementById('gameTitle').textContent = t.title;
+    document.getElementById('subtitleText').textContent = t.subtitle;
+    document.getElementById('settingsButton').textContent = t.settings;
+    document.getElementById('musicLabel').textContent = t.music;
+    document.getElementById('particleLabel').textContent = t.particles;
+    document.getElementById('fullscreenLabel').textContent = t.fullscreen;
+    document.getElementById('fullscreenButton').textContent = t.fullscreenButton;
+    document.getElementById('toggleMusicButton').textContent = t.toggleMusic;
+    document.getElementById('toggleParticlesButton').textContent = t.toggleParticles;
+    document.getElementById('languageLabel').textContent = t.language;
+    document.getElementById('backButton').textContent = t.back;
+    document.getElementById('shopButton1').textContent = t.p1shop;
+    document.getElementById('shopButton2').textContent = t.p2shop;
+    document.getElementById('menuButton').textContent = t.menu;
+    document.getElementById('easyButton').textContent = t.easy;
+    document.getElementById('easyMediumButton').textContent = t.easyMedium;
+    document.getElementById('mediumButton').textContent = t.medium;
+    document.getElementById('hardButton').textContent = t.hard;
+    document.getElementById('mpMediumButton').textContent = t.mpMedium;
+    document.getElementById('mpHardButton').textContent = t.mpHard;
+    updateUI();
+}
+
+function toggleShop(shop){
+    const opening = shop.style.display !== "block";
+    shop1.style.display = "none";
+    shop2.style.display = "none";
+    if(opening){
+        shop.style.display = "block";
+        gamePaused = true;
+    }else{
+        gamePaused = false;
+    }
+}
+
+shopButton1.onclick = () => toggleShop(shop1);
+shopButton2.onclick = () => toggleShop(shop2);
+menuButton.onclick = () => returnToMenu();
+
+// --- WORLD GENERATORS (ENVIRONMENT) ---
+const groundGeo = new THREE.BoxGeometry(arenaWidth, 20, arenaHeight);
+let groundMat = new THREE.MeshToonMaterial({ color: 0x63b255 });
+const groundMesh = new THREE.Mesh(groundGeo, groundMat);
+groundMesh.position.set(arenaWidth/2, -10, arenaHeight/2);
+groundMesh.receiveShadow = true;
+scene.add(groundMesh);
+
+function create3DTree(x, z, theme) {
+    const group = new THREE.Group();
+    
+    const trunkGeo = new THREE.CylinderGeometry(10, 14, 180, 8);
+    const trunkMat = new THREE.MeshToonMaterial({ color: theme.trunk });
+    const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+    trunk.position.y = 90;
+    trunk.castShadow = true;
+    group.add(trunk);
+
+    const leavesMat = new THREE.MeshToonMaterial({ color: theme.leaves });
+    const leafTop = new THREE.Mesh(new THREE.SphereGeometry(50, 8, 8), leavesMat);
+    leafTop.position.y = 180;
+    leafTop.castShadow = true;
+    group.add(leafTop);
+
+    const leafL = new THREE.Mesh(new THREE.SphereGeometry(40, 8, 8), leavesMat);
+    leafL.position.set(-30, 150, 0);
+    leafL.castShadow = true;
+    group.add(leafL);
+
+    const leafR = new THREE.Mesh(new THREE.SphereGeometry(40, 8, 8), leavesMat);
+    leafR.position.set(30, 150, 0);
+    leafR.castShadow = true;
+    group.add(leafR);
+
+    group.position.set(x, 0, z);
+    scene.add(group);
+    trees3D.push(group);
+}
+
+function rebuildEnvironment() {
+    const theme = getTheme();
+    
+    // Set Sky/Background Canvas clear Color
+    renderer.setClearColor(theme.skyBottom, 1);
+    scene.background = new THREE.Color(theme.skyBottom);
+    groundMat.color.setHex(theme.ground);
+
+    // Clear old elements
+    trees3D.forEach(t => scene.remove(t));
+    trees3D = [];
+    platforms3D.forEach(p => scene.remove(p));
+    platforms3D = [];
+    hazards3D.forEach(h => scene.remove(h));
+    hazards3D = [];
+    if(goalMesh) { scene.remove(goalMesh); goalMesh = null; }
+
+    if (currentLevel < 6) {
+        groundMesh.position.set(arenaWidth/2, -10, arenaHeight/2);
+        groundMesh.scale.set(1, 1, 1);
+        
+        // Spawn pretty peripheral decoration trees
+        for(let x = 50; x < arenaWidth; x += 160){
+            create3DTree(x, -40, theme);
+            create3DTree(x + 40, arenaHeight + 40, theme);
+        }
+    } else {
+        // Platformer sizing modifications
+        groundMesh.position.set(arenaWidth/2, -500, arenaHeight/2); 
+    }
+}
+
+// --- CREATOR FUNCTIONS FOR INDIE CHARACTER MODELS ---
+function create3DGooblet(colorHex) {
+    const group = new THREE.Group();
+    
+    // Body Shape
+    const bodyGeo = new THREE.SphereGeometry(21, 16, 16);
+    const bodyMat = new THREE.MeshToonMaterial({ color: colorHex });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.position.y = 21;
+    body.castShadow = true;
+    group.add(body);
+    group.userData = { bodyMesh: body, baseColor: colorHex };
+
+    // Left Ear Horn
+    const earGeo = new THREE.ConeGeometry(6, 18, 4);
+    const earL = new THREE.Mesh(earGeo, bodyMat);
+    earL.position.set(-12, 36, 0);
+    earL.rotation.z = 0.3;
+    group.add(earL);
+
+    // Right Ear Horn
+    const earR = earL.clone();
+    earR.position.x = 12;
+    earR.rotation.z = -0.3;
+    group.add(earR);
+
+    // Black Shiny Eyes
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+    const eyeGeo = new THREE.SphereGeometry(3, 8, 8);
+    
+    const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
+    eyeL.position.set(-8, 23, 16);
+    group.add(eyeL);
+
+    const eyeR = eyeL.clone();
+    eyeR.position.x = 8;
+    group.add(eyeR);
+
+    // Cheerful Little Feet
+    const footGeo = new THREE.BoxGeometry(8, 6, 12);
+    const footMat = new THREE.MeshToonMaterial({ color: 0x333333 });
+    
+    const footL = new THREE.Mesh(footGeo, footMat);
+    footL.position.set(-10, 3, 0);
+    group.add(footL);
+    
+    const footR = footL.clone();
+    footR.position.x = 10;
+    group.add(footR);
+
+    scene.add(group);
+    return group;
+}
+
+function create3DChicken() {
+    const group = new THREE.Group();
+    
+    const bodyGeo = new THREE.SphereGeometry(21, 16, 16);
+    const bodyMat = new THREE.MeshToonMaterial({ color: 0xffffff });
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.position.y = 21;
+    body.castShadow = true;
+    group.add(body);
+
+    // Comb
+    const combGeo = new THREE.BoxGeometry(6, 12, 16);
+    const combMat = new THREE.MeshToonMaterial({ color: 0xff3333 });
+    const comb = new THREE.Mesh(combGeo, combMat);
+    comb.position.set(0, 38, 2);
+    group.add(comb);
+
+    // Beak
+    const beakGeo = new THREE.ConeGeometry(5, 12, 4);
+    const beakMat = new THREE.MeshToonMaterial({ color: 0xffa500 });
+    const beak = new THREE.Mesh(beakGeo, beakMat);
+    beak.position.set(0, 20, 23);
+    beak.rotation.x = Math.PI / 2;
+    group.add(beak);
+
+    // Dark Aggressive Eyes
+    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+    const eyeGeo = new THREE.SphereGeometry(3, 8, 8);
+    const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
+    eyeL.position.set(-8, 25, 15);
+    group.add(eyeL);
+    const eyeR = eyeL.clone();
+    eyeR.position.x = 8;
+    group.add(eyeR);
+
+    scene.add(group);
+    return group;
+}
+
+// --- INITIALIZE ENTITY OBJECTS ---
+let keys = {};
+addEventListener("keydown", e => { keys[e.key.toLowerCase()] = true; });
+addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; });
+
+let player = { x:200, y:400, z:200, vy:0, size:42, color:"#9cff8f", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null };
+let player2 = { x:500, y:400, z:250, vy:0, size:42, color:"#7fd8ff", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null };
+
+let p1Grounded = false;
+let p2Grounded = false;
+
+let chicken = { x:700, y:0, z:500, size:42, mesh:null };
+let coins = [];
+let coins3D = [];
+let walkParticles = [];
+let fallingLeaves = [];
+
+let winnerText = '';
+let winnerTimer = 0;
+
+// Setup meshes
+player.mesh = create3DGooblet(0x9cff8f);
+player2.mesh = create3DGooblet(0x7fd8ff);
+chicken.mesh = create3DChicken();
+
+function startGame(isMultiplayer, mode){
+    multiplayer = isMultiplayer;
+    difficulty = mode;
+
+    currentLevel = 1;
+    coinsCollectedThisLevel = 0;
+    coinsNeededForNextLevel = 10;
+    levelUpTimer = 0;
+    platforms = [];
+    hazards = [];
+
+    chickenEnabled = mode !== 'easy';
+    if(mode === 'easy-medium') chickenSpeed = 1.6;
+    if(mode === 'medium') chickenSpeed = 2.8;
+    if(mode === 'hard') chickenSpeed = 4.2;
+
+    startScreen.style.display = "none";
+    ui.style.display = "flex";
+    document.getElementById("levelDisplay").style.display = "block";
+
+    shopButton1.style.display = "block";
+    menuButton.style.display = "block";
+    player2.mesh.visible = multiplayer;
+
+    if(multiplayer){
+        shopButton2.style.display = "block";
+        player2Card.style.display = "block";
+    }
+
+    gamePaused = false;
+    gameStarted = true;
+
+    rebuildEnvironment();
+    resetPositionsAll();
+    updateUI();
+
+    if(musicEnabled) bgMusic.play().catch(()=>{});
+}
+
+function resetPositionsAll() {
+    player.x = 200; player.y = 0; player.z = 300; player.vy = 0;
+    player2.x = 500; player2.y = 0; player2.z = 350; player2.vy = 0;
+    chicken.x = 700; chicken.y = 0; chicken.z = 500;
+    
+    // Clear legacy coin configurations
+    coins3D.forEach(c => scene.remove(c));
+    coins3D = [];
+    coins = [];
+}
+
+function openSettings(){ document.getElementById("settingsScreen").style.display = "flex"; }
+function closeSettings(){ document.getElementById("settingsScreen").style.display = "none"; }
+
+function toggleMusic(){
+    musicEnabled = !musicEnabled;
+    document.getElementById("musicStatus").textContent = musicEnabled ? "ON" : "OFF";
+    if(musicEnabled) bgMusic.play().catch(()=>{}); else bgMusic.pause();
+}
+
+function toggleParticles(){
+    particlesEnabled = !particlesEnabled;
+    document.getElementById("particleStatus").textContent = particlesEnabled ? "ON" : "OFF";
+}
+
+function toggleFullscreen(){
+    if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen();
+}
+
+function returnToMenu(){
+    ui.style.display = "none";
+    document.getElementById("levelDisplay").style.display = "none";
+    shopButton1.style.display = "none";
+    shopButton2.style.display = "none";
+    menuButton.style.display = "none";
+    shop1.style.display = "none";
+    shop2.style.display = "none";
+    player2Card.style.display = "none";
+    startScreen.style.display = "flex";
+
+    gameStarted = false;
+    multiplayer = false;
+
+    player.coins = 0; player.speed = 5; player.speedLevel = 1; player.speedCost = 10;
+    player2.coins = 0; player2.speed = 5; player2.speedLevel = 1; player2.speedCost = 10;
+    player.mesh.position.set(200, 0, 300);
+    player2.mesh.position.set(500, 0, 350);
+    player2.mesh.visible = false;
+    chicken.mesh.visible = false;
+
+    coins3D.forEach(c => scene.remove(c));
+    coins3D = []; coins = [];
+    bgMusic.pause();
+    bgMusic.currentTime = 0;
+    currentLevel = 1;
+    rebuildEnvironment();
+    updateUI();
+}
+
+// --- LEVEL 6 & 7 3D PLATFORMER GENERATOR ENGINE ---
+function setupPlatformerLevel(resetPositions = true) {
+    platforms = [];
+    hazards = [];
+    platforms3D.forEach(p => scene.remove(p));
+    platforms3D = [];
+    hazards3D.forEach(h => scene.remove(h));
+    hazards3D = [];
+    coins3D.forEach(c => scene.remove(c));
+    coins3D = [];
+    coins = [];
+
+    if(goalMesh) { scene.remove(goalMesh); goalMesh = null; }
+
+    const theme = getTheme();
+    const w = arenaWidth;
+    
+    if (resetPositions) {
+        player.x = 80; player.y = 200; player.z = arenaHeight / 2; player.vy = 0; p1Grounded = false;
+        if (multiplayer) {
+            player2.x = 160; player2.y = 200; player2.z = arenaHeight / 2; player2.vy = 0; p2Grounded = false;
+        }
+    }
+    
+    let platMat = new THREE.MeshToonMaterial({ color: theme.ground });
+    let leavesCapMat = new THREE.MeshToonMaterial({ color: theme.leaves });
+
+    function add3DPlatform(x, y, width, height) {
+        platforms.push({ x: x, y: y, w: width, h: height });
+        
+        const platGroup = new THREE.Group();
+        const boxGeo = new THREE.BoxGeometry(width, height, 120); // Thick deep block setup
+        const mesh = new THREE.Mesh(boxGeo, platMat);
+        mesh.position.set(width/2, -height/2, 0);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        platGroup.add(mesh);
+
+        // Cute top grass cap layer
+        const capGeo = new THREE.BoxGeometry(width, 6, 122);
+        const capMesh = new THREE.Mesh(capGeo, leavesCapMat);
+        capMesh.position.set(width/2, 3, 0);
+        platGroup.add(capMesh);
+
+        platGroup.position.set(x, y, arenaHeight / 2);
+        scene.add(platGroup);
+        platforms3D.push(platGroup);
+    }
+
+    if (currentLevel === 6) {
+        chicken.mesh.visible = false;
+        add3DPlatform(0, 120, w * 0.25, 500); 
+        add3DPlatform(w * 0.32, 220, w * 0.15, 40);
+        add3DPlatform(w * 0.52, 340, w * 0.15, 40);
+        add3DPlatform(w * 0.72, 260, w * 0.12, 40);
+        add3DPlatform(w * 0.88, 400, w * 0.14, 800);
+        
+        for (let i = 0; i < 8; i++) spawnPlatformerCoin();
+    } 
+    else if (currentLevel === 7) {
+        chicken.mesh.visible = false;
+        add3DPlatform(0, 150, w * 0.22, 500);
+        add3DPlatform(w * 0.26, 240, w * 0.10, 30);
+        add3DPlatform(w * 0.40, 350, w * 0.12, 30);
+        add3DPlatform(w * 0.57, 440, w * 0.14, 30);
+        add3DPlatform(w * 0.75, 520, w * 0.12, 30);
+        add3DPlatform(w * 0.88, 620, w * 0.15, 900);
+
+        // Hazards configuration
+        let hazX = w * 0.22;
+        let hazW = w * 0.66;
+        hazards.push({ x: hazX, y: 0, w: hazW, h: 40 });
+
+        const hazGroup = new THREE.Group();
+        const spikeMat = new THREE.MeshToonMaterial({ color: 0xff3838 });
+        let totalSpikes = Math.ceil(hazW / 24);
+        for(let i=0; i<totalSpikes; i++) {
+            const spikeGeo = new THREE.ConeGeometry(12, 35, 4);
+            const spike = new THREE.Mesh(spikeGeo, spikeMat);
+            spike.position.set(i * 24 + 12, 17.5, 0);
+            hazGroup.add(spike);
+        }
+        hazGroup.position.set(hazX, 0, arenaHeight / 2);
+        scene.add(hazGroup);
+        hazards3D.push(hazGroup);
+
+        winGoal = { x: w * 0.91, y: 620, w: 60, h: 90 };
+
+        // 3D Trophy Goal Design
+        const goalGroup = new THREE.Group();
+        const baseGeo = new THREE.CylinderGeometry(15, 20, 15, 8);
+        const goldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.2, metalness: 0.5 });
+        const base = new THREE.Mesh(baseGeo, goldMat);
+        base.position.y = 7.5;
+        goalGroup.add(base);
+
+        const cupGeo = new THREE.CylinderGeometry(25, 10, 40, 8);
+        const cup = new THREE.Mesh(cupGeo, goldMat);
+        cup.position.y = 35;
+        goalGroup.add(cup);
+
+        goalGroup.position.set(winGoal.x + 30, winGoal.y, arenaHeight / 2);
+        scene.add(goalGroup);
+        goalMesh = goalGroup;
+
+        if (resetPositions) gamePaused = false;
+    }
+}
+
+function spawnCoin(){
+    if(!gameStarted || gamePaused || currentLevel >= 7) return;
+    if(coins.length >= 10) return;
+
+    if (currentLevel < 6) {
+        let cx = Math.random() * (arenaWidth - 60) + 30;
+        let cz = Math.random() * (arenaHeight - 60) + 30;
+        
+        coins.push({ x: cx, y: 15, z: cz, size: 24 });
+        
+        const coinGeo = new THREE.CylinderGeometry(12, 12, 4, 12);
+        const coinMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3 });
+        const cMesh = new THREE.Mesh(coinGeo, coinMat);
+        cMesh.rotation.x = Math.PI / 2;
+        cMesh.position.set(cx, 20, cz);
+        cMesh.castShadow = true;
+        scene.add(cMesh);
+        coins3D.push(cMesh);
+    } else {
+        spawnPlatformerCoin();
+    }
+}
+
+function spawnPlatformerCoin() {
+    if(platforms.length === 0) return;
+    let plat = platforms[Math.floor(Math.random() * platforms.length)];
+    let cx = plat.x + Math.random() * (plat.w - 30) + 15;
+    let cy = plat.y + 35;
+    let cz = arenaHeight / 2;
+
+    coins.push({ x: cx, y: cy, z: cz, size: 24 });
+
+    const coinGeo = new THREE.CylinderGeometry(12, 12, 4, 12);
+    const coinMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3 });
+    const cMesh = new THREE.Mesh(coinGeo, coinMat);
+    cMesh.position.set(cx, cy, cz);
+    cMesh.rotation.x = Math.PI / 2;
+    cMesh.castShadow = true;
+    scene.add(cMesh);
+    coins3D.push(cMesh);
+}
+
+setInterval(spawnCoin, 1000);
+
+// --- RUNTIME HITBOX INTERSECTIONS & ACTIONS ---
+function collectCoins(p){
+    for(let i = coins.length - 1; i >= 0; i--){
+        let c = coins[i];
+        
+        // Accurate 3D Distance check
+        let dx = p.x - c.x;
+        let dy = p.y - c.y;
+        let dz = (currentLevel < 6) ? (p.z - c.z) : 0;
+        let dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+
+        if(dist < (p.size/2 + c.size/2)) {
+            // Spawn standard 3D Sparkle Burst Particles
+            if (particlesEnabled) {
+                for(let j=0; j<8; j++) {
+                    const pGeo = new THREE.SphereGeometry(2, 4, 4);
+                    const pMat = new THREE.MeshBasicMaterial({ color: 0xffea00 });
+                    const pMesh = new THREE.Mesh(pGeo, pMat);
+                    pMesh.position.set(c.x, c.y, c.z);
+                    scene.add(pMesh);
+                    walkParticles.push({
+                        mesh: pMesh,
+                        vx: (Math.random() - 0.5) * 6,
+                        vy: (Math.random() - 0.5) * 6,
+                        vz: (Math.random() - 0.5) * 6,
+                        life: 25
+                    });
+                }
+            }
+
+            // Remove mesh elements safely
+            scene.remove(coins3D[i]);
+            coins3D.splice(i, 1);
+            coins.splice(i, 1);
+            
+            p.coins++;
+            coinsCollectedThisLevel++;
+            
+            if(coinsCollectedThisLevel >= coinsNeededForNextLevel){
+                if(currentLevel >= 6){
+                    gamePaused = true;
+                    showWinScreen(multiplayer ? 'YOU BOTH BEAT THE GAME! 🎉' : 'YOU BEAT THE GAME! 🎉');
+                    return;
+                }
+
+                currentLevel++;
+                coinsCollectedThisLevel = 0;
+                coinsNeededForNextLevel = 10 + (currentLevel - 1) * 5;
+                levelUpTimer = 90; 
+                
+                rebuildEnvironment();
+                if (currentLevel >= 6) {
+                    setupPlatformerLevel(true);
+                } else {
+                    resetPositionsAll();
+                }
+                return; // FIX: Prevents loop evaluation errors on empty arrays
+            }
+            updateUI();
+        }
+    }
+}
+
+function checkHazardsAndGoals(p, isP2) {
+    if (currentLevel < 6) return;
+
+    // Platformer Hazard Spike checks
+    for (let haz of hazards) {
+        if (p.x > haz.x && p.x < haz.x + haz.w && p.y > haz.y && p.y < haz.y + haz.h + 20) {
+            resetPlatformerPosition(p);
+            return;
+        }
+    }
+
+    // Win Goal Trophy check
+    if (currentLevel === 7 && p.x > winGoal.x && p.x < winGoal.x + winGoal.w && p.y > winGoal.y && p.y < winGoal.y + winGoal.h) {
+        gamePaused = true;
+        showWinScreen(multiplayer 
+            ? (isP2 ? 'PLAYER 2 WINS THE PLATFORMER! 🎉' : 'PLAYER 1 WINS THE PLATFORMER! 🎉')
+            : 'YOU BEAT THE PLATFORMER! YOU WIN! 🎉');
+    }
+}
+
+function resetPlatformerPosition(p) {
+    p.x = 80;
+    p.y = 400;
+    p.vy = 0;
+}
+
+function showWinScreen(text) {
+    winnerText = text;
+    winnerTimer = 300;
+    setTimeout(() => {
+        if(gameStarted) returnToMenu();
+    }, 4500);
+    updateUI();
+}
+
+// --- MOVEMENT ENGINE PROCESSING LOOP ---
+function update(){
+    if(!gameStarted || gamePaused || winnerTimer > 0) return;
+
+    if (currentLevel < 6) {
+        // TOP-DOWN EXTRACTION RUNNER CONTROLS
+        chicken.mesh.visible = chickenEnabled;
+        
+        // P1 Controls (WASD)
+        let p1Moving = false;
+        if(keys["w"]) { player.z -= player.speed; p1Moving = true; player.mesh.rotation.y = Math.PI; }
+        if(keys["s"]) { player.z += player.speed; p1Moving = true; player.mesh.rotation.y = 0; }
+        if(keys["a"]) { player.x -= player.speed; p1Moving = true; player.mesh.rotation.y = -Math.PI/2; }
+        if(keys["d"]) { player.x += player.speed; p1Moving = true; player.mesh.rotation.y = Math.PI/2; }
+        
+        if (p1Moving) {
+            player.walk += 0.25;
+            player.mesh.position.y = Math.abs(Math.sin(player.walk)) * 8; 
+            spawnWalkParticle(player.x, player.z);
+        } else { player.mesh.position.y = 0; }
+        
+        player.x = Math.max(20, Math.min(arenaWidth - 20, player.x));
+        player.z = Math.max(20, Math.min(arenaHeight - 20, player.z));
+        player.mesh.position.set(player.x, player.mesh.position.y, player.z);
+        collectCoins(player);
+
+        // P2 Controls (Arrows)
+        if(multiplayer) {
+            let p2Moving = false;
+            if(keys["arrowup"]) { player2.z -= player2.speed; p2Moving = true; player2.mesh.rotation.y = Math.PI; }
+            if(keys["arrowdown"]) { player2.z += player2.speed; p2Moving = true; player2.mesh.rotation.y = 0; }
+            if(keys["arrowleft"]) { player2.x -= player2.speed; p2Moving = true; player2.mesh.rotation.y = -Math.PI/2; }
+            if(keys["arrowright"]) { player2.x += player2.speed; p2Moving = true; player2.mesh.rotation.y = Math.PI/2; }
+            
+            if (p2Moving) {
+                player2.walk += 0.25;
+                player2.mesh.position.y = Math.abs(Math.sin(player2.walk)) * 8;
+                spawnWalkParticle(player2.x, player2.z);
+            } else { player2.mesh.position.y = 0; }
+            
+            player2.x = Math.max(20, Math.min(arenaWidth - 20, player2.x));
+            player2.z = Math.max(20, Math.min(arenaHeight - 20, player2.z));
+            player2.mesh.position.set(player2.x, player2.mesh.position.y, player2.z);
+            collectCoins(player2);
+        }
+
+        // Hostile Chicken 3D AI Chase AI Script
+        if(chickenEnabled){
+            let target = player;
+            if(multiplayer){
+                let d1 = Math.hypot(chicken.x - player.x, chicken.z - player.z);
+                let d2 = Math.hypot(chicken.x - player2.x, chicken.z - player2.z);
+                target = d1 < d2 ? player : player2;
+            }
+
+            let angle = Math.atan2(target.z - chicken.z, target.x - chicken.x);
+            let currentChickenSpeed = chickenSpeed + (currentLevel - 1) * 0.25;
+            if(difficulty === 'hard') {
+                currentChickenSpeed = Math.min(player.speed * 0.85 + (currentLevel - 1) * 0.3, 7.5);
+            }
+
+            chicken.x += Math.cos(angle) * currentChickenSpeed;
+            chicken.z += Math.sin(angle) * currentChickenSpeed;
+            chicken.mesh.position.set(chicken.x, Math.abs(Math.sin(performance.now() * 0.01)) * 6, chicken.z);
+            chicken.mesh.rotation.y = -angle + Math.PI / 2;
+
+            // Catch Event Radius
+            let chaseDist = Math.hypot(chicken.x - target.x, chicken.z - target.z);
+            if(chaseDist < 35) {
+                alert('The chicken caught you!');
+                returnToMenu();
+            }
+        }
+    } else {
+        // SCROLLING 3D PLATFORMER PHYSICS INTERACTION
+        processPlatformerPhysics(player, "a", "d", "w", false);
+        collectCoins(player);
+        checkHazardsAndGoals(player, false);
+
+        if(multiplayer) {
+            processPlatformerPhysics(player2, "arrowleft", "arrowright", "arrowup", true);
+            collectCoins(player2);
+            checkHazardsAndGoals(player2, true);
+        }
+    }
+}
+
+function processPlatformerPhysics(p, leftKey, rightKey, jumpKey, isP2) {
+    let oldX = p.x;
+    let moving = false;
+
+    if (keys[leftKey]) { p.x -= p.speed; moving = true; p.mesh.rotation.y = -Math.PI/2; }
+    if (keys[rightKey]) { p.x += p.speed; moving = true; p.mesh.rotation.y = Math.PI/2; }
+
+    // X collision
+    for (let plat of platforms) {
+        if (p.x < plat.x + plat.w && p.x + 30 > plat.x && p.y < plat.y && p.y > plat.y - plat.h) {
+            p.x = oldX;
+        }
+    }
+
+    p.vy -= 0.55; // Gravity acceleration
+    p.y += p.vy;
+
+    let grounded = false;
+    // Y collision logic against standard blocks
+    for (let plat of platforms) {
+        if (p.x < plat.x + plat.w && p.x + 30 > plat.x) {
+            if (p.y <= plat.y && p.y >= plat.y - 40) {
+                if (p.vy <= 0) {
+                    p.y = plat.y;
+                    p.vy = 0;
+                    grounded = true;
+                }
+            }
+        }
+    }
+
+    if (isP2) p2Grounded = grounded; else p1Grounded = grounded;
+
+    if (keys[jumpKey] && grounded) {
+        p.vy = 14;
+        if (isP2) p2Grounded = false; else p1Grounded = false;
+    }
+
+    if(moving && grounded) {
+        p.walk += 0.3;
+        spawnWalkParticle(p.x, arenaHeight / 2);
+    }
+
+    p.x = Math.max(20, Math.min(arenaWidth - 20, p.x));
+    p.mesh.position.set(p.x, p.y, arenaHeight / 2);
+
+    // Abyss fall reset rules
+    if (p.y < -100) resetPlatformerPosition(p);
+}
+
+function spawnWalkParticle(x, z) {
+    if (!particlesEnabled || Math.random() > 0.25) return;
+    const pGeo = new THREE.SphereGeometry(2.5, 4, 4);
+    const pMat = new THREE.MeshBasicMaterial({ color: 0xddffdd, transparent: true, opacity: 0.6 });
+    const pMesh = new THREE.Mesh(pGeo, pMat);
+    pMesh.position.set(x, 2, z);
+    scene.add(pMesh);
+    walkParticles.push({ mesh: pMesh, vx: (Math.random()-0.5)*2, vy: Math.random()*2, vz: (Math.random()-0.5)*2, life: 20 });
+}
+
+function updateParticles() {
+    for (let i = walkParticles.length - 1; i >= 0; i--) {
+        let p = walkParticles[i];
+        p.mesh.position.x += p.vx;
+        p.mesh.position.y += p.vy;
+        p.mesh.position.z += p.vz;
+        p.life--;
+        if(p.life <= 0) {
+            scene.remove(p.mesh);
+            walkParticles.splice(i, 1);
+        }
+    }
+}
+
+// --- DYNAMIC CAMERA & GRAPHICS RENDER LOOP ---
+function renderLoop(){
+    update();
+    updateParticles();
+
+    // Rotate existing coins on scene
+    coins3D.forEach(cMesh => { cMesh.rotation.z += 0.04; });
+    if(goalMesh) goalMesh.rotation.y += 0.02;
+
+    // Smooth Intelligent Camera Setup Positioning
+    if (currentLevel < 6) {
+        // Top-Down Tracking Camera Blueprint
+        let targetX = player.x;
+        let targetZ = player.z;
+        if(multiplayer) {
+            targetX = (player.x + player2.x) / 2;
+            targetZ = (player.z + player2.z) / 2;
+        }
+        camera.position.set(targetX, 580, targetZ + 360);
+        camera.lookAt(targetX, 0, targetZ);
+    } else {
+        // Platformer Side Scrolling Tracking View Blueprint
+        let targetX = player.x;
+        let targetY = player.y + 100;
+        if(multiplayer) {
+            targetX = (player.x + player2.x) / 2;
+            targetY = ((player.y + player2.y) / 2) + 100;
+        }
+        camera.position.set(targetX, targetY + 20, (arenaHeight / 2) + 520);
+        camera.lookAt(targetX, targetY - 40, arenaHeight / 2);
+    }
+
+    renderer.render(scene, camera);
+    requestAnimationFrame(renderLoop);
+}
+
+// Start ThreeJS Loop Engine execution
+renderLoop();
+
+// --- UPGRADE SHOP ACTION IMPLEMENTATIONS ---
+function buySpeed(p){
+    if(p.coins >= p.speedCost){
+        p.coins -= p.speedCost;
+        p.speedLevel++;
+        p.speed += 0.9;
+        p.speedCost = Math.floor(p.speedCost * 1.5);
+        updateUI();
+    }
+}
+
+function buySkin(p, colorHex, cost){
+    if(p.coins >= cost){
+        p.coins -= cost;
+        p.color = colorHex;
+        if(p.mesh && p.mesh.userData.bodyMesh) {
+            p.mesh.userData.bodyMesh.material.color.set(colorHex);
+        }
+        updateUI();
+    }
+}
+
+function buyWin(p){
+    if(p.coins >= 100){
+        p.coins -= 100;
+        const playerName = prompt("Enter your name for the leaderboard:") || "Player";
+        console.log(`Leaderboard updated: ${playerName} achieved ${p.coins + 100} points!`);
+        showWinScreen(multiplayer ? (p === player ? 'PLAYER 1 WINS! 🎉' : 'PLAYER 2 WINS! 🎉') : 'YOU WIN! 🎉');
+    }
+}
+
+function updateUI(){
+    document.getElementById("coinCount1").textContent = player.coins;
+    document.getElementById("speedLevel1").textContent = player.speedLevel;
+    document.getElementById("coinCount2").textContent = player2.coins;
+    document.getElementById("speedLevel2").textContent = player2.speedLevel;
+
+    const prefix = translations[currentLanguage]?.level || "Level";
+    if (currentLevel < 6) {
+        document.getElementById("levelDisplay").textContent = `${prefix} ${currentLevel} (${coinsCollectedThisLevel}/${coinsNeededForNextLevel} 🪙)`;
+    } else {
+        document.getElementById("levelDisplay").textContent = `🏆 Final Platformer Level 🏆`;
+    }
+}
+
+window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+updateUI();
+</script>
+</body>
+</html>
