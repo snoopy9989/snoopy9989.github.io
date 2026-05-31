@@ -6,10 +6,10 @@
 
 <title>Gooblet Forest Collector 3D</title>
 
+<link rel="icon" type="image/png" href="favicon.png">
+
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
 
-<link rel="icon" type="image/png" href="favicon.png">
-    
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
 <style>
@@ -231,26 +231,63 @@ body{
 }
 .settingButton:hover{ background:#58a84f; }
 
-/* Canva Sandbox Friendly On-Screen Controls Style */
-.onScreenBtn {
-    width: 65px;
-    height: 65px;
-    font-size: 26px;
-    border: none;
+/* --- TOUCH CONTROLS STYLES --- */
+#touchControls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 240px;
+    z-index: 30;
+    pointer-events: none;
+    display: none;
+}
+
+#dpad {
+    position: absolute;
+    bottom: 25px;
+    left: 25px;
+    width: 170px;
+    height: 170px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
+    gap: 6px;
+    pointer-events: auto;
+}
+
+#btnJump {
+    position: absolute;
+    bottom: 45px;
+    right: 35px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
-    background: rgba(255, 255, 255, 0.85);
-    color: #4f9a46;
+    font-size: 20px;
+    pointer-events: auto;
+}
+
+.touchBtn {
+    background: rgba(255, 255, 255, 0.55);
+    border: 4px solid #4f9a46;
+    border-radius: 18px;
+    color: #2c5f2a;
+    font-size: 26px;
     font-weight: bold;
-    box-shadow: 0 5px 0 #5fb553, 0 4px 10px rgba(0,0,0,0.15);
-    cursor: pointer;
     display: flex;
     justify-content: center;
     align-items: center;
-    touch-action: manipulation;
+    user-select: none;
+    -webkit-user-select: none;
+    touch-action: none;
+    font-family:'Fredoka', sans-serif;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
-.onScreenBtn:active {
-    transform: translateY(3px);
-    box-shadow: 0 2px 0 #5fb553;
+
+.touchBtn:important-active, .touchBtn:active {
+    background: rgba(125, 216, 110, 0.9);
+    color: white;
+    transform: scale(0.95);
 }
 </style>
 </head>
@@ -300,18 +337,6 @@ body{
 <button class="shopButton" id="shopButton2">P2 Shop</button>
 <button class="shopButton" id="menuButton">Menu</button>
 
-<div id="screenControls" style="position: absolute; bottom: 30px; left: 30px; display: none; flex-direction: column; align-items: center; gap: 8px; z-index: 35;">
-    <button class="onScreenBtn" id="ctrlUp">▲</button>
-    <div style="display: flex; gap: 20px;">
-        <button class="onScreenBtn" id="ctrlLeft">◀</button>
-        <button class="onScreenBtn" id="ctrlDown">▼</button>
-        <button class="onScreenBtn" id="ctrlRight">▶</button>
-    </div>
-</div>
-<div id="jumpControl" style="position: absolute; bottom: 30px; right: 30px; display: none; z-index: 35;">
-    <button class="onScreenBtn" id="ctrlJump" style="width: 90px; border-radius: 20px;">JUMP</button>
-</div>
-
 <div class="shop" id="shop1">
     <h2>Player 1 Shop</h2>
     <button class="shopItem" onclick="buySpeed(player)">Speed Upgrade</button>
@@ -354,6 +379,10 @@ body{
             <button id="fullscreenButton" class="settingButton" onclick="toggleFullscreen()">Toggle Fullscreen</button>
         </div>
         <div class="settingRow">
+            <span id="touchLabel">Touch Controls:</span> <span id="touchStatus">OFF</span><br>
+            <button id="toggleTouchButton" class="settingButton" onclick="toggleTouchControls()">Toggle Touch</button>
+        </div>
+        <div class="settingRow">
             <span id="languageLabel">Language</span><br><br>
             <button class="settingButton" onclick="setLanguage('en')">English</button>
             <button class="settingButton" onclick="setLanguage('es')">Español</button>
@@ -366,6 +395,16 @@ body{
             <button class="shopItem" style="background:#cc3333;" onclick="buyWin(player2)">P2 WIN GAME (100)</button>
         </div>
     </div>
+</div>
+
+<div id="touchControls">
+    <div id="dpad">
+        <button class="touchBtn" id="btnUp" style="grid-area: 1 / 2 / 2 / 3;">▲</button>
+        <button class="touchBtn" id="btnLeft" style="grid-area: 2 / 1 / 3 / 2;">◀</button>
+        <button class="touchBtn" id="btnRight" style="grid-area: 2 / 3 / 3 / 4;">▶</button>
+        <button class="touchBtn" id="btnDown" style="grid-area: 3 / 2 / 4 / 3;">▼</button>
+    </div>
+    <button class="touchBtn" id="btnJump">JUMP</button>
 </div>
 
 <div id="gameContainer"></div>
@@ -421,6 +460,7 @@ const bgMusic = new Audio("https://notificationsounds.com/storage/sounds/file-so
 bgMusic.loop = true;
 bgMusic.volume = 0.7;
 let particlesEnabled = true;
+let touchControlsEnabled = false;
 let currentLanguage = 'en';
 
 let currentLevel = 1;
@@ -430,9 +470,9 @@ let levelUpTimer = 0;
 
 let platforms = [];
 let hazards = [];
-let platforms3D = []; // Fixed syntax bug (Variable names cannot start with numbers)
-let hazards3D = [];   // Fixed syntax bug
-let trees3D = [];     // Fixed syntax bug
+let platforms3D = [];
+let hazards3D = [];
+let trees3D = [];
 let winGoal = { x: 0, y: 0, w: 0, h: 0 };
 let goalMesh = null;
 
@@ -456,10 +496,10 @@ function getTheme() {
 }
 
 const translations = {
-    en:{ title:'Gooblet Forest 3D', subtitle:'Cute forest adventures 🌿', settings:'Settings ⚙️', music:'Music:', particles:'Particles:', fullscreen:'Fullscreen', fullscreenButton:'Toggle Fullscreen', toggleMusic:'Toggle Music', toggleParticles:'Toggle Particles', back:'Back', p1shop:'P1 Shop', p2shop:'P2 Shop', menu:'Menu', easy:'Easy 🌱', easyMedium:'Easy Medium 🐤', medium:'Medium 🐔', hard:'Hard ⚠️', mpMedium:'Multiplayer Medium', mpHard:'Multiplayer Hard', language:'Language', level:'Level' },
-    es:{ title:'Bosque Gooblet 3D', subtitle:'Aventuras lindas del bosque 🌿', settings:'Configuración ⚙️', music:'Música:', particles:'Partículas:', fullscreen:'Pantalla completa', fullscreenButton:'Cambiar pantalla completa', toggleMusic:'Alternar música', toggleParticles:'Alternar partículas', back:'Atrás', p1shop:'Tienda J1', p2shop:'Tienda J2', menu:'Menú', easy:'Fácil 🌱', easyMedium:'Medio Fácil 🐤', medium:'Medio 🐔', hard:'Difícil ⚠️', mpMedium:'Multijugador Medio', mpHard:'Multijugador Difícil', language:'Idioma', level:'Nivel' },
-    fr:{ title:'Forêt Gooblet 3D', subtitle:'Mignonnes aventures en forêt 🌿', settings:'Paramètres ⚙️', music:'Musique :', particles:'Particules :', fullscreen:'Plein écran', fullscreenButton:'Basculer plein écran', toggleMusic:'Activer musique', toggleParticles:'Activer particules', back:'Retour', p1shop:'Boutique J1', p2shop:'Boutique J2', menu:'Menu', easy:'Facile 🌱', easyMedium:'Moyen Facile 🐤', medium:'Moyen 🐔', hard:'Difficile ⚠️', mpMedium:'Multijouer Moyen', mpHard:'Multijoueur Difficile', language:'Langue', level:'Niveau' },
-    jp:{ title:'グーブレットの森 3D', subtitle:'かわいい森の冒険 🌿', settings:'設定 ⚙️', music:'音楽:', particles:'パーティクル:', fullscreen:'フルスクリーン', fullscreenButton:'フルスクリーン切替', toggleMusic:'音楽を切替', toggleParticles:'パーティクル切替', back:'戻る', p1shop:'P1ショップ', p2shop:'P2ショップ', menu:'メニュー', easy:'かんたん 🌱', easyMedium:'かんたんふつう 🐤', medium:'ふつう 🐔', hard:'むずかしい ⚠️', mpMedium:'マルチプレイヤー 普通', mpHard:'マルチプレイヤー 難しい', language:'言語', level:'レベル' }
+    en:{ title:'Gooblet Forest 3D', subtitle:'Cute forest adventures 🌿', settings:'Settings ⚙️', music:'Music:', particles:'Particles:', fullscreen:'Fullscreen', fullscreenButton:'Toggle Fullscreen', toggleMusic:'Toggle Music', toggleParticles:'Toggle Particles', back:'Back', p1shop:'P1 Shop', p2shop:'P2 Shop', menu:'Menu', easy:'Easy 🌱', easyMedium:'Easy Medium 🐤', medium:'Medium 🐔', hard:'Hard ⚠️', mpMedium:'Multiplayer Medium', mpHard:'Multiplayer Hard', language:'Language', level:'Level', touch:'Touch Controls:', toggleTouch:'Toggle Touch' },
+    es:{ title:'Bosque Gooblet 3D', subtitle:'Aventuras lindas del bosque 🌿', settings:'Configuración ⚙️', music:'Música:', particles:'Partículas:', fullscreen:'Pantalla completa', fullscreenButton:'Cambiar pantalla completa', toggleMusic:'Alternar música', toggleParticles:'Alternar partículas', back:'Atrás', p1shop:'Tienda J1', p2shop:'Tienda J2', menu:'Menú', easy:'Fácil 🌱', easyMedium:'Medio Fácil 🐤', medium:'Medio 🐔', hard:'Difícil ⚠️', mpMedium:'Multijugador Medio', mpHard:'Multijugador Difícil', language:'Idioma', level:'Nivel', touch:'Controles táctiles:', toggleTouch:'Alternar táctil' },
+    fr:{ title:'Forêt Gooblet 3D', subtitle:'Mignonnes aventures en forêt 🌿', settings:'Paramètres ⚙️', music:'Musique :', particles:'Particules :', fullscreen:'Plein écran', fullscreenButton:'Basculer plein écran', toggleMusic:'Activer musique', toggleParticles:'Activer particules', back:'Retour', p1shop:'Boutique J1', p2shop:'Boutique J2', menu:'Menu', easy:'Facile 🌱', easyMedium:'Moyen Facile 🐤', medium:'Moyen 🐔', hard:'Difficile ⚠️', mpMedium:'Multijoueur Moyen', mpHard:'Multijoueur Difficile', language:'Langue', level:'Niveau', touch:'Contrôles tactiles :', toggleTouch:'Basculer tactile' },
+    jp:{ title:'グーブレットの森 3D', subtitle:'かわいい森の冒険 🌿', settings:'設定 ⚙️', music:'音楽:', particles:'パーティクル:', fullscreen:'フルスクリーン', fullscreenButton:'フルスクリーン切替', toggleMusic:'音楽を切替', toggleParticles:'パーティクル切替', back:'戻る', p1shop:'P1ショップ', p2shop:'P2ショップ', menu:'メニュー', easy:'かんたん 🌱', easyMedium:'かんたんふつう 🐤', medium:'ふつう 🐔', hard:'むずかしい ⚠️', mpMedium:'マルチプレイヤー 普通', mpHard:'マルチプレイヤー 難しい', language:'言語', level:'レベル', touch:'タッチコントロール:', toggleTouch:'タッチ切替' }
 };
 
 function setLanguage(lang){
@@ -474,6 +514,8 @@ function setLanguage(lang){
     document.getElementById('fullscreenButton').textContent = t.fullscreenButton;
     document.getElementById('toggleMusicButton').textContent = t.toggleMusic;
     document.getElementById('toggleParticlesButton').textContent = t.toggleParticles;
+    document.getElementById('touchLabel').textContent = t.touch;
+    document.getElementById('toggleTouchButton').textContent = t.toggleTouch;
     document.getElementById('languageLabel').textContent = t.language;
     document.getElementById('backButton').textContent = t.back;
     document.getElementById('shopButton1').textContent = t.p1shop;
@@ -540,7 +582,7 @@ function create3DTree(x, z, theme) {
 
     group.position.set(x, 0, z);
     scene.add(group);
-    trees3D.push(group); // Fixed identifier
+    trees3D.push(group);
 }
 
 function rebuildEnvironment() {
@@ -552,11 +594,11 @@ function rebuildEnvironment() {
     groundMat.color.setHex(theme.ground);
 
     // Clear old elements
-    trees3D.forEach(t => scene.remove(t)); // Fixed identifier
+    trees3D.forEach(t => scene.remove(t));
     trees3D = [];
-    platforms3D.forEach(p => scene.remove(p)); // Fixed identifier
+    platforms3D.forEach(p => scene.remove(p));
     platforms3D = [];
-    hazards3D.forEach(h => scene.remove(h)); // Fixed identifier
+    hazards3D.forEach(h => scene.remove(h));
     hazards3D = [];
     if(goalMesh) { scene.remove(goalMesh); goalMesh = null; }
 
@@ -569,9 +611,12 @@ function rebuildEnvironment() {
             create3DTree(x, -40, theme);
             create3DTree(x + 40, arenaHeight + 40, theme);
         }
+        // Reposition jump button out of view in top down modes if touch is enabled
+        document.getElementById("btnJump").style.display = "none";
     } else {
         // Platformer sizing modifications
         groundMesh.position.set(arenaWidth/2, -500, arenaHeight/2); 
+        if(touchControlsEnabled && gameStarted) document.getElementById("btnJump").style.display = "flex";
     }
 }
 
@@ -673,22 +718,6 @@ let keys = {};
 addEventListener("keydown", e => { keys[e.key.toLowerCase()] = true; });
 addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; });
 
-// Canva Embed Compatibility: Link On-Screen buttons directly to game control simulation
-function linkControl(elementId, targetKey) {
-    const el = document.getElementById(elementId);
-    const activate = (e) => { e.preventDefault(); keys[targetKey] = true; window.focus(); };
-    const deactivate = (e) => { e.preventDefault(); keys[targetKey] = false; };
-    el.addEventListener("mousedown", activate);
-    el.addEventListener("mouseup", deactivate);
-    el.addEventListener("touchstart", activate);
-    el.addEventListener("touchend", deactivate);
-}
-linkControl("ctrlUp", "w");
-linkControl("ctrlDown", "s");
-linkControl("ctrlLeft", "a");
-linkControl("ctrlRight", "d");
-linkControl("ctrlJump", "w");
-
 let player = { x:200, y:400, z:200, vy:0, size:42, color:"#9cff8f", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null };
 let player2 = { x:500, y:400, z:250, vy:0, size:42, color:"#7fd8ff", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null };
 
@@ -697,7 +726,7 @@ let p2Grounded = false;
 
 let chicken = { x:700, y:0, z:500, size:42, mesh:null };
 let coins = [];
-let coins3D = []; // Fixed syntax bug
+let coins3D = [];
 let walkParticles = [];
 let fallingLeaves = [];
 
@@ -728,7 +757,6 @@ function startGame(isMultiplayer, mode){
     startScreen.style.display = "none";
     ui.style.display = "flex";
     document.getElementById("levelDisplay").style.display = "block";
-    document.getElementById("screenControls").style.display = "flex"; // Display on-screen buttons
 
     shopButton1.style.display = "block";
     menuButton.style.display = "block";
@@ -746,6 +774,11 @@ function startGame(isMultiplayer, mode){
     resetPositionsAll();
     updateUI();
 
+    if(touchControlsEnabled) {
+        document.getElementById("touchControls").style.display = "block";
+        document.getElementById("btnJump").style.display = "none"; // Top-down engine doesn't use standard jump buttons
+    }
+
     if(musicEnabled) bgMusic.play().catch(()=>{});
 }
 
@@ -755,7 +788,7 @@ function resetPositionsAll() {
     chicken.x = 700; chicken.y = 0; chicken.z = 500;
     
     // Clear legacy coin configurations
-    coins3D.forEach(c => scene.remove(c)); // Fixed identifier
+    coins3D.forEach(c => scene.remove(c));
     coins3D = [];
     coins = [];
 }
@@ -778,17 +811,21 @@ function toggleFullscreen(){
     if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen();
 }
 
-function returnToMenu() {
+function toggleTouchControls(){
+    touchControlsEnabled = !touchControlsEnabled;
+    document.getElementById("touchStatus").textContent = touchControlsEnabled ? "ON" : "OFF";
+}
+
+function returnToMenu(){
     ui.style.display = "none";
     document.getElementById("levelDisplay").style.display = "none";
-    document.getElementById("screenControls").style.display = "none";
-    document.getElementById("jumpControl").style.display = "none";
     shopButton1.style.display = "none";
     shopButton2.style.display = "none";
     menuButton.style.display = "none";
     shop1.style.display = "none";
     shop2.style.display = "none";
     player2Card.style.display = "none";
+    document.getElementById("touchControls").style.display = "none";
     startScreen.style.display = "flex";
 
     gameStarted = false;
@@ -801,7 +838,10 @@ function returnToMenu() {
     player2.mesh.visible = false;
     chicken.mesh.visible = false;
 
-    coins3D.forEach(c => scene.remove(c)); // Fixed identifier
+    // Reset touch variables state mapping
+    keys = {};
+
+    coins3D.forEach(c => scene.remove(c));
     coins3D = []; coins = [];
     bgMusic.pause();
     bgMusic.currentTime = 0;
@@ -814,11 +854,11 @@ function returnToMenu() {
 function setupPlatformerLevel(resetPositions = true) {
     platforms = [];
     hazards = [];
-    platforms3D.forEach(p => scene.remove(p)); // Fixed identifier
+    platforms3D.forEach(p => scene.remove(p));
     platforms3D = [];
-    hazards3D.forEach(h => scene.remove(h)); // Fixed identifier
+    hazards3D.forEach(h => scene.remove(h));
     hazards3D = [];
-    coins3D.forEach(c => scene.remove(c)); // Fixed identifier
+    coins3D.forEach(c => scene.remove(c));
     coins3D = [];
     coins = [];
 
@@ -856,12 +896,11 @@ function setupPlatformerLevel(resetPositions = true) {
 
         platGroup.position.set(x, y, arenaHeight / 2);
         scene.add(platGroup);
-        platforms3D.push(platGroup); // Fixed identifier
+        platforms3D.push(platGroup);
     }
 
     if (currentLevel === 6) {
         chicken.mesh.visible = false;
-        document.getElementById("jumpControl").style.display = "block"; // Show Jump button for platformer stage
         add3DPlatform(0, 120, w * 0.25, 500); 
         add3DPlatform(w * 0.32, 220, w * 0.15, 40);
         add3DPlatform(w * 0.52, 340, w * 0.15, 40);
@@ -872,7 +911,6 @@ function setupPlatformerLevel(resetPositions = true) {
     } 
     else if (currentLevel === 7) {
         chicken.mesh.visible = false;
-        document.getElementById("jumpControl").style.display = "block";
         add3DPlatform(0, 150, w * 0.22, 500);
         add3DPlatform(w * 0.26, 240, w * 0.10, 30);
         add3DPlatform(w * 0.40, 350, w * 0.12, 30);
@@ -896,7 +934,7 @@ function setupPlatformerLevel(resetPositions = true) {
         }
         hazGroup.position.set(hazX, 0, arenaHeight / 2);
         scene.add(hazGroup);
-        hazards3D.push(hazGroup); // Fixed identifier
+        hazards3D.push(hazGroup);
 
         winGoal = { x: w * 0.91, y: 620, w: 60, h: 90 };
 
@@ -919,6 +957,10 @@ function setupPlatformerLevel(resetPositions = true) {
 
         if (resetPositions) gamePaused = false;
     }
+    
+    if(touchControlsEnabled && gameStarted) {
+        document.getElementById("btnJump").style.display = "flex";
+    }
 }
 
 function spawnCoin(){
@@ -938,7 +980,7 @@ function spawnCoin(){
         cMesh.position.set(cx, 20, cz);
         cMesh.castShadow = true;
         scene.add(cMesh);
-        coins3D.push(cMesh); // Fixed identifier
+        coins3D.push(cMesh);
     } else {
         spawnPlatformerCoin();
     }
@@ -960,7 +1002,7 @@ function spawnPlatformerCoin() {
     cMesh.rotation.x = Math.PI / 2;
     cMesh.castShadow = true;
     scene.add(cMesh);
-    coins3D.push(cMesh); // Fixed identifier
+    coins3D.push(cMesh);
 }
 
 setInterval(spawnCoin, 1000);
@@ -996,8 +1038,8 @@ function collectCoins(p){
             }
 
             // Remove mesh elements safely
-            scene.remove(coins3D[i]); // Fixed identifier
-            coins3D.splice(i, 1);    // Fixed identifier
+            scene.remove(coins3D[i]);
+            coins3D.splice(i, 1);
             coins.splice(i, 1);
             
             p.coins++;
@@ -1021,6 +1063,7 @@ function collectCoins(p){
                 } else {
                     resetPositionsAll();
                 }
+                return; // FIX: Prevents loop evaluation errors on empty arrays
             }
             updateUI();
         }
@@ -1209,6 +1252,33 @@ function spawnWalkParticle(x, z) {
     walkParticles.push({ mesh: pMesh, vx: (Math.random()-0.5)*2, vy: Math.random()*2, vz: (Math.random()-0.5)*2, life: 20 });
 }
 
+// --- DPAD/BUTTON BINDING WRAPPERS ---
+function setupTouchInput(elementId, targetKey) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    
+    const bindStart = (e) => {
+        e.preventDefault();
+        keys[targetKey] = true;
+    };
+    
+    const bindEnd = (e) => {
+        e.preventDefault();
+        keys[targetKey] = false;
+    };
+    
+    el.addEventListener("touchstart", bindStart, { passive: false });
+    el.addEventListener("touchend", bindEnd, { passive: false });
+    el.addEventListener("touchcancel", bindEnd, { passive: false });
+}
+
+// Map touch overlay layout buttons to native keyboard configurations
+setupTouchInput("btnUp", "w");
+setupTouchInput("btnDown", "s");
+setupTouchInput("btnLeft", "a");
+setupTouchInput("btnRight", "d");
+setupTouchInput("btnJump", "w");
+
 function updateParticles() {
     for (let i = walkParticles.length - 1; i >= 0; i--) {
         let p = walkParticles[i];
@@ -1229,7 +1299,7 @@ function renderLoop(){
     updateParticles();
 
     // Rotate existing coins on scene
-    coins3D.forEach(cMesh => { cMesh.rotation.z += 0.04; }); // Fixed identifier
+    coins3D.forEach(cMesh => { cMesh.rotation.z += 0.04; });
     if(goalMesh) goalMesh.rotation.y += 0.02;
 
     // Smooth Intelligent Camera Setup Positioning
@@ -1311,11 +1381,6 @@ window.addEventListener("resize", () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
-});
-
-// Force focus inside restricted iframe views like Canva
-window.addEventListener("click", () => {
-    window.focus();
 });
 
 updateUI();
