@@ -6,9 +6,9 @@
 
 <title>Gooblet Forest Collector 3D</title>
 
-<link rel="icon" type="image/png" href="favicon.png">
+<link rel="icon" type="image/png" href="favicon.png">    
 
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght=500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 
@@ -231,39 +231,63 @@ body{
 }
 .settingButton:hover{ background:#58a84f; }
 
-/* --- TOUCH CONTROL STYLES --- */
-.control-container {
+/* --- TOUCH CONTROLS STYLES --- */
+#touchControls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 240px;
+    z-index: 30;
+    pointer-events: none;
+    display: none;
+}
+
+#dpad {
     position: absolute;
     bottom: 25px;
-    display: none; /* Controlled dynamically in JS */
-    grid-template-columns: repeat(3, 65px);
-    grid-template-rows: repeat(3, 65px);
+    left: 25px;
+    width: 220px;  /* Increase this (e.g., from 170px to 220px) to make it larger */
+    height: 220px; /* Increase this (e.g., from 170px to 220px) to make it larger */
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(3, 1fr);
     gap: 6px;
-    z-index: 30;
     pointer-events: auto;
 }
 
-#p1Controls { left: 25px; }
-#p2Controls { right: 25px; }
-
+#btnJump {
+    position: absolute;
+    bottom: 45px;
+    right: 35px;
+    width: 130px;  /* Increase this (e.g., from 100px to 130px) to make it larger */
+    height: 130px; /* Increase this (e.g., from 100px to 130px) to make it larger */
+    border-radius: 50%;
+    font-size: 24px; /* Optional: Make the word "JUMP" bigger to fit the new size */
+    pointer-events: auto;
+}
+  
 .touchBtn {
     background: rgba(255, 255, 255, 0.55);
     border: 4px solid #4f9a46;
     border-radius: 18px;
+    color: #2c5f2a;
     font-size: 26px;
     font-weight: bold;
-    color: #2c5f2a;
     display: flex;
     justify-content: center;
     align-items: center;
-    cursor: pointer;
     user-select: none;
+    -webkit-user-select: none;
     touch-action: none;
+    font-family:'Fredoka', sans-serif;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
-.touchBtn:active {
-    background: rgba(79, 154, 70, 0.85);
+.touchBtn:important-active, .touchBtn:active {
+    background: rgba(125, 216, 110, 0.9);
     color: white;
+    transform: scale(0.95);
 }
 </style>
 </head>
@@ -313,20 +337,6 @@ body{
 <button class="shopButton" id="shopButton2">P2 Shop</button>
 <button class="shopButton" id="menuButton">Menu</button>
 
-<div id="p1Controls" class="control-container">
-    <button id="p1_up" class="touchBtn" style="grid-column:2; grid-row:1;">▲</button>
-    <button id="p1_left" class="touchBtn" style="grid-column:1; grid-row:2;">◀</button>
-    <button id="p1_right" class="touchBtn" style="grid-column:3; grid-row:2;">▶</button>
-    <button id="p1_down" class="touchBtn" style="grid-column:2; grid-row:3;">▼</button>
-</div>
-
-<div id="p2Controls" class="control-container">
-    <button id="p2_up" class="touchBtn" style="grid-column:2; grid-row:1;">▲</button>
-    <button id="p2_left" class="touchBtn" style="grid-column:1; grid-row:2;">◀</button>
-    <button id="p2_right" class="touchBtn" style="grid-column:3; grid-row:2;">▶</button>
-    <button id="p2_down" class="touchBtn" style="grid-column:2; grid-row:3;">▼</button>
-</div>
-
 <div class="shop" id="shop1">
     <h2>Player 1 Shop</h2>
     <button class="shopItem" onclick="buySpeed(player)">Speed Upgrade</button>
@@ -369,6 +379,10 @@ body{
             <button id="fullscreenButton" class="settingButton" onclick="toggleFullscreen()">Toggle Fullscreen</button>
         </div>
         <div class="settingRow">
+            <span id="touchLabel">Touch Controls:</span> <span id="touchStatus">OFF</span><br>
+            <button id="toggleTouchButton" class="settingButton" onclick="toggleTouchControls()">Toggle Touch</button>
+        </div>
+        <div class="settingRow">
             <span id="languageLabel">Language</span><br><br>
             <button class="settingButton" onclick="setLanguage('en')">English</button>
             <button class="settingButton" onclick="setLanguage('es')">Español</button>
@@ -381,6 +395,16 @@ body{
             <button class="shopItem" style="background:#cc3333;" onclick="buyWin(player2)">P2 WIN GAME (100)</button>
         </div>
     </div>
+</div>
+
+<div id="touchControls">
+    <div id="dpad">
+        <button class="touchBtn" id="btnUp" style="grid-area: 1 / 2 / 2 / 3;">🠉</button>
+        <button class="touchBtn" id="btnLeft" style="grid-area: 2 / 1 / 3 / 2;">🠈</button>
+        <button class="touchBtn" id="btnRight" style="grid-area: 2 / 3 / 3 / 4;">🠊</button>
+        <button class="touchBtn" id="btnDown" style="grid-area: 3 / 2 / 4 / 3;">🠋</button>
+    </div>
+    <button class="touchBtn" id="btnJump">JUMP</button>
 </div>
 
 <div id="gameContainer"></div>
@@ -432,10 +456,11 @@ let difficulty = 'easy';
 let chickenEnabled = false;
 let chickenSpeed = 0;
 let musicEnabled = true;
-const bgMusic = new Audio("Forest_Ambieace.mp3");
+const bgMusic = new Audio("Forest_Ambiance.mp3");
 bgMusic.loop = true;
 bgMusic.volume = 0.7;
 let particlesEnabled = true;
+let touchControlsEnabled = false;
 let currentLanguage = 'en';
 
 let currentLevel = 1;
@@ -471,10 +496,10 @@ function getTheme() {
 }
 
 const translations = {
-    en:{ title:'Gooblet Forest 3D', subtitle:'Cute forest adventures 🌿', settings:'Settings ⚙️', music:'Music:', particles:'Particles:', fullscreen:'Fullscreen', fullscreenButton:'Toggle Fullscreen', toggleMusic:'Toggle Music', toggleParticles:'Toggle Particles', back:'Back', p1shop:'P1 Shop', p2shop:'P2 Shop', menu:'Menu', easy:'Easy 🌱', easyMedium:'Easy Medium 🐤', medium:'Medium 🐔', hard:'Hard ⚠️', mpMedium:'Multiplayer Medium', mpHard:'Multiplayer Hard', language:'Language', level:'Level' },
-    es:{ title:'Bosque Gooblet 3D', subtitle:'Aventuras lindas del bosque 🌿', settings:'Configuración ⚙️', music:'Música:', particles:'Partículas:', fullscreen:'Pantalla completa', fullscreenButton:'Cambiar pantalla completa', toggleMusic:'Alternar música', toggleParticles:'Alternar partículas', back:'Atrás', p1shop:'Tienda J1', p2shop:'Tienda J2', menu:'Menú', easy:'Fácil 🌱', easyMedium:'Medio Fácil 🐤', medium:'Medio 🐔', hard:'Difícil ⚠️', mpMedium:'Multijugador Medio', mpHard:'Multijugador Difícil', language:'Idioma', level:'Nivel' },
-    fr:{ title:'Forêt Gooblet 3D', subtitle:'Mignonnes aventures en forêt 🌿', settings:'Paramètres ⚙️', music:'Musique :', particles:'Particules :', fullscreen:'Plein écran', fullscreenButton:'Basculer plein écran', toggleMusic:'Activer musique', toggleParticles:'Activer particules', back:'Retour', p1shop:'Boutique J1', p2shop:'Boutique J2', menu:'Menu', easy:'Facile 🌱', easyMedium:'Moyen Facile 🐤', medium:'Moyen 🐔', hard:'Difficile ⚠️', mpMedium:'Multijoueur Moyen', mpHard:'Multijoueur Dificile', language:'Langue', level:'Niveau' },
-    jp:{ title:'グーブレットの森 3D', subtitle:'かわいい森の冒険 🌿', settings:'設定 ⚙️', music:'音楽:', particles:'パーティクル:', fullscreen:'フルスクリーン', fullscreenButton:'フルスクリーン切替', toggleMusic:'音楽を切替', toggleParticles:'パーティクル切替', back:'戻る', p1shop:'P1ショップ', p2shop:'P2ショップ', menu:'メニュー', easy:'かんたん 🌱', easyMedium:'かんたんふつう 🐤', medium:'ふつう 🐔', hard:'むずかしい ⚠️', mpMedium:'マルチプレイヤー 普通', mpHard:'マルチプレイヤー 難しい', language:'言語', level:'レベル' }
+    en:{ title:'Gooblet Forest 3D', subtitle:'Cute forest adventures 🌿', settings:'Settings ⚙️', music:'Music:', particles:'Particles:', fullscreen:'Fullscreen', fullscreenButton:'Toggle Fullscreen', toggleMusic:'Toggle Music', toggleParticles:'Toggle Particles', back:'Back', p1shop:'P1 Shop', p2shop:'P2 Shop', menu:'Menu', easy:'Easy 🌱', easyMedium:'Easy Medium 🐤', medium:'Medium 🐔', hard:'Hard ⚠️', mpMedium:'Multiplayer Medium', mpHard:'Multiplayer Hard', language:'Language', level:'Level', touch:'Touch Controls:', toggleTouch:'Toggle Touch' },
+    es:{ title:'Bosque Gooblet 3D', subtitle:'Aventuras lindas del bosque 🌿', settings:'Configuración ⚙️', music:'Música:', particles:'Partículas:', fullscreen:'Pantalla completa', fullscreenButton:'Cambiar pantalla completa', toggleMusic:'Alternar música', toggleParticles:'Alternar partículas', back:'Atrás', p1shop:'Tienda J1', p2shop:'Tienda J2', menu:'Menú', easy:'Fácil 🌱', easyMedium:'Medio Fácil 🐤', medium:'Medio 🐔', hard:'Difícil ⚠️', mpMedium:'Multijugador Medio', mpHard:'Multijugador Difícil', language:'Idioma', level:'Nivel', touch:'Controles táctiles:', toggleTouch:'Alternar táctil' },
+    fr:{ title:'Forêt Gooblet 3D', subtitle:'Mignonnes aventures en forêt 🌿', settings:'Paramètres ⚙️', music:'Musique :', particles:'Particules :', fullscreen:'Plein écran', fullscreenButton:'Basculer plein écran', toggleMusic:'Activer musique', toggleParticles:'Activer particules', back:'Retour', p1shop:'Boutique J1', p2shop:'Boutique J2', menu:'Menu', easy:'Facile 🌱', easyMedium:'Moyen Facile 🐤', medium:'Moyen 🐔', hard:'Difficile ⚠️', mpMedium:'Multijoueur Moyen', mpHard:'Multijoueur Difficile', language:'Langue', level:'Niveau', touch:'Contrôles tactiles :', toggleTouch:'Basculer tactile' },
+    jp:{ title:'グーブレットの森 3D', subtitle:'かわいい森の冒険 🌿', settings:'設定 ⚙️', music:'音楽:', particles:'パーティクル:', fullscreen:'フルスクリーン', fullscreenButton:'フルスクリーン切替', toggleMusic:'音楽を切替', toggleParticles:'パーティクル切替', back:'戻る', p1shop:'P1ショップ', p2shop:'P2ショップ', menu:'メニュー', easy:'かんたん 🌱', easyMedium:'かんたんふつう 🐤', medium:'ふつう 🐔', hard:'むずかしい ⚠️', mpMedium:'マルチプレイヤー 普通', mpHard:'マルチプレイヤー 難しい', language:'言語', level:'レベル', touch:'タッチコントロール:', toggleTouch:'タッチ切替' }
 };
 
 function setLanguage(lang){
@@ -489,6 +514,8 @@ function setLanguage(lang){
     document.getElementById('fullscreenButton').textContent = t.fullscreenButton;
     document.getElementById('toggleMusicButton').textContent = t.toggleMusic;
     document.getElementById('toggleParticlesButton').textContent = t.toggleParticles;
+    document.getElementById('touchLabel').textContent = t.touch;
+    document.getElementById('toggleTouchButton').textContent = t.toggleTouch;
     document.getElementById('languageLabel').textContent = t.language;
     document.getElementById('backButton').textContent = t.back;
     document.getElementById('shopButton1').textContent = t.p1shop;
@@ -584,9 +611,12 @@ function rebuildEnvironment() {
             create3DTree(x, -40, theme);
             create3DTree(x + 40, arenaHeight + 40, theme);
         }
+        // Reposition jump button out of view in top down modes if touch is enabled
+        document.getElementById("btnJump").style.display = "none";
     } else {
         // Platformer sizing modifications
         groundMesh.position.set(arenaWidth/2, -500, arenaHeight/2); 
+        if(touchControlsEnabled && gameStarted) document.getElementById("btnJump").style.display = "flex";
     }
 }
 
@@ -688,39 +718,6 @@ let keys = {};
 addEventListener("keydown", e => { keys[e.key.toLowerCase()] = true; });
 addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; });
 
-// --- POINTER BINDING WRAPPER (Works for Touch, Mouse, and Trackpad) ---
-function setupTouchInput(elementId, targetKey) {
-    const el = document.getElementById(elementId);
-    if (!el) return;
-    
-    const bindStart = (e) => {
-        e.preventDefault();
-        keys[targetKey] = true;
-    };
-    
-    const bindEnd = (e) => {
-        e.preventDefault();
-        keys[targetKey] = false;
-    };
-    
-    el.addEventListener("pointerdown", bindStart, { passive: false });
-    el.addEventListener("pointerup", bindEnd, { passive: false });
-    el.addEventListener("pointercancel", bindEnd, { passive: false });
-    el.addEventListener("pointerleave", bindEnd, { passive: false });
-}
-
-// Map Player 1 Touch Buttons (WASD)
-setupTouchInput("p1_up", "w");
-setupTouchInput("p1_down", "s");
-setupTouchInput("p1_left", "a");
-setupTouchInput("p1_right", "d");
-
-// Map Player 2 Touch Buttons (Arrow Keys)
-setupTouchInput("p2_up", "arrowup");
-setupTouchInput("p2_down", "arrowdown");
-setupTouchInput("p2_left", "arrowleft");
-setupTouchInput("p2_right", "arrowright");
-
 let player = { x:200, y:400, z:200, vy:0, size:42, color:"#9cff8f", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null };
 let player2 = { x:500, y:400, z:250, vy:0, size:42, color:"#7fd8ff", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null };
 
@@ -765,14 +762,9 @@ function startGame(isMultiplayer, mode){
     menuButton.style.display = "block";
     player2.mesh.visible = multiplayer;
 
-    // Manage visibility of Touch Control Sets
-    document.getElementById("p1Controls").style.display = "grid";
     if(multiplayer){
         shopButton2.style.display = "block";
         player2Card.style.display = "block";
-        document.getElementById("p2Controls").style.display = "grid";
-    } else {
-        document.getElementById("p2Controls").style.display = "none";
     }
 
     gamePaused = false;
@@ -781,6 +773,11 @@ function startGame(isMultiplayer, mode){
     rebuildEnvironment();
     resetPositionsAll();
     updateUI();
+
+    if(touchControlsEnabled) {
+        document.getElementById("touchControls").style.display = "block";
+        document.getElementById("btnJump").style.display = "none"; // Top-down engine doesn't use standard jump buttons
+    }
 
     if(musicEnabled) bgMusic.play().catch(()=>{});
 }
@@ -797,7 +794,7 @@ function resetPositionsAll() {
 }
 
 function openSettings(){ document.getElementById("settingsScreen").style.display = "flex"; }
-function closeSettings(){ document.getElementById("settingsScreen").style.none"; }
+function closeSettings(){ document.getElementById("settingsScreen").style.display = "none"; }
 
 function toggleMusic(){
     musicEnabled = !musicEnabled;
@@ -814,6 +811,11 @@ function toggleFullscreen(){
     if(!document.fullscreenElement) document.documentElement.requestFullscreen(); else document.exitFullscreen();
 }
 
+function toggleTouchControls(){
+    touchControlsEnabled = !touchControlsEnabled;
+    document.getElementById("touchStatus").textContent = touchControlsEnabled ? "ON" : "OFF";
+}
+
 function returnToMenu(){
     ui.style.display = "none";
     document.getElementById("levelDisplay").style.display = "none";
@@ -823,11 +825,7 @@ function returnToMenu(){
     shop1.style.display = "none";
     shop2.style.display = "none";
     player2Card.style.display = "none";
-    
-    // Hide touch overlays on main menu
-    document.getElementById("p1Controls").style.display = "none";
-    document.getElementById("p2Controls").style.display = "none";
-    
+    document.getElementById("touchControls").style.display = "none";
     startScreen.style.display = "flex";
 
     gameStarted = false;
@@ -839,6 +837,9 @@ function returnToMenu(){
     player2.mesh.position.set(500, 0, 350);
     player2.mesh.visible = false;
     chicken.mesh.visible = false;
+
+    // Reset touch variables state mapping
+    keys = {};
 
     coins3D.forEach(c => scene.remove(c));
     coins3D = []; coins = [];
@@ -955,6 +956,10 @@ function setupPlatformerLevel(resetPositions = true) {
         goalMesh = goalGroup;
 
         if (resetPositions) gamePaused = false;
+    }
+    
+    if(touchControlsEnabled && gameStarted) {
+        document.getElementById("btnJump").style.display = "flex";
     }
 }
 
@@ -1246,6 +1251,33 @@ function spawnWalkParticle(x, z) {
     scene.add(pMesh);
     walkParticles.push({ mesh: pMesh, vx: (Math.random()-0.5)*2, vy: Math.random()*2, vz: (Math.random()-0.5)*2, life: 20 });
 }
+
+// --- DPAD/BUTTON BINDING WRAPPERS ---
+function setupTouchInput(elementId, targetKey) {
+    const el = document.getElementById(elementId);
+    if (!el) return;
+    
+    const bindStart = (e) => {
+        e.preventDefault();
+        keys[targetKey] = true;
+    };
+    
+    const bindEnd = (e) => {
+        e.preventDefault();
+        keys[targetKey] = false;
+    };
+    
+    el.addEventListener("touchstart", bindStart, { passive: false });
+    el.addEventListener("touchend", bindEnd, { passive: false });
+    el.addEventListener("touchcancel", bindEnd, { passive: false });
+}
+
+// Map touch overlay layout buttons to native keyboard configurations
+setupTouchInput("btnUp", "w");
+setupTouchInput("btnDown", "s");
+setupTouchInput("btnLeft", "a");
+setupTouchInput("btnRight", "d");
+setupTouchInput("btnJump", "w");
 
 function updateParticles() {
     for (let i = walkParticles.length - 1; i >= 0; i--) {
