@@ -1046,7 +1046,7 @@ function collectCoins(p){
             coinsCollectedThisLevel++;
             
             if(coinsCollectedThisLevel >= coinsNeededForNextLevel){
-                if(currentLevel >= 6){
+                if(currentLevel >= 7){
                     gamePaused = true;
                     showWinScreen(multiplayer ? 'YOU BOTH BEAT THE GAME! 🎉' : 'YOU BEAT THE GAME! 🎉');
                     return;
