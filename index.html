@@ -247,8 +247,8 @@ body{
     position: absolute;
     bottom: 25px;
     left: 25px;
-    width: 300px;  /* Increase this (e.g., from 170px to 220px) to make it larger */
-    height: 300px; /* Increase this (e.g., from 170px to 220px) to make it larger */
+    width: 300px;  
+    height: 300px; 
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(3, 1fr);
@@ -260,10 +260,10 @@ body{
     position: absolute;
     bottom: 45px;
     right: 35px;
-    width: 150px;  /* Increase this (e.g., from 100px to 130px) to make it larger */
-    height: 150px; /* Increase this (e.g., from 100px to 130px) to make it larger */
+    width: 150px;  
+    height: 150px; 
     border-radius: 50%;
-    font-size: 24px; /* Optional: Make the word "JUMP" bigger to fit the new size */
+    font-size: 24px; 
     pointer-events: auto;
 }
   
@@ -323,11 +323,13 @@ body{
         <div class="playerTitle">Player 1</div>
         <div class="stat">Coins: <span id="coinCount1">0</span></div>
         <div class="stat">Speed: <span id="speedLevel1">1</span></div>
+        <div id="p1PowerUps" style="font-size:15px; margin-top:5px; font-weight:700; color:#d63031;"></div>
     </div>
     <div class="playerCard" id="player2Card" style="display:none;">
         <div class="playerTitle">Player 2</div>
         <div class="stat">Coins: <span id="coinCount2">0</span></div>
         <div class="stat">Speed: <span id="speedLevel2">1</span></div>
+        <div id="p2PowerUps" style="font-size:15px; margin-top:5px; font-weight:700; color:#0984e3;"></div>
     </div>
 </div>
 
@@ -600,6 +602,10 @@ function rebuildEnvironment() {
     platforms3D = [];
     hazards3D.forEach(h => scene.remove(h));
     hazards3D = [];
+    powerUps3D.forEach(p => scene.remove(p));
+    powerUps3D = [];
+    powerUps = [];
+
     if(goalMesh) { scene.remove(goalMesh); goalMesh = null; }
 
     if (currentLevel < 6) {
@@ -718,8 +724,8 @@ let keys = {};
 addEventListener("keydown", e => { keys[e.key.toLowerCase()] = true; });
 addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; });
 
-let player = { x:200, y:400, z:200, vy:0, size:42, color:"#9cff8f", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null };
-let player2 = { x:500, y:400, z:250, vy:0, size:42, color:"#7fd8ff", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null };
+let player = { x:200, y:400, z:200, vy:0, size:42, color:"#9cff8f", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null, magnetTimer:0, doubleCoinsTimer:0 };
+let player2 = { x:500, y:400, z:250, vy:0, size:42, color:"#7fd8ff", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null, magnetTimer:0, doubleCoinsTimer:0 };
 
 let p1Grounded = false;
 let p2Grounded = false;
@@ -727,6 +733,8 @@ let p2Grounded = false;
 let chicken = { x:700, y:0, z:500, size:42, mesh:null };
 let coins = [];
 let coins3D = [];
+let powerUps = [];
+let powerUps3D = [];
 let walkParticles = [];
 let fallingLeaves = [];
 
@@ -776,7 +784,7 @@ function startGame(isMultiplayer, mode){
 
     if(touchControlsEnabled) {
         document.getElementById("touchControls").style.display = "block";
-        document.getElementById("btnJump").style.display = "none"; // Top-down engine doesn't use standard jump buttons
+        document.getElementById("btnJump").style.display = "none"; 
     }
 
     if(musicEnabled) bgMusic.play().catch(()=>{});
@@ -787,10 +795,18 @@ function resetPositionsAll() {
     player2.x = 500; player2.y = 0; player2.z = 350; player2.vy = 0;
     chicken.x = 700; chicken.y = 0; chicken.z = 500;
     
-    // Clear legacy coin configurations
     coins3D.forEach(c => scene.remove(c));
     coins3D = [];
     coins = [];
+
+    powerUps3D.forEach(p => scene.remove(p));
+    powerUps3D = [];
+    powerUps = [];
+    
+    player.magnetTimer = 0;
+    player.doubleCoinsTimer = 0;
+    player2.magnetTimer = 0;
+    player2.doubleCoinsTimer = 0;
 }
 
 function openSettings(){ document.getElementById("settingsScreen").style.display = "flex"; }
@@ -833,16 +849,20 @@ function returnToMenu(){
 
     player.coins = 0; player.speed = 5; player.speedLevel = 1; player.speedCost = 10;
     player2.coins = 0; player2.speed = 5; player2.speedLevel = 1; player2.speedCost = 10;
+    player.magnetTimer = 0; player.doubleCoinsTimer = 0;
+    player2.magnetTimer = 0; player2.doubleCoinsTimer = 0;
     player.mesh.position.set(200, 0, 300);
     player2.mesh.position.set(500, 0, 350);
     player2.mesh.visible = false;
     chicken.mesh.visible = false;
 
-    // Reset touch variables state mapping
     keys = {};
 
     coins3D.forEach(c => scene.remove(c));
     coins3D = []; coins = [];
+    powerUps3D.forEach(p => scene.remove(p));
+    powerUps3D = []; powerUps = [];
+
     bgMusic.pause();
     bgMusic.currentTime = 0;
     currentLevel = 1;
@@ -861,6 +881,9 @@ function setupPlatformerLevel(resetPositions = true) {
     coins3D.forEach(c => scene.remove(c));
     coins3D = [];
     coins = [];
+    powerUps3D.forEach(p => scene.remove(p));
+    powerUps3D = [];
+    powerUps = [];
 
     if(goalMesh) { scene.remove(goalMesh); goalMesh = null; }
 
@@ -869,8 +892,10 @@ function setupPlatformerLevel(resetPositions = true) {
     
     if (resetPositions) {
         player.x = 80; player.y = 200; player.z = arenaHeight / 2; player.vy = 0; p1Grounded = false;
+        player.magnetTimer = 0; player.doubleCoinsTimer = 0;
         if (multiplayer) {
             player2.x = 160; player2.y = 200; player2.z = arenaHeight / 2; player2.vy = 0; p2Grounded = false;
+            player2.magnetTimer = 0; player2.doubleCoinsTimer = 0;
         }
     }
     
@@ -881,14 +906,13 @@ function setupPlatformerLevel(resetPositions = true) {
         platforms.push({ x: x, y: y, w: width, h: height });
         
         const platGroup = new THREE.Group();
-        const boxGeo = new THREE.BoxGeometry(width, height, 120); // Thick deep block setup
+        const boxGeo = new THREE.BoxGeometry(width, height, 120); 
         const mesh = new THREE.Mesh(boxGeo, platMat);
         mesh.position.set(width/2, -height/2, 0);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         platGroup.add(mesh);
 
-        // Cute top grass cap layer
         const capGeo = new THREE.BoxGeometry(width, 6, 122);
         const capMesh = new THREE.Mesh(capGeo, leavesCapMat);
         capMesh.position.set(width/2, 3, 0);
@@ -918,7 +942,6 @@ function setupPlatformerLevel(resetPositions = true) {
         add3DPlatform(w * 0.75, 520, w * 0.12, 30);
         add3DPlatform(w * 0.88, 620, w * 0.15, 900);
 
-        // Hazards configuration
         let hazX = w * 0.22;
         let hazW = w * 0.66;
         hazards.push({ x: hazX, y: 0, w: hazW, h: 40 });
@@ -938,7 +961,6 @@ function setupPlatformerLevel(resetPositions = true) {
 
         winGoal = { x: w * 0.91, y: 620, w: 60, h: 90 };
 
-        // 3D Trophy Goal Design
         const goalGroup = new THREE.Group();
         const baseGeo = new THREE.CylinderGeometry(15, 20, 15, 8);
         const goldMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.2, metalness: 0.5 });
@@ -986,40 +1008,67 @@ function spawnCoin(){
     }
 }
 
-function spawnPlatformerCoin() {
-    if(platforms.length === 0) return;
-    let plat = platforms[Math.floor(Math.random() * platforms.length)];
-    let cx = plat.x + Math.random() * (plat.w - 30) + 15;
-    let cy = plat.y + 35;
-    let cz = arenaHeight / 2;
+// --- POWER UP SPARK SPONSOR ENGINE ---
+function spawnPowerUp() {
+    if(!gameStarted || gamePaused || currentLevel >= 7) return;
+    if(powerUps.length >= 2) return; 
 
-    coins.push({ x: cx, y: cy, z: cz, size: 24 });
+    let type = Math.random() > 0.5 ? 'magnet' : 'double';
+    let cx, cy, cz;
 
-    const coinGeo = new THREE.CylinderGeometry(12, 12, 4, 12);
-    const coinMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3 });
-    const cMesh = new THREE.Mesh(coinGeo, coinMat);
-    cMesh.position.set(cx, cy, cz);
-    cMesh.rotation.x = Math.PI / 2;
-    cMesh.castShadow = true;
-    scene.add(cMesh);
-    coins3D.push(cMesh);
+    if (currentLevel < 6) {
+        cx = Math.random() * (arenaWidth - 60) + 30;
+        cy = 15;
+        cz = Math.random() * (arenaHeight - 60) + 30;
+    } else {
+        if(platforms.length === 0) return;
+        let plat = platforms[Math.floor(Math.random() * platforms.length)];
+        cx = plat.x + Math.random() * (plat.w - 30) + 15;
+        cy = plat.y + 35;
+        cz = arenaHeight / 2;
+    }
+
+    powerUps.push({ x: cx, y: cy, z: cz, type: type, size: 24 });
+
+    // Distinctive 3D base mesh
+    let geo = new THREE.SphereGeometry(12, 12, 12);
+    let matColor = type === 'magnet' ? 0x00d2ff : 0xff00ff;
+    let mat = new THREE.MeshStandardMaterial({ color: matColor, roughness: 0.2, metalness: 0.6 });
+    let mesh = new THREE.Mesh(geo, mat);
+
+    if(type === 'magnet') {
+        let innerGeo = new THREE.TorusGeometry(6, 2, 8, 12);
+        let innerMat = new THREE.MeshBasicMaterial({ color: 0xff3333 });
+        let innerMesh = new THREE.Mesh(innerGeo, innerMat);
+        innerMesh.rotation.x = Math.PI / 2;
+        mesh.add(innerMesh);
+    } else {
+        let innerGeo = new THREE.BoxGeometry(8, 8, 8);
+        let innerMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        let innerMesh = new THREE.Mesh(innerGeo, innerMat);
+        mesh.add(innerMesh);
+    }
+
+    mesh.position.set(cx, cy + 5, cz);
+    mesh.castShadow = true;
+    scene.add(mesh);
+    powerUps3D.push(mesh);
 }
 
 setInterval(spawnCoin, 1000);
+setInterval(spawnPowerUp, 8000); 
 
 // --- RUNTIME HITBOX INTERSECTIONS & ACTIONS ---
 function collectCoins(p){
     for(let i = coins.length - 1; i >= 0; i--){
         let c = coins[i];
         
-        // Accurate 3D Distance check
         let dx = p.x - c.x;
         let dy = p.y - c.y;
         let dz = (currentLevel < 6) ? (p.z - c.z) : 0;
         let dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
 
         if(dist < (p.size/2 + c.size/2)) {
-            // Spawn standard 3D Sparkle Burst Particles
             if (particlesEnabled) {
                 for(let j=0; j<8; j++) {
                     const pGeo = new THREE.SphereGeometry(2, 4, 4);
@@ -1037,13 +1086,14 @@ function collectCoins(p){
                 }
             }
 
-            // Remove mesh elements safely
             scene.remove(coins3D[i]);
             coins3D.splice(i, 1);
             coins.splice(i, 1);
             
-            p.coins++;
-            coinsCollectedThisLevel++;
+            // Dynamic evaluation matching multiplier bonuses
+            let gain = (p.doubleCoinsTimer > 0) ? 2 : 1;
+            p.coins += gain;
+            coinsCollectedThisLevel += gain;
             
             if(coinsCollectedThisLevel >= coinsNeededForNextLevel){
                 if(currentLevel >= 7){
@@ -1063,9 +1113,72 @@ function collectCoins(p){
                 } else {
                     resetPositionsAll();
                 }
-                return; // FIX: Prevents loop evaluation errors on empty arrays
+                return; 
             }
             updateUI();
+        }
+    }
+}
+
+function collectPowerUps(p) {
+    for(let i = powerUps.length - 1; i >= 0; i--) {
+        let pu = powerUps[i];
+        let dx = p.x - pu.x;
+        let dy = p.y - pu.y;
+        let dz = (currentLevel < 6) ? (p.z - pu.z) : 0;
+        let dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+
+        if(dist < (p.size/2 + pu.size/2)) {
+            if(pu.type === 'magnet') p.magnetTimer = 600; // 10 seconds at 60 FPS
+            if(pu.type === 'double') p.doubleCoinsTimer = 600;
+
+            if (particlesEnabled) {
+                let pColor = pu.type === 'magnet' ? 0x00d2ff : 0xff00ff;
+                for(let j=0; j<12; j++) {
+                    const pGeo = new THREE.SphereGeometry(2.5, 4, 4);
+                    const pMat = new THREE.MeshBasicMaterial({ color: pColor });
+                    const pMesh = new THREE.Mesh(pGeo, pMat);
+                    pMesh.position.set(pu.x, pu.y, pu.z);
+                    scene.add(pMesh);
+                    walkParticles.push({
+                        mesh: pMesh,
+                        vx: (Math.random() - 0.5) * 6,
+                        vy: (Math.random() - 0.5) * 6,
+                        vz: (Math.random() - 0.5) * 6,
+                        life: 25
+                    });
+                }
+            }
+
+            scene.remove(powerUps3D[i]);
+            powerUps3D.splice(i, 1);
+            powerUps.splice(i, 1);
+        }
+    }
+}
+
+function applyMagnets() {
+    let pList = [player];
+    if(multiplayer) pList.push(player2);
+
+    for(let p of pList) {
+        if(p.magnetTimer > 0) {
+            for(let i = 0; i < coins.length; i++) {
+                let c = coins[i];
+                let dx = p.x - c.x;
+                let dy = p.y - c.y;
+                let dz = (currentLevel < 6) ? (p.z - c.z) : 0;
+                let dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
+
+                // Magnet tracking capture zone trigger limit
+                if(dist < 280) {
+                    let pullFactor = 5.5;
+                    c.x += (dx / dist) * pullFactor;
+                    c.y += (dy / dist) * pullFactor;
+                    if(currentLevel < 6) c.z += (dz / dist) * pullFactor;
+                    coins3D[i].position.set(c.x, c.y + (currentLevel < 6 ? 5 : 0), c.z);
+                }
+            }
         }
     }
 }
@@ -1073,7 +1186,6 @@ function collectCoins(p){
 function checkHazardsAndGoals(p, isP2) {
     if (currentLevel < 6) return;
 
-    // Platformer Hazard Spike checks
     for (let haz of hazards) {
         if (p.x > haz.x && p.x < haz.x + haz.w && p.y > haz.y && p.y < haz.y + haz.h + 20) {
             resetPlatformerPosition(p);
@@ -1081,7 +1193,6 @@ function checkHazardsAndGoals(p, isP2) {
         }
     }
 
-    // Win Goal Trophy check
     if (currentLevel === 7 && p.x > winGoal.x && p.x < winGoal.x + winGoal.w && p.y > winGoal.y && p.y < winGoal.y + winGoal.h) {
         gamePaused = true;
         showWinScreen(multiplayer 
@@ -1109,8 +1220,32 @@ function showWinScreen(text) {
 function update(){
     if(!gameStarted || gamePaused || winnerTimer > 0) return;
 
+    // Power-up duration processing ticker metrics
+    if(player.magnetTimer > 0) player.magnetTimer--;
+    if(player.doubleCoinsTimer > 0) player.doubleCoinsTimer--;
+    if(multiplayer) {
+        if(player2.magnetTimer > 0) player2.magnetTimer--;
+        if(player2.doubleCoinsTimer > 0) player2.doubleCoinsTimer--;
+    }
+
+    applyMagnets();
+    collectPowerUps(player);
+    if(multiplayer) collectPowerUps(player2);
+
+    // Live display string builder
+    let p1Txt = "";
+    if(player.magnetTimer > 0) p1Txt += `🧲 Magnet: ${Math.ceil(player.magnetTimer/60)}s `;
+    if(player.doubleCoinsTimer > 0) p1Txt += `✨ 2x Coins: ${Math.ceil(player.doubleCoinsTimer/60)}s`;
+    document.getElementById("p1PowerUps").innerHTML = p1Txt;
+
+    let p2Txt = "";
+    if(multiplayer) {
+        if(player2.magnetTimer > 0) p2Txt += `🧲 Magnet: ${Math.ceil(player2.magnetTimer/60)}s `;
+        if(player2.doubleCoinsTimer > 0) p2Txt += `✨ 2x Coins: ${Math.ceil(player2.doubleCoinsTimer/60)}s`;
+        document.getElementById("p2PowerUps").innerHTML = p2Txt;
+    }
+
     if (currentLevel < 6) {
-        // TOP-DOWN EXTRACTION RUNNER CONTROLS
         chicken.mesh.visible = chickenEnabled;
         
         // P1 Controls (WASD)
@@ -1171,7 +1306,6 @@ function update(){
             chicken.mesh.position.set(chicken.x, Math.abs(Math.sin(performance.now() * 0.01)) * 6, chicken.z);
             chicken.mesh.rotation.y = -angle + Math.PI / 2;
 
-            // Catch Event Radius
             let chaseDist = Math.hypot(chicken.x - target.x, chicken.z - target.z);
             if(chaseDist < 35) {
                 alert('The chicken caught you!');
@@ -1179,7 +1313,6 @@ function update(){
             }
         }
     } else {
-        // SCROLLING 3D PLATFORMER PHYSICS INTERACTION
         processPlatformerPhysics(player, "a", "d", "w", false);
         collectCoins(player);
         checkHazardsAndGoals(player, false);
@@ -1199,18 +1332,16 @@ function processPlatformerPhysics(p, leftKey, rightKey, jumpKey, isP2) {
     if (keys[leftKey]) { p.x -= p.speed; moving = true; p.mesh.rotation.y = -Math.PI/2; }
     if (keys[rightKey]) { p.x += p.speed; moving = true; p.mesh.rotation.y = Math.PI/2; }
 
-    // X collision
     for (let plat of platforms) {
         if (p.x < plat.x + plat.w && p.x + 30 > plat.x && p.y < plat.y && p.y > plat.y - plat.h) {
             p.x = oldX;
         }
     }
 
-    p.vy -= 0.55; // Gravity acceleration
+    p.vy -= 0.55; 
     p.y += p.vy;
 
     let grounded = false;
-    // Y collision logic against standard blocks
     for (let plat of platforms) {
         if (p.x < plat.x + plat.w && p.x + 30 > plat.x) {
             if (p.y <= plat.y && p.y >= plat.y - 40) {
@@ -1238,7 +1369,6 @@ function processPlatformerPhysics(p, leftKey, rightKey, jumpKey, isP2) {
     p.x = Math.max(20, Math.min(arenaWidth - 20, p.x));
     p.mesh.position.set(p.x, p.y, arenaHeight / 2);
 
-    // Abyss fall reset rules
     if (p.y < -100) resetPlatformerPosition(p);
 }
 
@@ -1272,7 +1402,6 @@ function setupTouchInput(elementId, targetKey) {
     el.addEventListener("touchcancel", bindEnd, { passive: false });
 }
 
-// Map touch overlay layout buttons to native keyboard configurations
 setupTouchInput("btnUp", "w");
 setupTouchInput("btnDown", "s");
 setupTouchInput("btnLeft", "a");
@@ -1298,13 +1427,11 @@ function renderLoop(){
     update();
     updateParticles();
 
-    // Rotate existing coins on scene
     coins3D.forEach(cMesh => { cMesh.rotation.z += 0.04; });
+    powerUps3D.forEach(puMesh => { puMesh.rotation.y += 0.05; puMesh.rotation.x += 0.02; });
     if(goalMesh) goalMesh.rotation.y += 0.02;
 
-    // Smooth Intelligent Camera Setup Positioning
     if (currentLevel < 6) {
-        // Top-Down Tracking Camera Blueprint
         let targetX = player.x;
         let targetZ = player.z;
         if(multiplayer) {
@@ -1314,7 +1441,6 @@ function renderLoop(){
         camera.position.set(targetX, 580, targetZ + 360);
         camera.lookAt(targetX, 0, targetZ);
     } else {
-        // Platformer Side Scrolling Tracking View Blueprint
         let targetX = player.x;
         let targetY = player.y + 100;
         if(multiplayer) {
@@ -1329,7 +1455,6 @@ function renderLoop(){
     requestAnimationFrame(renderLoop);
 }
 
-// Start ThreeJS Loop Engine execution
 renderLoop();
 
 // --- UPGRADE SHOP ACTION IMPLEMENTATIONS ---
