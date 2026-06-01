@@ -303,7 +303,7 @@ body{
     <div id="gameTitle">Gooblet Forest 3D</div>
 
     <div id="subtitle">
-        <span id="subtitleText">3D v1.5</span>
+        <span id="subtitleText">3D v1.6</span>
         <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:20px;">
             <button id="easyButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy')">Easy 🌱</button>
             <button id="easyMediumButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy-medium')">Easy Medium 🐤</button>
@@ -986,7 +986,7 @@ function setupPlatformerLevel(resetPositions = true) {
 }
 
 function spawnCoin(){
-    if(!gameStarted || gamePaused || currentLevel >= 7) return;
+    if(!gameStarted || gamePaused) return;
     if(coins.length >= 10) return;
 
     if (currentLevel < 6) {
@@ -1008,9 +1008,29 @@ function spawnCoin(){
     }
 }
 
+function spawnPlatformerCoin() {
+    if (platforms.length === 0) return;
+    // Pick a random platform block and float a coin over it
+    let plat = platforms[Math.floor(Math.random() * platforms.length)];
+    let cx = plat.x + Math.random() * (plat.w - 30) + 15;
+    let cy = plat.y + 35;
+    let cz = arenaHeight / 2;
+
+    coins.push({ x: cx, y: cy, z: cz, size: 24 });
+
+    const coinGeo = new THREE.CylinderGeometry(12, 12, 4, 12);
+    const coinMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3 });
+    const cMesh = new THREE.Mesh(coinGeo, coinMat);
+    cMesh.rotation.x = Math.PI / 2;
+    cMesh.position.set(cx, cy, cz);
+    cMesh.castShadow = true;
+    scene.add(cMesh);
+    coins3D.push(cMesh);
+}
+
 // --- POWER UP SPARK SPONSOR ENGINE ---
 function spawnPowerUp() {
-    if(!gameStarted || gamePaused || currentLevel >= 7) return;
+    if(!gameStarted || gamePaused) return;
     if(powerUps.length >= 2) return; 
 
     let type = Math.random() > 0.5 ? 'magnet' : 'double';
@@ -1495,11 +1515,7 @@ function updateUI(){
     document.getElementById("speedLevel2").textContent = player2.speedLevel;
 
     const prefix = translations[currentLanguage]?.level || "Level";
-    if (currentLevel < 7) {
-        document.getElementById("levelDisplay").textContent = `${prefix} ${currentLevel} (${coinsCollectedThisLevel}/${coinsNeededForNextLevel} 🪙)`;
-    } else {
-        document.getElementById("levelDisplay").textContent = `You Win!`;
-    }
+    document.getElementById("levelDisplay").textContent = `${prefix} ${currentLevel} (${coinsCollectedThisLevel}/${coinsNeededForNextLevel} 🪙)`;
 }
 
 window.addEventListener("resize", () => {
