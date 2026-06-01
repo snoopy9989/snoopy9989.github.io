@@ -1370,7 +1370,7 @@ function updateUI(){
     document.getElementById("speedLevel2").textContent = player2.speedLevel;
 
     const prefix = translations[currentLanguage]?.level || "Level";
-    if (currentLevel < 6) {
+    if (currentLevel < 7) {
         document.getElementById("levelDisplay").textContent = `${prefix} ${currentLevel} (${coinsCollectedThisLevel}/${coinsNeededForNextLevel} 🪙)`;
     } else {
         document.getElementById("levelDisplay").textContent = `🏆 Final Platformer Level 🏆`;
