@@ -363,7 +363,7 @@ body{
         <button class="menuButton" id="settingsButton" onclick="openSettings()">Settings ⚙️</button>
     </div>
 
-</div> <div id="onlineMenuScreen" style="display: none; position: absolute; inset: 0; background: rgba(20, 40, 20, 0.95); flex-direction: column; justify-content: center; align-items: center; z-index: 200;">
+<div id="onlineMenuScreen" style="display: none; position: absolute; inset: 0; background: rgba(20, 40, 20, 0.95); flex-direction: column; justify-content: center; align-items: center; z-index: 200;">
     <div class="settingsPanel">
         <div class="settingsTitle">Online Mode 🌐</div>
         
@@ -375,8 +375,7 @@ body{
         <div class="settingRow">
             <label for="roomCodeInput">Room ID / Code:</label><br>
             <input type="text" id="roomCodeInput" class="onlineInput" placeholder="e.g., 5562" maxlength="6">
-        
-        <div class="settingRow">
+        </div> <div class="settingRow">
             <label for="onlineDifficulty">Difficulty:</label><br>
             <select id="onlineDifficulty" class="onlineInput">
                 <option value="easy">Easy 🌱</option>
@@ -394,7 +393,6 @@ body{
         <button class="menuButton" style="width:220px; font-size:24px; margin:0;" onclick="closeOnlineMenu()">Back</button>
     </div>
 </div>
-
 
 <div id="ui">
     <div id="dynamicCardContainer" style="display:flex; flex-direction:column; gap:12px;"></div>
