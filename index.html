@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Gooblet Forest 3D</title>
+<title>Gooblet Forest Collector 3D</title>
 
 <link rel="icon" type="image/png" href="favicon.png">    
 
@@ -348,7 +348,7 @@ body{
     <div id="gameTitle">Gooblet Forest 3D</div>
 
     <div id="subtitle">
-        <span id="subtitleText">3D v1.6.2</span>
+        <span id="subtitleText">3D v1.6.1</span>
     </div> <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:20px; z-index: 2;">
         <button id="easyButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy')">Easy 🌱</button>
         <button id="easyMediumButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy-medium')">Easy Medium 🐤</button>
@@ -363,7 +363,7 @@ body{
         <button class="menuButton" id="settingsButton" onclick="openSettings()">Settings ⚙️</button>
     </div>
 
-<div id="onlineMenuScreen" style="display: none; position: absolute; inset: 0; background: rgba(20, 40, 20, 0.95); flex-direction: column; justify-content: center; align-items: center; z-index: 200;">
+</div> <div id="onlineMenuScreen" style="display: none; position: absolute; inset: 0; background: rgba(20, 40, 20, 0.95); flex-direction: column; justify-content: center; align-items: center; z-index: 200;">
     <div class="settingsPanel">
         <div class="settingsTitle">Online Mode 🌐</div>
         
@@ -375,14 +375,6 @@ body{
         <div class="settingRow">
             <label for="roomCodeInput">Room ID / Code:</label><br>
             <input type="text" id="roomCodeInput" class="onlineInput" placeholder="e.g., 5562" maxlength="6">
-        </div> <div class="settingRow">
-            <label for="onlineDifficulty">Difficulty:</label><br>
-            <select id="onlineDifficulty" class="onlineInput">
-                <option value="easy">Easy 🌱</option>
-                <option value="easy-medium">Easy Medium 🐤</option>
-                <option value="medium" selected>Medium 🐔</option>
-                <option value="hard">Hard ⚠️</option>
-            </select>
         </div>
 
         <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 20px;">
@@ -393,6 +385,7 @@ body{
         <button class="menuButton" style="width:220px; font-size:24px; margin:0;" onclick="closeOnlineMenu()">Back</button>
     </div>
 </div>
+
 
 <div id="ui">
     <div id="dynamicCardContainer" style="display:flex; flex-direction:column; gap:12px;"></div>
@@ -2291,7 +2284,6 @@ function closeOnlineMenu() {
 function handleOnlineAction(action) {
     const playerName = document.getElementById("playerNameInput").value.trim();
     const roomCode = document.getElementById("roomCodeInput").value.trim();
-    const selectedDifficulty = document.getElementById("onlineDifficulty").value;
 
     if (!playerName) {
         alert("Please enter a player name before proceeding!");
@@ -2309,7 +2301,7 @@ function handleOnlineAction(action) {
     closeOnlineMenu();
     
     // Launch the game in multiplayer mode as a baseline
-    startGame(true, selectedDifficulty); 
+    startGame(true, 'medium'); 
     
     /* NOTE: This is where you would hook in networking libraries 
        (e.g., Socket.io, PeerJS, or Firebase Realtime Database) 
