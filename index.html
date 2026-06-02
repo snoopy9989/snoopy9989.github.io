@@ -348,7 +348,7 @@ body{
     <div id="gameTitle">Gooblet Forest 3D</div>
 
     <div id="subtitle">
-        <span id="subtitleText">3D v1.6.1</span>
+        <span id="subtitleText">3D v1.6.2</span>
     </div> <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:20px; z-index: 2;">
         <button id="easyButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy')">Easy 🌱</button>
         <button id="easyMediumButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy-medium')">Easy Medium 🐤</button>
@@ -1861,7 +1861,7 @@ function initOnlineHost() {
         document.getElementById("netStatus").innerHTML = `Hosting Room! Share Code: <span style="color:#fff; font-size:18px; text-decoration:underline;">${id}</span>`;
         
         // Launch standard game frame loop structure locally
-        startGame(false, 'medium');
+        startGame(false, 'easy');
     });
 
     peerNetworkNode.on('connection', (conn) => {
@@ -2301,7 +2301,7 @@ function handleOnlineAction(action) {
     closeOnlineMenu();
     
     // Launch the game in multiplayer mode as a baseline
-    startGame(true, 'medium'); 
+    startGame(true, 'easy'); 
     
     /* NOTE: This is where you would hook in networking libraries 
        (e.g., Socket.io, PeerJS, or Firebase Realtime Database) 
