@@ -303,7 +303,7 @@ body{
     <div id="gameTitle">Gooblet Forest 3D</div>
 
     <div id="subtitle">
-        <span id="subtitleText">3D v1.6</span>
+        <span id="subtitleText">3D v1.2</span>
         <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:20px;">
             <button id="easyButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy')">Easy 🌱</button>
             <button id="easyMediumButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy-medium')">Easy Medium 🐤</button>
@@ -608,7 +608,7 @@ function rebuildEnvironment() {
 
     if(goalMesh) { scene.remove(goalMesh); goalMesh = null; }
 
-    if (currentLevel < 6) {
+    if (currentLevel < 11) {
         groundMesh.position.set(arenaWidth/2, -10, arenaHeight/2);
         groundMesh.scale.set(1, 1, 1);
         
@@ -676,6 +676,15 @@ function create3DGooblet(colorHex) {
     footR.position.x = 10;
     group.add(footR);
 
+    // Dynamic Force Field Shield Aura (Initially Hidden)
+    const shieldGeo = new THREE.SphereGeometry(32, 16, 16);
+    const shieldMat = new THREE.MeshBasicMaterial({ color: 0x00ffcc, transparent: true, opacity: 0.35, wireframe: true });
+    const shield = new THREE.Mesh(shieldGeo, shieldMat);
+    shield.position.y = 21;
+    shield.visible = false;
+    group.add(shield);
+    group.userData.shieldMesh = shield;
+
     scene.add(group);
     return group;
 }
@@ -724,8 +733,8 @@ let keys = {};
 addEventListener("keydown", e => { keys[e.key.toLowerCase()] = true; });
 addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; });
 
-let player = { x:200, y:400, z:200, vy:0, size:42, color:"#9cff8f", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null, magnetTimer:0, doubleCoinsTimer:0 };
-let player2 = { x:500, y:400, z:250, vy:0, size:42, color:"#7fd8ff", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null, magnetTimer:0, doubleCoinsTimer:0 };
+let player = { x:200, y:400, z:200, vy:0, size:42, color:"#9cff8f", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null, magnetTimer:0, doubleCoinsTimer:0, forceFieldTimer:0 };
+let player2 = { x:500, y:400, z:250, vy:0, size:42, color:"#7fd8ff", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null, magnetTimer:0, doubleCoinsTimer:0, forceFieldTimer:0 };
 
 let p1Grounded = false;
 let p2Grounded = false;
@@ -805,8 +814,10 @@ function resetPositionsAll() {
     
     player.magnetTimer = 0;
     player.doubleCoinsTimer = 0;
+    player.forceFieldTimer = 0;
     player2.magnetTimer = 0;
     player2.doubleCoinsTimer = 0;
+    player2.forceFieldTimer = 0;
 }
 
 function openSettings(){ document.getElementById("settingsScreen").style.display = "flex"; }
@@ -849,8 +860,8 @@ function returnToMenu(){
 
     player.coins = 0; player.speed = 5; player.speedLevel = 1; player.speedCost = 10;
     player2.coins = 0; player2.speed = 5; player2.speedLevel = 1; player2.speedCost = 10;
-    player.magnetTimer = 0; player.doubleCoinsTimer = 0;
-    player2.magnetTimer = 0; player2.doubleCoinsTimer = 0;
+    player.magnetTimer = 0; player.doubleCoinsTimer = 0; player.forceFieldTimer = 0;
+    player2.magnetTimer = 0; player2.doubleCoinsTimer = 0; player2.forceFieldTimer = 0;
     player.mesh.position.set(200, 0, 300);
     player2.mesh.position.set(500, 0, 350);
     player2.mesh.visible = false;
@@ -870,7 +881,7 @@ function returnToMenu(){
     updateUI();
 }
 
-// --- LEVEL 6 & 7 3D PLATFORMER GENERATOR ENGINE ---
+// --- LEVEL 11, 12, & 13 3D PLATFORMER GENERATOR ENGINE ---
 function setupPlatformerLevel(resetPositions = true) {
     platforms = [];
     hazards = [];
@@ -892,10 +903,10 @@ function setupPlatformerLevel(resetPositions = true) {
     
     if (resetPositions) {
         player.x = 80; player.y = 200; player.z = arenaHeight / 2; player.vy = 0; p1Grounded = false;
-        player.magnetTimer = 0; player.doubleCoinsTimer = 0;
+        player.magnetTimer = 0; player.doubleCoinsTimer = 0; player.forceFieldTimer = 0;
         if (multiplayer) {
             player2.x = 160; player2.y = 200; player2.z = arenaHeight / 2; player2.vy = 0; p2Grounded = false;
-            player2.magnetTimer = 0; player2.doubleCoinsTimer = 0;
+            player2.magnetTimer = 0; player2.doubleCoinsTimer = 0; player2.forceFieldTimer = 0;
         }
     }
     
@@ -923,7 +934,7 @@ function setupPlatformerLevel(resetPositions = true) {
         platforms3D.push(platGroup);
     }
 
-    if (currentLevel === 6) {
+    if (currentLevel === 11) {
         chicken.mesh.visible = false;
         add3DPlatform(0, 120, w * 0.25, 500); 
         add3DPlatform(w * 0.32, 220, w * 0.15, 40);
@@ -933,7 +944,7 @@ function setupPlatformerLevel(resetPositions = true) {
         
         for (let i = 0; i < 8; i++) spawnPlatformerCoin();
     } 
-    else if (currentLevel === 7) {
+    else if (currentLevel === 12) {
         chicken.mesh.visible = false;
         add3DPlatform(0, 150, w * 0.22, 500);
         add3DPlatform(w * 0.26, 240, w * 0.10, 30);
@@ -959,7 +970,39 @@ function setupPlatformerLevel(resetPositions = true) {
         scene.add(hazGroup);
         hazards3D.push(hazGroup);
 
-        winGoal = { x: w * 0.91, y: 620, w: 60, h: 90 };
+        for (let i = 0; i < 8; i++) spawnPlatformerCoin();
+    }
+    else if (currentLevel === 13) {
+        // EXTRA PLATFORMER GAUNTLET LEVEL
+        chicken.mesh.visible = false;
+        add3DPlatform(0, 150, w * 0.16, 500);
+        add3DPlatform(w * 0.20, 260, w * 0.08, 30);
+        add3DPlatform(w * 0.32, 220, w * 0.08, 30);
+        add3DPlatform(w * 0.44, 340, w * 0.08, 30);
+        add3DPlatform(w * 0.56, 450, w * 0.12, 30);
+        add3DPlatform(w * 0.73, 360, w * 0.08, 30);
+        add3DPlatform(w * 0.86, 500, w * 0.14, 900);
+
+        // Dangerous spike hazard floors across the entire mid gap
+        let hazX = w * 0.16;
+        let hazW = w * 0.70;
+        hazards.push({ x: hazX, y: 0, w: hazW, h: 40 });
+
+        const hazGroup = new THREE.Group();
+        const spikeMat = new THREE.MeshToonMaterial({ color: 0xd63031 });
+        let totalSpikes = Math.ceil(hazW / 24);
+        for(let i=0; i<totalSpikes; i++) {
+            const spikeGeo = new THREE.ConeGeometry(12, 35, 4);
+            const spike = new THREE.Mesh(spikeGeo, spikeMat);
+            spike.position.set(i * 24 + 12, 17.5, 0);
+            hazGroup.add(spike);
+        }
+        hazGroup.position.set(hazX, 0, arenaHeight / 2);
+        scene.add(hazGroup);
+        hazards3D.push(hazGroup);
+
+        // Ultimate Golden Trophy at the end line
+        winGoal = { x: w * 0.89, y: 500, w: 60, h: 90 };
 
         const goalGroup = new THREE.Group();
         const baseGeo = new THREE.CylinderGeometry(15, 20, 15, 8);
@@ -977,19 +1020,20 @@ function setupPlatformerLevel(resetPositions = true) {
         scene.add(goalGroup);
         goalMesh = goalGroup;
 
-        if (resetPositions) gamePaused = false;
+        for (let i = 0; i < 5; i++) spawnPlatformerCoin();
     }
     
     if(touchControlsEnabled && gameStarted) {
         document.getElementById("btnJump").style.display = "flex";
     }
+    if (resetPositions) gamePaused = false;
 }
 
 function spawnCoin(){
     if(!gameStarted || gamePaused) return;
     if(coins.length >= 10) return;
 
-    if (currentLevel < 6) {
+    if (currentLevel < 11) {
         let cx = Math.random() * (arenaWidth - 60) + 30;
         let cz = Math.random() * (arenaHeight - 60) + 30;
         
@@ -1010,7 +1054,6 @@ function spawnCoin(){
 
 function spawnPlatformerCoin() {
     if (platforms.length === 0) return;
-    // Pick a random platform block and float a coin over it
     let plat = platforms[Math.floor(Math.random() * platforms.length)];
     let cx = plat.x + Math.random() * (plat.w - 30) + 15;
     let cy = plat.y + 35;
@@ -1033,10 +1076,15 @@ function spawnPowerUp() {
     if(!gameStarted || gamePaused) return;
     if(powerUps.length >= 2) return; 
 
-    let type = Math.random() > 0.5 ? 'magnet' : 'double';
+    // Weighted selection pool for power ups
+    let rand = Math.random();
+    let type = 'magnet';
+    if (rand > 0.66) type = 'double';
+    else if (rand > 0.33) type = 'forcefield';
+
     let cx, cy, cz;
 
-    if (currentLevel < 6) {
+    if (currentLevel < 11) {
         cx = Math.random() * (arenaWidth - 60) + 30;
         cy = 15;
         cz = Math.random() * (arenaHeight - 60) + 30;
@@ -1050,9 +1098,9 @@ function spawnPowerUp() {
 
     powerUps.push({ x: cx, y: cy, z: cz, type: type, size: 24 });
 
-    // Distinctive 3D base mesh
+    // Distinctive 3D base mesh configurations
     let geo = new THREE.SphereGeometry(12, 12, 12);
-    let matColor = type === 'magnet' ? 0x00d2ff : 0xff00ff;
+    let matColor = type === 'magnet' ? 0x00d2ff : (type === 'double' ? 0xff00ff : 0x00ffcc);
     let mat = new THREE.MeshStandardMaterial({ color: matColor, roughness: 0.2, metalness: 0.6 });
     let mesh = new THREE.Mesh(geo, mat);
 
@@ -1062,9 +1110,14 @@ function spawnPowerUp() {
         let innerMesh = new THREE.Mesh(innerGeo, innerMat);
         innerMesh.rotation.x = Math.PI / 2;
         mesh.add(innerMesh);
-    } else {
+    } else if (type === 'double') {
         let innerGeo = new THREE.BoxGeometry(8, 8, 8);
         let innerMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        let innerMesh = new THREE.Mesh(innerGeo, innerMat);
+        mesh.add(innerMesh);
+    } else if (type === 'forcefield') {
+        let innerGeo = new THREE.IcosahedronGeometry(7, 0);
+        let innerMat = new THREE.MeshBasicMaterial({ color: 0xffff00, wireframe: true });
         let innerMesh = new THREE.Mesh(innerGeo, innerMat);
         mesh.add(innerMesh);
     }
@@ -1085,7 +1138,7 @@ function collectCoins(p){
         
         let dx = p.x - c.x;
         let dy = p.y - c.y;
-        let dz = (currentLevel < 6) ? (p.z - c.z) : 0;
+        let dz = (currentLevel < 11) ? (p.z - c.z) : 0;
         let dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
 
         if(dist < (p.size/2 + c.size/2)) {
@@ -1116,9 +1169,9 @@ function collectCoins(p){
             coinsCollectedThisLevel += gain;
             
             if(coinsCollectedThisLevel >= coinsNeededForNextLevel){
-                if(currentLevel >= 7){
-                    gamePaused = true;
-                    showWinScreen(multiplayer ? 'YOU BOTH BEAT THE GAME! 🎉' : 'YOU BEAT THE GAME! 🎉');
+                if(currentLevel === 13){
+                    // Final platformer gauntlet is explicitly won via reaching the golden trophy instead
+                    updateUI();
                     return;
                 }
 
@@ -1128,7 +1181,7 @@ function collectCoins(p){
                 levelUpTimer = 90; 
                 
                 rebuildEnvironment();
-                if (currentLevel >= 6) {
+                if (currentLevel >= 11) {
                     setupPlatformerLevel(true);
                 } else {
                     resetPositionsAll();
@@ -1145,15 +1198,16 @@ function collectPowerUps(p) {
         let pu = powerUps[i];
         let dx = p.x - pu.x;
         let dy = p.y - pu.y;
-        let dz = (currentLevel < 6) ? (p.z - pu.z) : 0;
+        let dz = (currentLevel < 11) ? (p.z - pu.z) : 0;
         let dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
 
         if(dist < (p.size/2 + pu.size/2)) {
-            if(pu.type === 'magnet') p.magnetTimer = 600; // 10 seconds at 60 FPS
+            if(pu.type === 'magnet') p.magnetTimer = 600; 
             if(pu.type === 'double') p.doubleCoinsTimer = 600;
+            if(pu.type === 'forcefield') p.forceFieldTimer = 600; // 10 seconds protection shield
 
             if (particlesEnabled) {
-                let pColor = pu.type === 'magnet' ? 0x00d2ff : 0xff00ff;
+                let pColor = pu.type === 'magnet' ? 0x00d2ff : (pu.type === 'double' ? 0xff00ff : 0x00ffcc);
                 for(let j=0; j<12; j++) {
                     const pGeo = new THREE.SphereGeometry(2.5, 4, 4);
                     const pMat = new THREE.MeshBasicMaterial({ color: pColor });
@@ -1187,16 +1241,15 @@ function applyMagnets() {
                 let c = coins[i];
                 let dx = p.x - c.x;
                 let dy = p.y - c.y;
-                let dz = (currentLevel < 6) ? (p.z - c.z) : 0;
+                let dz = (currentLevel < 11) ? (p.z - c.z) : 0;
                 let dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
 
-                // Magnet tracking capture zone trigger limit
                 if(dist < 280) {
                     let pullFactor = 5.5;
                     c.x += (dx / dist) * pullFactor;
                     c.y += (dy / dist) * pullFactor;
-                    if(currentLevel < 6) c.z += (dz / dist) * pullFactor;
-                    coins3D[i].position.set(c.x, c.y + (currentLevel < 6 ? 5 : 0), c.z);
+                    if(currentLevel < 11) c.z += (dz / dist) * pullFactor;
+                    coins3D[i].position.set(c.x, c.y + (currentLevel < 11 ? 5 : 0), c.z);
                 }
             }
         }
@@ -1204,20 +1257,26 @@ function applyMagnets() {
 }
 
 function checkHazardsAndGoals(p, isP2) {
-    if (currentLevel < 6) return;
+    if (currentLevel < 11) return;
 
     for (let haz of hazards) {
         if (p.x > haz.x && p.x < haz.x + haz.w && p.y > haz.y && p.y < haz.y + haz.h + 20) {
-            resetPlatformerPosition(p);
+            if (p.forceFieldTimer > 0) {
+                // Shield bounce mechanic saves player from falling into spikes
+                p.vy = 12;
+                p.forceFieldTimer = Math.max(0, p.forceFieldTimer - 90); // Small shield penalty deduction
+            } else {
+                resetPlatformerPosition(p);
+            }
             return;
         }
     }
 
-    if (currentLevel === 7 && p.x > winGoal.x && p.x < winGoal.x + winGoal.w && p.y > winGoal.y && p.y < winGoal.y + winGoal.h) {
+    if (currentLevel === 13 && p.x > winGoal.x && p.x < winGoal.x + winGoal.w && p.y > winGoal.y && p.y < winGoal.y + winGoal.h) {
         gamePaused = true;
         showWinScreen(multiplayer 
-            ? (isP2 ? 'PLAYER 2 WINS THE PLATFORMER! 🎉' : 'PLAYER 1 WINS THE PLATFORMER! 🎉')
-            : 'YOU BEAT THE PLATFORMER! YOU WIN! 🎉');
+            ? (isP2 ? 'PLAYER 2 BEAT THE GAUNTLET! 🎉' : 'PLAYER 1 BEAT THE GAUNTLET! 🎉')
+            : 'YOU BEAT THE 13-LEVEL GAUNTLET! YOU WIN! 🎉');
     }
 }
 
@@ -1230,9 +1289,10 @@ function resetPlatformerPosition(p) {
 function showWinScreen(text) {
     winnerText = text;
     winnerTimer = 300;
+    alert(text);
     setTimeout(() => {
         if(gameStarted) returnToMenu();
-    }, 4500);
+    }, 1500);
     updateUI();
 }
 
@@ -1240,32 +1300,45 @@ function showWinScreen(text) {
 function update(){
     if(!gameStarted || gamePaused || winnerTimer > 0) return;
 
-    // Power-up duration processing ticker metrics
+    // Power-up duration processing ticker clocks
     if(player.magnetTimer > 0) player.magnetTimer--;
     if(player.doubleCoinsTimer > 0) player.doubleCoinsTimer--;
+    if(player.forceFieldTimer > 0) player.forceFieldTimer--;
+    
+    // Toggle 3D mesh shield visible nodes dynamically
+    if(player.mesh && player.mesh.userData.shieldMesh) {
+        player.mesh.userData.shieldMesh.visible = (player.forceFieldTimer > 0);
+    }
+
     if(multiplayer) {
         if(player2.magnetTimer > 0) player2.magnetTimer--;
         if(player2.doubleCoinsTimer > 0) player2.doubleCoinsTimer--;
+        if(player2.forceFieldTimer > 0) player2.forceFieldTimer--;
+        if(player2.mesh && player2.mesh.userData.shieldMesh) {
+            player2.mesh.userData.shieldMesh.visible = (player2.forceFieldTimer > 0);
+        }
     }
 
     applyMagnets();
     collectPowerUps(player);
     if(multiplayer) collectPowerUps(player2);
 
-    // Live display string builder
+    // Live active display tag text updates
     let p1Txt = "";
     if(player.magnetTimer > 0) p1Txt += `🧲 Magnet: ${Math.ceil(player.magnetTimer/60)}s `;
-    if(player.doubleCoinsTimer > 0) p1Txt += `✨ 2x Coins: ${Math.ceil(player.doubleCoinsTimer/60)}s`;
+    if(player.doubleCoinsTimer > 0) p1Txt += `✨ 2x Coins: ${Math.ceil(player.doubleCoinsTimer/60)}s `;
+    if(player.forceFieldTimer > 0) p1Txt += `🛡️ Shield: ${Math.ceil(player.forceFieldTimer/60)}s`;
     document.getElementById("p1PowerUps").innerHTML = p1Txt;
 
     let p2Txt = "";
     if(multiplayer) {
         if(player2.magnetTimer > 0) p2Txt += `🧲 Magnet: ${Math.ceil(player2.magnetTimer/60)}s `;
-        if(player2.doubleCoinsTimer > 0) p2Txt += `✨ 2x Coins: ${Math.ceil(player2.doubleCoinsTimer/60)}s`;
+        if(player2.doubleCoinsTimer > 0) p2Txt += `✨ 2x Coins: ${Math.ceil(player2.doubleCoinsTimer/60)}s `;
+        if(player2.forceFieldTimer > 0) p2Txt += `🛡️ Shield: ${Math.ceil(player2.forceFieldTimer/60)}s`;
         document.getElementById("p2PowerUps").innerHTML = p2Txt;
     }
 
-    if (currentLevel < 6) {
+    if (currentLevel < 11) {
         chicken.mesh.visible = chickenEnabled;
         
         // P1 Controls (WASD)
@@ -1306,7 +1379,7 @@ function update(){
             collectCoins(player2);
         }
 
-        // Hostile Chicken 3D AI Chase AI Script
+        // Hostile Chicken 3D AI Chase Script
         if(chickenEnabled){
             let target = player;
             if(multiplayer){
@@ -1328,8 +1401,15 @@ function update(){
 
             let chaseDist = Math.hypot(chicken.x - target.x, chicken.z - target.z);
             if(chaseDist < 35) {
-                alert('The chicken caught you!');
-                returnToMenu();
+                if(target.forceFieldTimer > 0) {
+                    // Shield impact reflects the chicken backward
+                    chicken.x -= Math.cos(angle) * 150;
+                    chicken.z -= Math.sin(angle) * 150;
+                    target.forceFieldTimer = Math.max(0, target.forceFieldTimer - 120); // Discharges shield on impact
+                } else {
+                    alert('The chicken caught you!');
+                    returnToMenu();
+                }
             }
         }
     } else {
@@ -1451,7 +1531,17 @@ function renderLoop(){
     powerUps3D.forEach(puMesh => { puMesh.rotation.y += 0.05; puMesh.rotation.x += 0.02; });
     if(goalMesh) goalMesh.rotation.y += 0.02;
 
-    if (currentLevel < 6) {
+    // Spin active forcefield visual wireframe lines
+    if(player.mesh && player.mesh.userData.shieldMesh.visible) {
+        player.mesh.userData.shieldMesh.rotation.y += 0.02;
+        player.mesh.userData.shieldMesh.rotation.x += 0.01;
+    }
+    if(player2.mesh && player2.mesh.userData.shieldMesh.visible) {
+        player2.mesh.userData.shieldMesh.rotation.y += 0.02;
+        player2.mesh.userData.shieldMesh.rotation.x += 0.01;
+    }
+
+    if (currentLevel < 11) {
         let targetX = player.x;
         let targetZ = player.z;
         if(multiplayer) {
