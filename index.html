@@ -8,9 +8,10 @@
 
 <link rel="icon" type="image/png" href="favicon.png">    
 
-<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght=500;700&display=swap" rel="stylesheet">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.4.7/peerjs.min.js"></script>
 
 <style>
 body{
@@ -39,7 +40,8 @@ body{
     justify-content:center;
     align-items:center;
     z-index:50;
-    overflow:hidden;
+    overflow-y:auto;
+    padding: 20px 0;
 }
 
 .leaf{
@@ -58,18 +60,18 @@ body{
 }
 
 #gameTitle{
-    font-size:82px;
+    font-size:72px;
     color:white;
     text-shadow: 0 4px 0 #4f9a46, 0 8px 20px rgba(0,0,0,0.25);
     animation:wobble 3s ease-in-out infinite;
-    margin-bottom:20px;
+    margin-bottom:10px;
     z-index:2;
 }
 
 #subtitle{
-    font-size:24px;
+    font-size:22px;
     color:#efffe9;
-    margin-bottom:40px;
+    margin-bottom:25px;
     z-index:2;
     text-align: center;
 }
@@ -82,9 +84,9 @@ body{
 
 .menuButton{
     width:280px;
-    padding:18px;
-    margin:12px;
-    font-size:30px;
+    padding:14px;
+    margin:8px;
+    font-size:26px;
     border:none;
     border-radius:22px;
     cursor:pointer;
@@ -92,7 +94,7 @@ body{
     color:#4f9a46;
     font-family:'Fredoka', sans-serif;
     font-weight:700;
-    box-shadow:0 8px 0 #5fb553;
+    box-shadow:0 6px 0 #5fb553;
     transition:0.15s;
     z-index:2;
 }
@@ -108,20 +110,24 @@ body{
     gap:12px;
     flex-direction:column;
     z-index:20;
+    max-height: 85vh;
+    overflow-y: auto;
+    pointer-events: none;
 }
 
 .playerCard{
     background:rgba(255,255,255,0.9);
-    padding:14px 18px;
+    padding:12px 16px;
     border-radius:20px;
     color:#2c5f2a;
-    min-width:230px;
+    min-width:210px;
     box-shadow:0 6px 18px rgba(0,0,0,0.2);
     border:4px solid #7dd86e;
+    pointer-events: auto;
 }
 
-.playerTitle{ font-size:24px; font-weight:700; margin-bottom:5px; }
-.stat{ font-size:18px; }
+.playerTitle{ font-size:22px; font-weight:700; margin-bottom:5px; }
+.stat{ font-size:17px; }
 
 #levelDisplay {
     position:absolute;
@@ -157,7 +163,7 @@ body{
 }
 
 #shopButton1{ right:15px; }
-#shopButton2{ right:170px; }
+#shopButton2{ right:170px; display:none; }
 #menuButton{ right:325px; background:#6dbd63; }
 
 .shop{
@@ -289,6 +295,45 @@ body{
     color: white;
     transform: scale(0.95);
 }
+
+/* --- NETWORKING UI ADDITIONS --- */
+.onlinePanel {
+    background: rgba(255, 255, 255, 0.25);
+    border: 4px dashed rgba(255,255,255,0.6);
+    padding: 16px;
+    border-radius: 24px;
+    width: 340px;
+    margin-top: 15px;
+    box-sizing: border-box;
+    z-index: 5;
+    text-align: center;
+}
+  #onlineMenuScreen {
+    position: absolute;
+    inset: 0;
+    background: rgba(20, 40, 20, 0.95);
+    display: none; /* Keeps it hidden until clicked */
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 200; /* High z-index ensures it sits above the start screen */
+}
+
+.onlineInput {
+    width: 80%;
+    padding: 12px;
+    margin: 8px 0 18px 0;
+    border: 3px solid #7dd86e;
+    border-radius: 14px;
+    font-family: 'Fredoka', sans-serif;
+    font-size: 18px;
+    text-align: center;
+    color: #2c5f2a;
+    outline: none;
+}
+.onlineInput:focus { outline: none; border-color: #4f9a46; }
+.netBtn { width: 140px; font-size: 20px; padding: 10px; margin: 4px; border-radius: 16px; }
+#netStatus { font-size: 16px; color: #ffffff; text-shadow: 0 2px 4px rgba(0,0,0,0.3); margin-top: 8px; font-weight: bold; }
 </style>
 </head>
 <body>
@@ -303,24 +348,50 @@ body{
     <div id="gameTitle">Gooblet Forest 3D</div>
 
     <div id="subtitle">
-        <span id="subtitleText">3D v1.2</span>
-        <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:20px;">
-            <button id="easyButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy')">Easy 🌱</button>
-            <button id="easyMediumButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy-medium')">Easy Medium 🐤</button>
-            <button id="mediumButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'medium')">Medium 🐔</button>
-            <button id="hardButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'hard')">Hard ⚠️</button>
+        <span id="subtitleText">3D v1.6.1</span>
+    </div> <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:20px; z-index: 2;">
+        <button id="easyButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy')">Easy 🌱</button>
+        <button id="easyMediumButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy-medium')">Easy Medium 🐤</button>
+        <button id="mediumButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'medium')">Medium 🐔</button>
+        <button id="hardButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'hard')">Hard ⚠️</button>
+        <button id="onlineMenuButton" class="menuButton" style="width:250px; font-size:24px; background:#2980b9; color:white; box-shadow:0 8px 0 #1f618d;" onclick="openOnlineMenu()">Online Mode 🌐</button>
+    </div>
+
+    <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:10px; z-index: 2;">
+        <button id="mpMediumButton" class="menuButton" style="width:250px; font-size:24px;" onclick="startGame(true,'medium')">Local MP Medium</button>
+        <button id="mpHardButton" class="menuButton" style="width:250px; font-size:24px;" onclick="startGame(true,'hard')">Local MP Hard</button>
+        <button class="menuButton" id="settingsButton" onclick="openSettings()">Settings ⚙️</button>
+    </div>
+
+</div> <div id="onlineMenuScreen" style="display: none; position: absolute; inset: 0; background: rgba(20, 40, 20, 0.95); flex-direction: column; justify-content: center; align-items: center; z-index: 200;">
+    <div class="settingsPanel">
+        <div class="settingsTitle">Online Mode 🌐</div>
+        
+        <div class="settingRow">
+            <label for="playerNameInput">Player Name:</label><br>
+            <input type="text" id="playerNameInput" class="onlineInput" placeholder="Enter your name..." maxlength="12">
         </div>
-        <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:10px;">
-            <button id="mpMediumButton" class="menuButton" style="width:250px; font-size:24px;" onclick="startGame(true,'medium')">Multiplayer Medium</button>
-            <button id="mpHardButton" class="menuButton" style="width:250px; font-size:24px;" onclick="startGame(true,'hard')">Multiplayer Hard</button>
-            <button class="menuButton" id="settingsButton" onclick="openSettings()">Settings ⚙️</button>
+
+        <div class="settingRow">
+            <label for="roomCodeInput">Room ID / Code:</label><br>
+            <input type="text" id="roomCodeInput" class="onlineInput" placeholder="e.g., 5562" maxlength="6">
         </div>
+
+        <div style="display: flex; gap: 12px; justify-content: center; margin-bottom: 20px;">
+            <button class="settingButton" onclick="handleOnlineAction('create')">Create Room</button>
+            <button class="settingButton" onclick="handleOnlineAction('join')">Join Room</button>
+        </div>
+
+        <button class="menuButton" style="width:220px; font-size:24px; margin:0;" onclick="closeOnlineMenu()">Back</button>
     </div>
 </div>
 
+
 <div id="ui">
-    <div class="playerCard">
-        <div class="playerTitle">Player 1</div>
+    <div id="dynamicCardContainer" style="display:flex; flex-direction:column; gap:12px;"></div>
+    
+    <div class="playerCard" id="legacyCard1" style="display:none;">
+        <div class="playerTitle" id="lP1Title">Player 1</div>
         <div class="stat">Coins: <span id="coinCount1">0</span></div>
         <div class="stat">Speed: <span id="speedLevel1">1</span></div>
         <div id="p1PowerUps" style="font-size:15px; margin-top:5px; font-weight:700; color:#d63031;"></div>
@@ -335,21 +406,21 @@ body{
 
 <div id="levelDisplay">Level 1</div>
 
-<button class="shopButton" id="shopButton1">P1 Shop</button>
+<button class="shopButton" id="shopButton1">Shop</button>
 <button class="shopButton" id="shopButton2">P2 Shop</button>
 <button class="shopButton" id="menuButton">Menu</button>
 
 <div class="shop" id="shop1">
-    <h2>Player 1 Shop</h2>
-    <button class="shopItem" onclick="buySpeed(player)">Speed Upgrade</button>
-    <button class="shopItem" onclick="buySkin(player,'#ff3333',5)">Red Skin (5)</button>
-    <button class="shopItem" onclick="buySkin(player,'#3333ff',8)">Blue Skin (8)</button>
-    <button class="shopItem" onclick="buySkin(player,'#aa33ff',12)">Purple Skin (12)</button>
-    <button class="shopItem" onclick="buySkin(player,'#ffd700',18)">Gold Skin (18)</button>
-    <button class="shopItem" onclick="buySkin(player,'#ff7f7f',20)">Strawberry Skin (20)</button>
-    <button class="shopItem" onclick="buySkin(player,'#7fb8ff',24)">Ocean Skin (24)</button>
-    <button class="shopItem" onclick="buySkin(player,'#b58cff',28)">Dream Skin (28)</button>
-    <button class="shopItem" onclick="buySkin(player,'#ffe066',35)">Golden Glow Skin (35)</button>
+    <h2 id="shopTitleHeader">Upgrade Shop</h2>
+    <button class="shopItem" onclick="triggerLocalSpeedUpgrade()">Speed Upgrade</button>
+    <button class="shopItem" onclick="triggerLocalSkinUpgrade('#ff3333',5)">Red Skin (5)</button>
+    <button class="shopItem" onclick="triggerLocalSkinUpgrade('#3333ff',8)">Blue Skin (8)</button>
+    <button class="shopItem" onclick="triggerLocalSkinUpgrade('#aa33ff',12)">Purple Skin (12)</button>
+    <button class="shopItem" onclick="triggerLocalSkinUpgrade('#ffd700',18)">Gold Skin (18)</button>
+    <button class="shopItem" onclick="triggerLocalSkinUpgrade('#ff7f7f',20)">Strawberry Skin (20)</button>
+    <button class="shopItem" onclick="triggerLocalSkinUpgrade('#7fb8ff',24)">Ocean Skin (24)</button>
+    <button class="shopItem" onclick="triggerLocalSkinUpgrade('#b58cff',28)">Dream Skin (28)</button>
+    <button class="shopItem" onclick="triggerLocalSkinUpgrade('#ffe066',35)">Golden Glow Skin (35)</button>
 </div>
 
 <div class="shop" id="shop2">
@@ -477,8 +548,20 @@ let hazards3D = [];
 let trees3D = [];
 let winGoal = { x: 0, y: 0, w: 0, h: 0 };
 let goalMesh = null;
+let powerUps = [];   // ADD THIS LINE
+let powerUps3D = []; // ADD THIS LINE
 
-// Virtual bounds mapped directly from the original layout
+// Real-time Cloud Networking Engine State Declarations
+let isOnlineMode = false;
+let isNetHost = false;
+let peerNetworkNode = null;
+let networkConnections = [];
+let targetHostConnection = null;
+let myNetworkId = "";
+let localPlayerUsername = "PlayerGoob";
+let remotePlayers = {}; // Dictionary bucket storing remote entity structures
+
+// Virtual bounds mapped directly from original vector dimensions
 const arenaWidth = 1400;
 const arenaHeight = 800;
 
@@ -498,10 +581,10 @@ function getTheme() {
 }
 
 const translations = {
-    en:{ title:'Gooblet Forest 3D', subtitle:' 3D v1.2', settings:'Settings ⚙️', music:'Music:', particles:'Particles:', fullscreen:'Fullscreen', fullscreenButton:'Toggle Fullscreen', toggleMusic:'Toggle Music', toggleParticles:'Toggle Particles', back:'Back', p1shop:'P1 Shop', p2shop:'P2 Shop', menu:'Menu', easy:'Easy 🌱', easyMedium:'Easy Medium 🐤', medium:'Medium 🐔', hard:'Hard ⚠️', mpMedium:'Multiplayer Medium', mpHard:'Multiplayer Hard', language:'Language', level:'Level', touch:'Touch Controls:', toggleTouch:'Toggle Touch' },
-    es:{ title:'Bosque Gooblet 3D', subtitle:'Aventuras lindas del bosque 🌿', settings:'Configuración ⚙️', music:'Música:', particles:'Partículas:', fullscreen:'Pantalla completa', fullscreenButton:'Cambiar pantalla completa', toggleMusic:'Alternar música', toggleParticles:'Alternar partículas', back:'Atrás', p1shop:'Tienda J1', p2shop:'Tienda J2', menu:'Menú', easy:'Fácil 🌱', easyMedium:'Medio Fácil 🐤', medium:'Medio 🐔', hard:'Difícil ⚠️', mpMedium:'Multijugador Medio', mpHard:'Multijugador Difícil', language:'Idioma', level:'Nivel', touch:'Controles táctiles:', toggleTouch:'Alternar táctil' },
-    fr:{ title:'Forêt Gooblet 3D', subtitle:'Mignonnes aventures en forêt 🌿', settings:'Paramètres ⚙️', music:'Musique :', particles:'Particules :', fullscreen:'Plein écran', fullscreenButton:'Basculer plein écran', toggleMusic:'Activer musique', toggleParticles:'Activer particules', back:'Retour', p1shop:'Boutique J1', p2shop:'Boutique J2', menu:'Menu', easy:'Facile 🌱', easyMedium:'Moyen Facile 🐤', medium:'Moyen 🐔', hard:'Difficile ⚠️', mpMedium:'Multijoueur Moyen', mpHard:'Multijoueur Difficile', language:'Langue', level:'Niveau', touch:'Contrôles tactiles :', toggleTouch:'Basculer tactile' },
-    jp:{ title:'グーブレットの森 3D', subtitle:'かわいい森の冒険 🌿', settings:'設定 ⚙️', music:'音楽:', particles:'パーティクル:', fullscreen:'フルスクリーン', fullscreenButton:'フルスクリーン切替', toggleMusic:'音楽を切替', toggleParticles:'パーティクル切替', back:'戻る', p1shop:'P1ショップ', p2shop:'P2ショップ', menu:'メニュー', easy:'かんたん 🌱', easyMedium:'かんたんふつう 🐤', medium:'ふつう 🐔', hard:'むずかしい ⚠️', mpMedium:'マルチプレイヤー 普通', mpHard:'マルチプレイヤー 難しい', language:'言語', level:'レベル', touch:'タッチコントロール:', toggleTouch:'タッチ切替' }
+    en:{ title:'Gooblet Forest 3D', subtitle:' 3D v1.5 Engine', settings:'Settings ⚙️', music:'Music:', particles:'Particles:', fullscreen:'Fullscreen', fullscreenButton:'Toggle Fullscreen', toggleMusic:'Toggle Music', toggleParticles:'Toggle Particles', back:'Back', p1shop:'Shop', p2shop:'P2 Shop', menu:'Menu', easy:'Easy 🌱', easyMedium:'Easy Medium 🐤', medium:'Medium 🐔', hard:'Hard ⚠️', mpMedium:'Local MP Medium', mpHard:'Local MP Hard', language:'Language', level:'Level', touch:'Touch Controls:', toggleTouch:'Toggle Touch' },
+    es:{ title:'Bosque Gooblet 3D', subtitle:'Aventuras lindas del bosque 🌿', settings:'Configuración ⚙️', music:'Música:', particles:'Partículas:', fullscreen:'Pantalla completa', fullscreenButton:'Cambiar pantalla completa', toggleMusic:'Alternar música', toggleParticles:'Alternar partículas', back:'Atrás', p1shop:'Tienda', p2shop:'Tienda J2', menu:'Menú', easy:'Fácil 🌱', easyMedium:'Medio Fácil 🐤', medium:'Medio 🐔', hard:'Difícil ⚠️', mpMedium:'Multijugador Medio', mpHard:'Multijugador Difícil', language:'Idioma', level:'Nivel', touch:'Controles táctiles:', toggleTouch:'Alternar táctil' },
+    fr:{ title:'Forêt Gooblet 3D', subtitle:'Mignonnes aventures en forêt 🌿', settings:'Paramètres ⚙️', music:'Musique :', particles:'Particules :', fullscreen:'Plein écran', fullscreenButton:'Basculer plein écran', toggleMusic:'Activer musique', toggleParticles:'Activer particules', back:'Retour', p1shop:'Boutique', p2shop:'Boutique J2', menu:'Menu', easy:'Facile 🌱', easyMedium:'Moyen Facile 🐤', medium:'Moyen 🐔', hard:'Difficile ⚠️', mpMedium:'Multijoueur Moyen', mpHard:'Multijoueur Difficile', language:'Langue', level:'Niveau', touch:'Contrôles tactiles :', toggleTouch:'Basculer tactile' },
+    jp:{ title:'グーブレットの森 3D', subtitle:'かわいい森の冒険 🌿', settings:'設定 ⚙️', music:'音楽:', particles:'パーティクル:', fullscreen:'フルスクリーン', fullscreenButton:'フルスクリーン切替', toggleMusic:'音楽を切替', toggleParticles:'パーティクル切替', back:'戻る', p1shop:'ショップ', p2shop:'P2ショップ', menu:'メニュー', easy:'かんたん 🌱', easyMedium:'かんたんふつう 🐤', medium:'ふつう 🐔', hard:'むずかしい ⚠️', mpMedium:'マルチプレイヤー 普通', mpHard:'マルチプレイヤー 難しい', language:'言語', level:'レベル', touch:'タッチコントロール:', toggleTouch:'タッチ切替' }
 };
 
 function setLanguage(lang){
@@ -590,12 +673,10 @@ function create3DTree(x, z, theme) {
 function rebuildEnvironment() {
     const theme = getTheme();
     
-    // Set Sky/Background Canvas clear Color
     renderer.setClearColor(theme.skyBottom, 1);
     scene.background = new THREE.Color(theme.skyBottom);
     groundMat.color.setHex(theme.ground);
 
-    // Clear old elements
     trees3D.forEach(t => scene.remove(t));
     trees3D = [];
     platforms3D.forEach(p => scene.remove(p));
@@ -612,25 +693,21 @@ function rebuildEnvironment() {
         groundMesh.position.set(arenaWidth/2, -10, arenaHeight/2);
         groundMesh.scale.set(1, 1, 1);
         
-        // Spawn pretty peripheral decoration trees
         for(let x = 50; x < arenaWidth; x += 160){
             create3DTree(x, -40, theme);
             create3DTree(x + 40, arenaHeight + 40, theme);
         }
-        // Reposition jump button out of view in top down modes if touch is enabled
         document.getElementById("btnJump").style.display = "none";
     } else {
-        // Platformer sizing modifications
         groundMesh.position.set(arenaWidth/2, -500, arenaHeight/2); 
         if(touchControlsEnabled && gameStarted) document.getElementById("btnJump").style.display = "flex";
     }
 }
 
-// --- CREATOR FUNCTIONS FOR INDIE CHARACTER MODELS ---
+// --- CREATOR FUNCTIONS FOR MODELS ---
 function create3DGooblet(colorHex) {
     const group = new THREE.Group();
     
-    // Body Shape
     const bodyGeo = new THREE.SphereGeometry(21, 16, 16);
     const bodyMat = new THREE.MeshToonMaterial({ color: colorHex });
     const body = new THREE.Mesh(bodyGeo, bodyMat);
@@ -639,20 +716,17 @@ function create3DGooblet(colorHex) {
     group.add(body);
     group.userData = { bodyMesh: body, baseColor: colorHex };
 
-    // Left Ear Horn
     const earGeo = new THREE.ConeGeometry(6, 18, 4);
     const earL = new THREE.Mesh(earGeo, bodyMat);
     earL.position.set(-12, 36, 0);
     earL.rotation.z = 0.3;
     group.add(earL);
 
-    // Right Ear Horn
     const earR = earL.clone();
     earR.position.x = 12;
     earR.rotation.z = -0.3;
     group.add(earR);
 
-    // Black Shiny Eyes
     const eyeMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
     const eyeGeo = new THREE.SphereGeometry(3, 8, 8);
     
@@ -664,7 +738,6 @@ function create3DGooblet(colorHex) {
     eyeR.position.x = 8;
     group.add(eyeR);
 
-    // Cheerful Little Feet
     const footGeo = new THREE.BoxGeometry(8, 6, 12);
     const footMat = new THREE.MeshToonMaterial({ color: 0x333333 });
     
@@ -676,7 +749,6 @@ function create3DGooblet(colorHex) {
     footR.position.x = 10;
     group.add(footR);
 
-    // Dynamic Force Field Shield Aura (Initially Hidden)
     const shieldGeo = new THREE.SphereGeometry(32, 16, 16);
     const shieldMat = new THREE.MeshBasicMaterial({ color: 0x00ffcc, transparent: true, opacity: 0.35, wireframe: true });
     const shield = new THREE.Mesh(shieldGeo, shieldMat);
@@ -699,14 +771,12 @@ function create3DChicken() {
     body.castShadow = true;
     group.add(body);
 
-    // Comb
     const combGeo = new THREE.BoxGeometry(6, 12, 16);
     const combMat = new THREE.MeshToonMaterial({ color: 0xff3333 });
     const comb = new THREE.Mesh(combGeo, combMat);
     comb.position.set(0, 38, 2);
     group.add(comb);
 
-    // Beak
     const beakGeo = new THREE.ConeGeometry(5, 12, 4);
     const beakMat = new THREE.MeshToonMaterial({ color: 0xffa500 });
     const beak = new THREE.Mesh(beakGeo, beakMat);
@@ -714,7 +784,6 @@ function create3DChicken() {
     beak.rotation.x = Math.PI / 2;
     group.add(beak);
 
-    // Dark Aggressive Eyes
     const eyeMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
     const eyeGeo = new THREE.SphereGeometry(3, 8, 8);
     const eyeL = new THREE.Mesh(eyeGeo, eyeMat);
@@ -733,8 +802,8 @@ let keys = {};
 addEventListener("keydown", e => { keys[e.key.toLowerCase()] = true; });
 addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; });
 
-let player = { x:200, y:400, z:200, vy:0, size:42, color:"#9cff8f", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null, magnetTimer:0, doubleCoinsTimer:0, forceFieldTimer:0 };
-let player2 = { x:500, y:400, z:250, vy:0, size:42, color:"#7fd8ff", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null, magnetTimer:0, doubleCoinsTimer:0, forceFieldTimer:0 };
+let player = { name: "Player 1", id: "local_p1", x:200, y:400, z:200, vy:0, size:42, color:"#9cff8f", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null, magnetTimer:0, doubleCoinsTimer:0, forceFieldTimer:0 };
+let player2 = { name: "Player 2", id: "local_p2", x:500, y:400, z:250, vy:0, size:42, color:"#7fd8ff", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null, magnetTimer:0, doubleCoinsTimer:0, forceFieldTimer:0 };
 
 let p1Grounded = false;
 let p2Grounded = false;
@@ -750,7 +819,6 @@ let fallingLeaves = [];
 let winnerText = '';
 let winnerTimer = 0;
 
-// Setup meshes
 player.mesh = create3DGooblet(0x9cff8f);
 player2.mesh = create3DGooblet(0x7fd8ff);
 chicken.mesh = create3DChicken();
@@ -777,11 +845,15 @@ function startGame(isMultiplayer, mode){
 
     shopButton1.style.display = "block";
     menuButton.style.display = "block";
-    player2.mesh.visible = multiplayer;
-
-    if(multiplayer){
-        shopButton2.style.display = "block";
-        player2Card.style.display = "block";
+    
+    if(!isOnlineMode) {
+        player2.mesh.visible = multiplayer;
+        if(multiplayer){
+            shopButton2.style.display = "block";
+        }
+    } else {
+        player2.mesh.visible = false;
+        shopButton2.style.display = "none";
     }
 
     gamePaused = false;
@@ -804,10 +876,8 @@ function resetPositionsAll() {
     player2.x = 500; player2.y = 0; player2.z = 350; player2.vy = 0;
     chicken.x = 700; chicken.y = 0; chicken.z = 500;
     
-    coins3D.forEach(c => scene.remove(c));
-    coins3D = [];
-    coins = [];
-
+    clearCoinMeshes();
+    
     powerUps3D.forEach(p => scene.remove(p));
     powerUps3D = [];
     powerUps = [];
@@ -818,6 +888,12 @@ function resetPositionsAll() {
     player2.magnetTimer = 0;
     player2.doubleCoinsTimer = 0;
     player2.forceFieldTimer = 0;
+}
+
+function clearCoinMeshes() {
+    coins3D.forEach(c => scene.remove(c));
+    coins3D = [];
+    coins = [];
 }
 
 function openSettings(){ document.getElementById("settingsScreen").style.display = "flex"; }
@@ -844,6 +920,9 @@ function toggleTouchControls(){
 }
 
 function returnToMenu(){
+    // Shutdown networking links safely
+    disconnectOnlineEngine();
+
     ui.style.display = "none";
     document.getElementById("levelDisplay").style.display = "none";
     shopButton1.style.display = "none";
@@ -853,6 +932,9 @@ function returnToMenu(){
     shop2.style.display = "none";
     player2Card.style.display = "none";
     document.getElementById("touchControls").style.display = "none";
+    document.getElementById("onlineMenuScreen").style.display = "none";
+    document.getElementById("playerNameInput").value = "";
+    document.getElementById("roomCodeInput").value = "";
     startScreen.style.display = "flex";
 
     gameStarted = false;
@@ -869,8 +951,7 @@ function returnToMenu(){
 
     keys = {};
 
-    coins3D.forEach(c => scene.remove(c));
-    coins3D = []; coins = [];
+    clearCoinMeshes();
     powerUps3D.forEach(p => scene.remove(p));
     powerUps3D = []; powerUps = [];
 
@@ -879,6 +960,8 @@ function returnToMenu(){
     currentLevel = 1;
     rebuildEnvironment();
     updateUI();
+    document.getElementById("playerNameInput").value = "";
+    document.getElementById("roomCodeInput").value = "";
 }
 
 // --- LEVEL 11, 12, & 13 3D PLATFORMER GENERATOR ENGINE ---
@@ -889,9 +972,7 @@ function setupPlatformerLevel(resetPositions = true) {
     platforms3D = [];
     hazards3D.forEach(h => scene.remove(h));
     hazards3D = [];
-    coins3D.forEach(c => scene.remove(c));
-    coins3D = [];
-    coins = [];
+    clearCoinMeshes();
     powerUps3D.forEach(p => scene.remove(p));
     powerUps3D = [];
     powerUps = [];
@@ -904,7 +985,7 @@ function setupPlatformerLevel(resetPositions = true) {
     if (resetPositions) {
         player.x = 80; player.y = 200; player.z = arenaHeight / 2; player.vy = 0; p1Grounded = false;
         player.magnetTimer = 0; player.doubleCoinsTimer = 0; player.forceFieldTimer = 0;
-        if (multiplayer) {
+        if (multiplayer && !isOnlineMode) {
             player2.x = 160; player2.y = 200; player2.z = arenaHeight / 2; player2.vy = 0; p2Grounded = false;
             player2.magnetTimer = 0; player2.doubleCoinsTimer = 0; player2.forceFieldTimer = 0;
         }
@@ -942,7 +1023,9 @@ function setupPlatformerLevel(resetPositions = true) {
         add3DPlatform(w * 0.72, 260, w * 0.12, 40);
         add3DPlatform(w * 0.88, 400, w * 0.14, 800);
         
-        for (let i = 0; i < 8; i++) spawnPlatformerCoin();
+        if(!isOnlineMode || isNetHost) {
+            for (let i = 0; i < 8; i++) spawnPlatformerCoin();
+        }
     } 
     else if (currentLevel === 12) {
         chicken.mesh.visible = false;
@@ -970,10 +1053,11 @@ function setupPlatformerLevel(resetPositions = true) {
         scene.add(hazGroup);
         hazards3D.push(hazGroup);
 
-        for (let i = 0; i < 8; i++) spawnPlatformerCoin();
+        if(!isOnlineMode || isNetHost) {
+            for (let i = 0; i < 8; i++) spawnPlatformerCoin();
+        }
     }
     else if (currentLevel === 13) {
-        // EXTRA PLATFORMER GAUNTLET LEVEL
         chicken.mesh.visible = false;
         add3DPlatform(0, 150, w * 0.16, 500);
         add3DPlatform(w * 0.20, 260, w * 0.08, 30);
@@ -983,7 +1067,6 @@ function setupPlatformerLevel(resetPositions = true) {
         add3DPlatform(w * 0.73, 360, w * 0.08, 30);
         add3DPlatform(w * 0.86, 500, w * 0.14, 900);
 
-        // Dangerous spike hazard floors across the entire mid gap
         let hazX = w * 0.16;
         let hazW = w * 0.70;
         hazards.push({ x: hazX, y: 0, w: hazW, h: 40 });
@@ -1001,7 +1084,6 @@ function setupPlatformerLevel(resetPositions = true) {
         scene.add(hazGroup);
         hazards3D.push(hazGroup);
 
-        // Ultimate Golden Trophy at the end line
         winGoal = { x: w * 0.89, y: 500, w: 60, h: 90 };
 
         const goalGroup = new THREE.Group();
@@ -1020,36 +1102,48 @@ function setupPlatformerLevel(resetPositions = true) {
         scene.add(goalGroup);
         goalMesh = goalGroup;
 
-        for (let i = 0; i < 5; i++) spawnPlatformerCoin();
+        if(!isOnlineMode || isNetHost) {
+            for (let i = 0; i < 5; i++) spawnPlatformerCoin();
+        }
     }
     
     if(touchControlsEnabled && gameStarted) {
         document.getElementById("btnJump").style.display = "flex";
     }
+    
+    if(isOnlineMode && isNetHost) {
+        dispatchWorldStateSync();
+    }
+    
     if (resetPositions) gamePaused = false;
 }
 
 function spawnCoin(){
     if(!gameStarted || gamePaused) return;
+    if(isOnlineMode && !isNetHost) return; // Only Host authoritative state spawns coins
     if(coins.length >= 10) return;
 
     if (currentLevel < 11) {
         let cx = Math.random() * (arenaWidth - 60) + 30;
         let cz = Math.random() * (arenaHeight - 60) + 30;
-        
-        coins.push({ x: cx, y: 15, z: cz, size: 24 });
-        
-        const coinGeo = new THREE.CylinderGeometry(12, 12, 4, 12);
-        const coinMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3 });
-        const cMesh = new THREE.Mesh(coinGeo, coinMat);
-        cMesh.rotation.x = Math.PI / 2;
-        cMesh.position.set(cx, 20, cz);
-        cMesh.castShadow = true;
-        scene.add(cMesh);
-        coins3D.push(cMesh);
+        injectCoinEntityIntoScene(cx, 15, cz);
     } else {
         spawnPlatformerCoin();
     }
+    
+    if(isOnlineMode && isNetHost) dispatchWorldStateSync();
+}
+
+function injectCoinEntityIntoScene(x, y, z) {
+    coins.push({ x: x, y: y, z: z, size: 24 });
+    const coinGeo = new THREE.CylinderGeometry(12, 12, 4, 12);
+    const coinMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3 });
+    const cMesh = new THREE.Mesh(coinGeo, coinMat);
+    cMesh.rotation.x = Math.PI / 2;
+    cMesh.position.set(x, y + 5, z);
+    cMesh.castShadow = true;
+    scene.add(cMesh);
+    coins3D.push(cMesh);
 }
 
 function spawnPlatformerCoin() {
@@ -1058,32 +1152,20 @@ function spawnPlatformerCoin() {
     let cx = plat.x + Math.random() * (plat.w - 30) + 15;
     let cy = plat.y + 35;
     let cz = arenaHeight / 2;
-
-    coins.push({ x: cx, y: cy, z: cz, size: 24 });
-
-    const coinGeo = new THREE.CylinderGeometry(12, 12, 4, 12);
-    const coinMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3 });
-    const cMesh = new THREE.Mesh(coinGeo, coinMat);
-    cMesh.rotation.x = Math.PI / 2;
-    cMesh.position.set(cx, cy, cz);
-    cMesh.castShadow = true;
-    scene.add(cMesh);
-    coins3D.push(cMesh);
+    injectCoinEntityIntoScene(cx, cy, cz);
 }
 
-// --- POWER UP SPARK SPONSOR ENGINE ---
 function spawnPowerUp() {
     if(!gameStarted || gamePaused) return;
+    if(isOnlineMode && !isNetHost) return; 
     if(powerUps.length >= 2) return; 
 
-    // Weighted selection pool for power ups
     let rand = Math.random();
     let type = 'magnet';
     if (rand > 0.66) type = 'double';
     else if (rand > 0.33) type = 'forcefield';
 
     let cx, cy, cz;
-
     if (currentLevel < 11) {
         cx = Math.random() * (arenaWidth - 60) + 30;
         cy = 15;
@@ -1096,9 +1178,13 @@ function spawnPowerUp() {
         cz = arenaHeight / 2;
     }
 
+    injectPowerUpEntityIntoScene(cx, cy, cz, type);
+    if(isOnlineMode && isNetHost) dispatchWorldStateSync();
+}
+
+function injectPowerUpEntityIntoScene(cx, cy, cz, type) {
     powerUps.push({ x: cx, y: cy, z: cz, type: type, size: 24 });
 
-    // Distinctive 3D base mesh configurations
     let geo = new THREE.SphereGeometry(12, 12, 12);
     let matColor = type === 'magnet' ? 0x00d2ff : (type === 'double' ? 0xff00ff : 0x00ffcc);
     let mat = new THREE.MeshStandardMaterial({ color: matColor, roughness: 0.2, metalness: 0.6 });
@@ -1142,55 +1228,68 @@ function collectCoins(p){
         let dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
 
         if(dist < (p.size/2 + c.size/2)) {
-            if (particlesEnabled) {
-                for(let j=0; j<8; j++) {
-                    const pGeo = new THREE.SphereGeometry(2, 4, 4);
-                    const pMat = new THREE.MeshBasicMaterial({ color: 0xffea00 });
-                    const pMesh = new THREE.Mesh(pGeo, pMat);
-                    pMesh.position.set(c.x, c.y, c.z);
-                    scene.add(pMesh);
-                    walkParticles.push({
-                        mesh: pMesh,
-                        vx: (Math.random() - 0.5) * 6,
-                        vy: (Math.random() - 0.5) * 6,
-                        vz: (Math.random() - 0.5) * 6,
-                        life: 25
-                    });
-                }
+            // If online Client node, dispatch interaction packet request to Host authority instead of local manipulation
+            if(isOnlineMode && !isNetHost) {
+                targetHostConnection.send({ type: "claimCoinRequest", coinIndex: i });
+                continue;
             }
 
-            scene.remove(coins3D[i]);
-            coins3D.splice(i, 1);
-            coins.splice(i, 1);
-            
-            // Dynamic evaluation matching multiplier bonuses
-            let gain = (p.doubleCoinsTimer > 0) ? 2 : 1;
-            p.coins += gain;
-            coinsCollectedThisLevel += gain;
-            
-            if(coinsCollectedThisLevel >= coinsNeededForNextLevel){
-                if(currentLevel === 13){
-                    // Final platformer gauntlet is explicitly won via reaching the golden trophy instead
-                    updateUI();
-                    return;
-                }
-
-                currentLevel++;
-                coinsCollectedThisLevel = 0;
-                coinsNeededForNextLevel = 10 + (currentLevel - 1) * 5;
-                levelUpTimer = 90; 
-                
-                rebuildEnvironment();
-                if (currentLevel >= 11) {
-                    setupPlatformerLevel(true);
-                } else {
-                    resetPositionsAll();
-                }
-                return; 
-            }
-            updateUI();
+            executeCoinPickupSequence(i, p);
+            return;
         }
     }
+}
+
+function executeCoinPickupSequence(index, parsingPlayer) {
+    if(index >= coins.length) return;
+    let c = coins[index];
+
+    if (particlesEnabled) {
+        for(let j=0; j<8; j++) {
+            const pGeo = new THREE.SphereGeometry(2, 4, 4);
+            const pMat = new THREE.MeshBasicMaterial({ color: 0xffea00 });
+            const pMesh = new THREE.Mesh(pGeo, pMat);
+            pMesh.position.set(c.x, c.y, c.z);
+            scene.add(pMesh);
+            walkParticles.push({
+                mesh: pMesh,
+                vx: (Math.random() - 0.5) * 6,
+                vy: (Math.random() - 0.5) * 6,
+                vz: (Math.random() - 0.5) * 6,
+                life: 25
+            });
+        }
+    }
+
+    scene.remove(coins3D[index]);
+    coins3D.splice(index, 1);
+    coins.splice(index, 1);
+    
+    let gain = (parsingPlayer.doubleCoinsTimer > 0) ? 2 : 1;
+    parsingPlayer.coins += gain;
+    coinsCollectedThisLevel += gain;
+    
+    if(coinsCollectedThisLevel >= coinsNeededForNextLevel){
+        if(currentLevel === 13){
+            triggerGlobalVictorySequence(parsingPlayer.name + ' Beat the Gauntlet! 🎉');
+            return;
+        }
+
+        currentLevel++;
+        coinsCollectedThisLevel = 0;
+        coinsNeededForNextLevel = 10 + (currentLevel - 1) * 5;
+        levelUpTimer = 90; 
+        
+        rebuildEnvironment();
+        if (currentLevel >= 11) {
+            setupPlatformerLevel(true);
+        } else {
+            resetPositionsAll();
+        }
+    }
+    
+    updateUI();
+    if(isOnlineMode && isNetHost) dispatchWorldStateSync();
 }
 
 function collectPowerUps(p) {
@@ -1202,38 +1301,54 @@ function collectPowerUps(p) {
         let dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
 
         if(dist < (p.size/2 + pu.size/2)) {
-            if(pu.type === 'magnet') p.magnetTimer = 600; 
-            if(pu.type === 'double') p.doubleCoinsTimer = 600;
-            if(pu.type === 'forcefield') p.forceFieldTimer = 600; // 10 seconds protection shield
-
-            if (particlesEnabled) {
-                let pColor = pu.type === 'magnet' ? 0x00d2ff : (pu.type === 'double' ? 0xff00ff : 0x00ffcc);
-                for(let j=0; j<12; j++) {
-                    const pGeo = new THREE.SphereGeometry(2.5, 4, 4);
-                    const pMat = new THREE.MeshBasicMaterial({ color: pColor });
-                    const pMesh = new THREE.Mesh(pGeo, pMat);
-                    pMesh.position.set(pu.x, pu.y, pu.z);
-                    scene.add(pMesh);
-                    walkParticles.push({
-                        mesh: pMesh,
-                        vx: (Math.random() - 0.5) * 6,
-                        vy: (Math.random() - 0.5) * 6,
-                        vz: (Math.random() - 0.5) * 6,
-                        life: 25
-                    });
-                }
+            if(isOnlineMode && !isNetHost) {
+                targetHostConnection.send({ type: "claimPowerUpRequest", puIndex: i });
+                continue;
             }
-
-            scene.remove(powerUps3D[i]);
-            powerUps3D.splice(i, 1);
-            powerUps.splice(i, 1);
+            executePowerUpPickupSequence(i, p);
         }
     }
 }
 
+function executePowerUpPickupSequence(index, parsingPlayer) {
+    if(index >= powerUps.length) return;
+    let pu = powerUps[index];
+
+    if(pu.type === 'magnet') parsingPlayer.magnetTimer = 600; 
+    if(pu.type === 'double') parsingPlayer.doubleCoinsTimer = 600;
+    if(pu.type === 'forcefield') parsingPlayer.forceFieldTimer = 600; 
+
+    if (particlesEnabled) {
+        let pColor = pu.type === 'magnet' ? 0x00d2ff : (pu.type === 'double' ? 0xff00ff : 0x00ffcc);
+        for(let j=0; j<12; j++) {
+            const pGeo = new THREE.SphereGeometry(2.5, 4, 4);
+            const pMat = new THREE.MeshBasicMaterial({ color: pColor });
+            const pMesh = new THREE.Mesh(pGeo, pMat);
+            pMesh.position.set(pu.x, pu.y, pu.z);
+            scene.add(pMesh);
+            walkParticles.push({
+                mesh: pMesh,
+                vx: (Math.random() - 0.5) * 6,
+                vy: (Math.random() - 0.5) * 6,
+                vz: (Math.random() - 0.5) * 6,
+                life: 25
+            });
+        }
+    }
+
+    scene.remove(powerUps3D[index]);
+    powerUps3D.splice(index, 1);
+    powerUps.splice(index, 1);
+
+    if(isOnlineMode && isNetHost) dispatchWorldStateSync();
+}
+
 function applyMagnets() {
     let pList = [player];
-    if(multiplayer) pList.push(player2);
+    if(multiplayer && !isOnlineMode) pList.push(player2);
+    if(isOnlineMode) {
+        Object.keys(remotePlayers).forEach(id => { pList.push(remotePlayers[id]); });
+    }
 
     for(let p of pList) {
         if(p.magnetTimer > 0) {
@@ -1249,7 +1364,7 @@ function applyMagnets() {
                     c.x += (dx / dist) * pullFactor;
                     c.y += (dy / dist) * pullFactor;
                     if(currentLevel < 11) c.z += (dz / dist) * pullFactor;
-                    coins3D[i].position.set(c.x, c.y + (currentLevel < 11 ? 5 : 0), c.z);
+                    if(coins3D[i]) coins3D[i].position.set(c.x, c.y + (currentLevel < 11 ? 5 : 0), c.z);
                 }
             }
         }
@@ -1262,9 +1377,8 @@ function checkHazardsAndGoals(p, isP2) {
     for (let haz of hazards) {
         if (p.x > haz.x && p.x < haz.x + haz.w && p.y > haz.y && p.y < haz.y + haz.h + 20) {
             if (p.forceFieldTimer > 0) {
-                // Shield bounce mechanic saves player from falling into spikes
                 p.vy = 12;
-                p.forceFieldTimer = Math.max(0, p.forceFieldTimer - 90); // Small shield penalty deduction
+                p.forceFieldTimer = Math.max(0, p.forceFieldTimer - 90); 
             } else {
                 resetPlatformerPosition(p);
             }
@@ -1273,10 +1387,15 @@ function checkHazardsAndGoals(p, isP2) {
     }
 
     if (currentLevel === 13 && p.x > winGoal.x && p.x < winGoal.x + winGoal.w && p.y > winGoal.y && p.y < winGoal.y + winGoal.h) {
-        gamePaused = true;
-        showWinScreen(multiplayer 
-            ? (isP2 ? 'PLAYER 2 BEAT THE GAUNTLET! 🎉' : 'PLAYER 1 BEAT THE GAUNTLET! 🎉')
-            : 'YOU BEAT THE 13-LEVEL GAUNTLET! YOU WIN! 🎉');
+        triggerGlobalVictorySequence(p.name + ' Beat the Gauntlet! 🎉');
+    }
+}
+
+function triggerGlobalVictorySequence(winMessageText) {
+    gamePaused = true;
+    showWinScreen(winMessageText);
+    if(isOnlineMode && isNetHost) {
+        broadcastToNetwork({ type: "victoryBroadcast", text: winMessageText });
     }
 }
 
@@ -1300,17 +1419,15 @@ function showWinScreen(text) {
 function update(){
     if(!gameStarted || gamePaused || winnerTimer > 0) return;
 
-    // Power-up duration processing ticker clocks
     if(player.magnetTimer > 0) player.magnetTimer--;
     if(player.doubleCoinsTimer > 0) player.doubleCoinsTimer--;
     if(player.forceFieldTimer > 0) player.forceFieldTimer--;
     
-    // Toggle 3D mesh shield visible nodes dynamically
     if(player.mesh && player.mesh.userData.shieldMesh) {
         player.mesh.userData.shieldMesh.visible = (player.forceFieldTimer > 0);
     }
 
-    if(multiplayer) {
+    if(multiplayer && !isOnlineMode) {
         if(player2.magnetTimer > 0) player2.magnetTimer--;
         if(player2.doubleCoinsTimer > 0) player2.doubleCoinsTimer--;
         if(player2.forceFieldTimer > 0) player2.forceFieldTimer--;
@@ -1319,29 +1436,24 @@ function update(){
         }
     }
 
+    // Tick process remote shields
+    if(isOnlineMode) {
+        Object.keys(remotePlayers).forEach(id => {
+            let rp = remotePlayers[id];
+            if(rp.forceFieldTimer > 0) rp.forceFieldTimer--;
+            if(rp.mesh && rp.mesh.userData.shieldMesh) {
+                rp.mesh.userData.shieldMesh.visible = (rp.forceFieldTimer > 0);
+            }
+        });
+    }
+
     applyMagnets();
     collectPowerUps(player);
-    if(multiplayer) collectPowerUps(player2);
-
-    // Live active display tag text updates
-    let p1Txt = "";
-    if(player.magnetTimer > 0) p1Txt += `🧲 Magnet: ${Math.ceil(player.magnetTimer/60)}s `;
-    if(player.doubleCoinsTimer > 0) p1Txt += `✨ 2x Coins: ${Math.ceil(player.doubleCoinsTimer/60)}s `;
-    if(player.forceFieldTimer > 0) p1Txt += `🛡️ Shield: ${Math.ceil(player.forceFieldTimer/60)}s`;
-    document.getElementById("p1PowerUps").innerHTML = p1Txt;
-
-    let p2Txt = "";
-    if(multiplayer) {
-        if(player2.magnetTimer > 0) p2Txt += `🧲 Magnet: ${Math.ceil(player2.magnetTimer/60)}s `;
-        if(player2.doubleCoinsTimer > 0) p2Txt += `✨ 2x Coins: ${Math.ceil(player2.doubleCoinsTimer/60)}s `;
-        if(player2.forceFieldTimer > 0) p2Txt += `🛡️ Shield: ${Math.ceil(player2.forceFieldTimer/60)}s`;
-        document.getElementById("p2PowerUps").innerHTML = p2Txt;
-    }
+    if(multiplayer && !isOnlineMode) collectPowerUps(player2);
 
     if (currentLevel < 11) {
         chicken.mesh.visible = chickenEnabled;
         
-        // P1 Controls (WASD)
         let p1Moving = false;
         if(keys["w"]) { player.z -= player.speed; p1Moving = true; player.mesh.rotation.y = Math.PI; }
         if(keys["s"]) { player.z += player.speed; p1Moving = true; player.mesh.rotation.y = 0; }
@@ -1359,8 +1471,7 @@ function update(){
         player.mesh.position.set(player.x, player.mesh.position.y, player.z);
         collectCoins(player);
 
-        // P2 Controls (Arrows)
-        if(multiplayer) {
+        if(multiplayer && !isOnlineMode) {
             let p2Moving = false;
             if(keys["arrowup"]) { player2.z -= player2.speed; p2Moving = true; player2.mesh.rotation.y = Math.PI; }
             if(keys["arrowdown"]) { player2.z += player2.speed; p2Moving = true; player2.mesh.rotation.y = 0; }
@@ -1379,36 +1490,45 @@ function update(){
             collectCoins(player2);
         }
 
-        // Hostile Chicken 3D AI Chase Script
+        // Hostile Chicken AI Processing System
         if(chickenEnabled){
-            let target = player;
-            if(multiplayer){
-                let d1 = Math.hypot(chicken.x - player.x, chicken.z - player.z);
-                let d2 = Math.hypot(chicken.x - player2.x, chicken.z - player2.z);
-                target = d1 < d2 ? player : player2;
-            }
+            if(!isOnlineMode || isNetHost) {
+                let target = player;
+                let shortestDist = Math.hypot(chicken.x - player.x, chicken.z - player.z);
 
-            let angle = Math.atan2(target.z - chicken.z, target.x - chicken.x);
-            let currentChickenSpeed = chickenSpeed + (currentLevel - 1) * 0.25;
-            if(difficulty === 'hard') {
-                currentChickenSpeed = Math.min(player.speed * 0.85 + (currentLevel - 1) * 0.3, 7.5);
-            }
+                if(multiplayer && !isOnlineMode) {
+                    let d2 = Math.hypot(chicken.x - player2.x, chicken.z - player2.z);
+                    if(d2 < shortestDist) { target = player2; shortestDist = d2; }
+                }
+                
+                if(isOnlineMode) {
+                    Object.keys(remotePlayers).forEach(id => {
+                        let rp = remotePlayers[id];
+                        let dRp = Math.hypot(chicken.x - rp.x, chicken.z - rp.z);
+                        if(dRp < shortestDist) { target = rp; shortestDist = dRp; }
+                    });
+                }
 
-            chicken.x += Math.cos(angle) * currentChickenSpeed;
-            chicken.z += Math.sin(angle) * currentChickenSpeed;
-            chicken.mesh.position.set(chicken.x, Math.abs(Math.sin(performance.now() * 0.01)) * 6, chicken.z);
-            chicken.mesh.rotation.y = -angle + Math.PI / 2;
+                let angle = Math.atan2(target.z - chicken.z, target.x - chicken.x);
+                let currentChickenSpeed = chickenSpeed + (currentLevel - 1) * 0.25;
+                if(difficulty === 'hard') {
+                    currentChickenSpeed = Math.min(player.speed * 0.85 + (currentLevel - 1) * 0.3, 7.5);
+                }
 
-            let chaseDist = Math.hypot(chicken.x - target.x, chicken.z - target.z);
-            if(chaseDist < 35) {
-                if(target.forceFieldTimer > 0) {
-                    // Shield impact reflects the chicken backward
-                    chicken.x -= Math.cos(angle) * 150;
-                    chicken.z -= Math.sin(angle) * 150;
-                    target.forceFieldTimer = Math.max(0, target.forceFieldTimer - 120); // Discharges shield on impact
-                } else {
-                    alert('The chicken caught you!');
-                    returnToMenu();
+                chicken.x += Math.cos(angle) * currentChickenSpeed;
+                chicken.z += Math.sin(angle) * currentChickenSpeed;
+                chicken.mesh.position.set(chicken.x, Math.abs(Math.sin(performance.now() * 0.01)) * 6, chicken.z);
+                chicken.mesh.rotation.y = -angle + Math.PI / 2;
+
+                if(shortestDist < 35) {
+                    if(target.forceFieldTimer > 0) {
+                        chicken.x -= Math.cos(angle) * 150;
+                        chicken.z -= Math.sin(angle) * 150;
+                        target.forceFieldTimer = Math.max(0, target.forceFieldTimer - 120);
+                        if(isOnlineMode) dispatchWorldStateSync();
+                    } else {
+                        triggerGlobalDefeatSequence(target.name);
+                    }
                 }
             }
         }
@@ -1417,12 +1537,27 @@ function update(){
         collectCoins(player);
         checkHazardsAndGoals(player, false);
 
-        if(multiplayer) {
+        if(multiplayer && !isOnlineMode) {
             processPlatformerPhysics(player2, "arrowleft", "arrowright", "arrowup", true);
             collectCoins(player2);
             checkHazardsAndGoals(player2, true);
         }
     }
+
+    // Continuous Frame Sync Dispatchers
+    if(isOnlineMode) {
+        dispatchPlayerTransformPacket();
+    }
+}
+
+function triggerGlobalDefeatSequence(killedPlayerName) {
+    gamePaused = true;
+    let textStr = `The chicken caught ${killedPlayerName}!`;
+    alert(textStr);
+    if(isOnlineMode && isNetHost) {
+        broadcastToNetwork({ type: "defeatBroadcast", text: textStr });
+    }
+    returnToMenu();
 }
 
 function processPlatformerPhysics(p, leftKey, rightKey, jumpKey, isP2) {
@@ -1527,11 +1662,10 @@ function renderLoop(){
     update();
     updateParticles();
 
-    coins3D.forEach(cMesh => { cMesh.rotation.z += 0.04; });
-    powerUps3D.forEach(puMesh => { puMesh.rotation.y += 0.05; puMesh.rotation.x += 0.02; });
+    coins3D.forEach(cMesh => { if(cMesh) cMesh.rotation.z += 0.04; });
+    powerUps3D.forEach(puMesh => { if(puMesh) { puMesh.rotation.y += 0.05; puMesh.rotation.x += 0.02; } });
     if(goalMesh) goalMesh.rotation.y += 0.02;
 
-    // Spin active forcefield visual wireframe lines
     if(player.mesh && player.mesh.userData.shieldMesh.visible) {
         player.mesh.userData.shieldMesh.rotation.y += 0.02;
         player.mesh.userData.shieldMesh.rotation.x += 0.01;
@@ -1541,22 +1675,25 @@ function renderLoop(){
         player2.mesh.userData.shieldMesh.rotation.x += 0.01;
     }
 
+    // Spin active remote forcefields
+    if(isOnlineMode) {
+        Object.keys(remotePlayers).forEach(id => {
+            let rp = remotePlayers[id];
+            if(rp.mesh && rp.mesh.userData.shieldMesh && rp.mesh.userData.shieldMesh.visible) {
+                rp.mesh.userData.shieldMesh.rotation.y += 0.02;
+                rp.mesh.userData.shieldMesh.rotation.x += 0.01;
+            }
+        });
+    }
+
     if (currentLevel < 11) {
         let targetX = player.x;
         let targetZ = player.z;
-        if(multiplayer) {
-            targetX = (player.x + player2.x) / 2;
-            targetZ = (player.z + player2.z) / 2;
-        }
         camera.position.set(targetX, 580, targetZ + 360);
         camera.lookAt(targetX, 0, targetZ);
     } else {
         let targetX = player.x;
         let targetY = player.y + 100;
-        if(multiplayer) {
-            targetX = (player.x + player2.x) / 2;
-            targetY = ((player.y + player2.y) / 2) + 100;
-        }
         camera.position.set(targetX, targetY + 20, (arenaHeight / 2) + 520);
         camera.lookAt(targetX, targetY - 40, arenaHeight / 2);
     }
@@ -1568,6 +1705,29 @@ function renderLoop(){
 renderLoop();
 
 // --- UPGRADE SHOP ACTION IMPLEMENTATIONS ---
+function triggerLocalSpeedUpgrade() {
+    let p = player;
+    if(p.coins >= p.speedCost){
+        p.coins -= p.speedCost;
+        p.speedLevel++;
+        p.speed += 0.9;
+        p.speedCost = Math.floor(p.speedCost * 1.5);
+        updateUI();
+    }
+}
+
+function triggerLocalSkinUpgrade(colorHex, cost) {
+    let p = player;
+    if(p.coins >= cost){
+        p.coins -= cost;
+        p.color = colorHex;
+        if(p.mesh && p.mesh.userData.bodyMesh) {
+            p.mesh.userData.bodyMesh.material.color.set(colorHex);
+        }
+        updateUI();
+    }
+}
+
 function buySpeed(p){
     if(p.coins >= p.speedCost){
         p.coins -= p.speedCost;
@@ -1593,19 +1753,77 @@ function buyWin(p){
     if(p.coins >= 100){
         p.coins -= 100;
         const playerName = prompt("Enter your name for the leaderboard:") || "Player";
-        console.log(`Leaderboard updated: ${playerName} achieved ${p.coins + 100} points!`);
-        showWinScreen(multiplayer ? (p === player ? 'PLAYER 1 WINS! 🎉' : 'PLAYER 2 WINS! 🎉') : 'YOU WIN! 🎉');
+        triggerGlobalVictorySequence(`${playerName} achieved victory via shop! 🎉`);
     }
 }
 
 function updateUI(){
-    document.getElementById("coinCount1").textContent = player.coins;
-    document.getElementById("speedLevel1").textContent = player.speedLevel;
-    document.getElementById("coinCount2").textContent = player2.coins;
-    document.getElementById("speedLevel2").textContent = player2.speedLevel;
+    const dynamicContainer = document.getElementById("dynamicCardContainer");
+    if(!dynamicContainer) return;
+
+    // Clear and completely re-render player cards to adapt seamlessly to 1, 2, or 20 online entities
+    dynamicContainer.innerHTML = "";
+
+    // Append Local Player Card
+    dynamicContainer.appendChild(createPlayerUICardElement(
+        localPlayerUsername + " (You)", 
+        player.coins, 
+        player.speedLevel, 
+        player.magnetTimer, 
+        player.doubleCoinsTimer, 
+        player.forceFieldTimer,
+        "#d63031"
+    ));
+
+    // Append Local Offline MP Split Card if active
+    if(multiplayer && !isOnlineMode) {
+        dynamicContainer.appendChild(createPlayerUICardElement(
+            "Player 2", 
+            player2.coins, 
+            player2.speedLevel, 
+            player2.magnetTimer, 
+            player2.doubleCoinsTimer, 
+            player2.forceFieldTimer,
+            "#0984e3"
+        ));
+    }
+
+    // Append Dynamic Real-time Remote Network Node Cards
+    if(isOnlineMode) {
+        Object.keys(remotePlayers).forEach(id => {
+            let rp = remotePlayers[id];
+            dynamicContainer.appendChild(createPlayerUICardElement(
+                rp.name, 
+                rp.coins, 
+                rp.speedLevel, 
+                rp.magnetTimer, 
+                rp.doubleCoinsTimer, 
+                rp.forceFieldTimer,
+                "#00b894"
+            ));
+        });
+    }
 
     const prefix = translations[currentLanguage]?.level || "Level";
     document.getElementById("levelDisplay").textContent = `${prefix} ${currentLevel} (${coinsCollectedThisLevel}/${coinsNeededForNextLevel} 🪙)`;
+}
+
+function createPlayerUICardElement(name, coins, speedLvl, magT, dblT, ffT, colorHex) {
+    const card = document.createElement("div");
+    card.className = "playerCard";
+    
+    let powerUpsHtml = "";
+    if(magT > 0) powerUpsHtml += `🧲 Magnet: ${Math.ceil(magT/60)}s `;
+    if(dblT > 0) powerUpsHtml += `✨ 2x: ${Math.ceil(dblT/60)}s `;
+    if(ffT > 0) powerUpsHtml += `🛡️ Shield: ${Math.ceil(ffT/60)}s`;
+
+    card.innerHTML = `
+        <div class="playerTitle">${name}</div>
+        <div class="stat">Coins: <span>${coins}</span></div>
+        <div class="stat">Speed: <span>${speedLvl}</span></div>
+        <div style="font-size:15px; margin-top:5px; font-weight:700; color:${colorHex};">${powerUpsHtml}</div>
+    `;
+    return card;
 }
 
 window.addEventListener("resize", () => {
@@ -1614,6 +1832,486 @@ window.addEventListener("resize", () => {
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
 
+
+// ============================================================================
+//               ONLINE MULTIPLAYER ENGINE NETWORK INFRASTRUCTURE
+// ============================================================================
+
+function generateSecureShortRoomCode() {
+    // Generates a clean 6 digit numerical numeric room identity to allow boxel ease of connection matching
+    return "GB-" + Math.floor(100000 + Math.random() * 899999);
+}
+
+function initOnlineHost() {
+    const nameInput = document.getElementById("netUsername").value.trim();
+    if(nameInput) localPlayerUsername = nameInput;
+    player.name = localPlayerUsername;
+
+    const generatedCode = generateSecureShortRoomCode();
+    document.getElementById("netStatus").textContent = "Allocating peer channels...";
+
+    isOnlineMode = true;
+    isNetHost = true;
+    multiplayer = false;
+
+    // Instantiate network channel attached to custom ID string
+    peerNetworkNode = new Peer(generatedCode);
+
+    peerNetworkNode.on('open', (id) => {
+        myNetworkId = id;
+        document.getElementById("netRoomCode").value = id;
+        document.getElementById("netStatus").innerHTML = `Hosting Room! Share Code: <span style="color:#fff; font-size:18px; text-decoration:underline;">${id}</span>`;
+        
+        // Launch standard game frame loop structure locally
+        startGame(false, 'medium');
+    });
+
+    peerNetworkNode.on('connection', (conn) => {
+        networkConnections.push(conn);
+        setupConnectionDataListeners(conn);
+    });
+
+    peerNetworkNode.on('error', (err) => {
+        alert("Hosting Error: Room identification token collision or allocation fault. Type: " + err.type);
+        document.getElementById("netStatus").textContent = "Channel Fault. Try again.";
+        isOnlineMode = false;
+        isNetHost = false;
+    });
+}
+
+function initOnlineClient() {
+    const nameInput = document.getElementById("netUsername").value.trim();
+    if(nameInput) localPlayerUsername = nameInput;
+    player.name = localPlayerUsername;
+
+    const targetCode = document.getElementById("netRoomCode").value.trim().toUpperCase();
+    if(!targetCode) {
+        alert("Please input a valid generated 6 digit host target code first!");
+        return;
+    }
+
+    document.getElementById("netStatus").textContent = "Binding remote pipeline links...";
+    isOnlineMode = true;
+    isNetHost = false;
+    multiplayer = false;
+
+    peerNetworkNode = new Peer();
+
+    peerNetworkNode.on('open', (id) => {
+        myNetworkId = id;
+        document.getElementById("netStatus").textContent = "Handshaking connection packet wrappers...";
+        
+        let conn = peerNetworkNode.connect(targetCode);
+        targetHostConnection = conn;
+        setupConnectionDataListeners(conn);
+    });
+
+    peerNetworkNode.on('error', (err) => {
+        alert("Pipeline Error: Failed targeting endpoint room identifier sequence! Type: " + err.type);
+        document.getElementById("netStatus").textContent = "Handshake Terminated.";
+        isOnlineMode = false;
+    });
+}
+
+function setupConnectionDataListeners(conn) {
+    conn.on('open', () => {
+        document.getElementById("netStatus").textContent = "Synchronizing environment nodes...";
+        
+        if(!isNetHost) {
+            // Client lets Host register identity properties
+            conn.send({
+                type: "handshakeRegister",
+                id: myNetworkId,
+                name: localPlayerUsername,
+                color: player.color
+            });
+            startGame(false, 'medium');
+        }
+    });
+
+    conn.on('data', (data) => {
+        if(!data || typeof data !== 'object') return;
+        handleIncomingNetworkPackets(data, conn);
+    });
+
+    conn.on('close', () => {
+        handleNetworkDisconnection(conn);
+    });
+}
+
+function handleIncomingNetworkPackets(packet, sourceConnection) {
+    switch(packet.type) {
+        
+        case "handshakeRegister":
+            // [HOST EXCLUSIVE] Process newly attached join token
+            remotePlayers[packet.id] = {
+                id: packet.id,
+                name: packet.name,
+                x: 200, y: 0, z: 300,
+                color: packet.color,
+                mesh: create3DGooblet(packet.color),
+                coins: 0, speedLevel: 1,
+                magnetTimer: 0, doubleCoinsTimer: 0, forceFieldTimer: 0
+            };
+            document.getElementById("netStatus").textContent = `Clients bound: ${Object.keys(remotePlayers).length}`;
+            // Instantly transmit latest master matrix down state
+            dispatchWorldStateSync();
+            break;
+
+        case "transformUpdateStream":
+            // Process continuous transform updates
+            if(isNetHost) {
+                // Host handles client mutations and distributes updates
+                let rp = remotePlayers[packet.id];
+                if(rp) {
+                    rp.x = packet.x; rp.y = packet.y; rp.z = packet.z;
+                    rp.rotY = packet.rotY;
+                    rp.walk = packet.walk;
+                    if(rp.mesh) {
+                        rp.mesh.position.set(rp.x, rp.y + (currentLevel < 11 ? Math.abs(Math.sin(rp.walk)) * 8 : 0), rp.z);
+                        rp.mesh.rotation.y = rp.rotY;
+                    }
+                }
+                // Relay positional metrics matrix out to everyone else downstream
+                broadcastToNetwork({
+                    type: "transformRelay",
+                    id: packet.id,
+                    x: packet.x, y: packet.y, z: packet.z,
+                    rotY: packet.rotY, walk: packet.walk
+                });
+            }
+            break;
+
+        case "transformRelay":
+            // [CLIENT EXCLUSIVE] Update peer avatar transforms received from Host
+            if(!isNetHost) {
+                if(packet.id === myNetworkId) return;
+                let rp = remotePlayers[packet.id];
+                if(rp) {
+                    rp.x = packet.x; rp.y = packet.y; rp.z = packet.z;
+                    rp.walk = packet.walk;
+                    if(rp.mesh) {
+                        rp.mesh.position.set(rp.x, rp.y + (currentLevel < 11 ? Math.abs(Math.sin(packet.walk)) * 8 : 0), rp.z);
+                        rp.mesh.rotation.y = packet.rotY;
+                    }
+                }
+            }
+            break;
+
+        case "worldMasterSync":
+            // [CLIENT EXCLUSIVE] Accept authoritative environment geometry snapshots from Host
+            if(!isNetHost) {
+                if(currentLevel !== packet.level) {
+                    currentLevel = packet.level;
+                    rebuildEnvironment();
+                    if(currentLevel >= 11) setupPlatformerLevel(false);
+                }
+                
+                coinsCollectedThisLevel = packet.coinsCollected;
+                coinsNeededForNextLevel = packet.coinsNeeded;
+                
+                // Synchronize coin vectors
+                synchronizeClientCoinMeshes(packet.coinsArray);
+                // Synchronize power-up vectors
+                synchronizeClientPowerUpMeshes(packet.powerUpsArray);
+
+                // Update processing metrics for remote player cards
+                packet.playerStateArray.forEach(ps => {
+                    if(ps.id === myNetworkId) {
+                        player.coins = ps.coins;
+                        player.speedLevel = ps.speedLevel;
+                        return;
+                    }
+
+                    let rp = remotePlayers[ps.id];
+                    if(!rp) {
+                        remotePlayers[ps.id] = {
+                            id: ps.id, name: ps.name, x: 0, y: 0, z: 0, color: ps.color,
+                            mesh: create3DGooblet(ps.color), coins: ps.coins, speedLevel: ps.speedLevel,
+                            magnetTimer: ps.magT, doubleCoinsTimer: ps.dblT, forceFieldTimer: ps.ffT
+                        };
+                    } else {
+                        rp.coins = ps.coins;
+                        rp.speedLevel = ps.speedLevel;
+                        rp.name = ps.name;
+                        rp.magnetTimer = ps.magT;
+                        rp.doubleCoinsTimer = ps.dblT;
+                        rp.forceFieldTimer = ps.ffT;
+                        if(rp.color !== ps.color) {
+                            rp.color = ps.color;
+                            if(rp.mesh && rp.mesh.userData.bodyMesh) rp.mesh.userData.bodyMesh.material.color.set(ps.color);
+                        }
+                    }
+                });
+
+                // Clean stale/disconnected players
+                Object.keys(remotePlayers).forEach(id => {
+                    if(!packet.playerStateArray.find(ps => ps.id === id)) {
+                        if(remotePlayers[id].mesh) scene.remove(remotePlayers[id].mesh);
+                        delete remotePlayers[id];
+                    }
+                });
+
+                // Position Chicken AI mesh node
+                if(packet.chicken) {
+                    chicken.mesh.visible = packet.chicken.visible;
+                    chicken.mesh.position.set(packet.chicken.x, packet.chicken.y, packet.chicken.z);
+                    chicken.mesh.rotation.y = packet.chicken.rotY;
+                }
+                updateUI();
+            }
+            break;
+
+        case "claimCoinRequest":
+            // [HOST EXCLUSIVE] Validate coin claim interaction requests from clients
+            if(isNetHost) {
+                let interactingClient = remotePlayers[sourceConnection.peer];
+                if(interactingClient) {
+                    executeCoinPickupSequence(packet.coinIndex, interactingClient);
+                }
+            }
+            break;
+
+        case "claimPowerUpRequest":
+            // [HOST EXCLUSIVE] Validate power-up claims from clients
+            if(isNetHost) {
+                let interactingClient = remotePlayers[sourceConnection.peer];
+                if(interactingClient) {
+                    executePowerUpPickupSequence(packet.puIndex, interactingClient);
+                }
+            }
+            break;
+
+        case "shopPurchaseNotification":
+            // [HOST EXCLUSIVE] Handle shop upgrades bought by clients
+            if(isNetHost) {
+                let targetClient = remotePlayers[sourceConnection.peer];
+                if(targetClient) {
+                    if(packet.upgradeType === 'speed' && targetClient.coins >= targetClient.speedCost) {
+                        targetClient.coins -= targetClient.speedCost;
+                        targetClient.speedLevel++;
+                        targetClient.speed += 0.9;
+                        targetClient.speedCost = Math.floor(targetClient.speedCost * 1.5);
+                    } else if(packet.upgradeType === 'skin' && targetClient.coins >= packet.cost) {
+                        targetClient.coins -= packet.cost;
+                        targetClient.color = packet.colorHex;
+                        if(targetClient.mesh && targetClient.mesh.userData.bodyMesh) {
+                            targetClient.mesh.userData.bodyMesh.material.color.set(packet.colorHex);
+                        }
+                    }
+                    dispatchWorldStateSync();
+                }
+            }
+            break;
+
+        case "victoryBroadcast":
+            showWinScreen(packet.text);
+            break;
+
+        case "defeatBroadcast":
+            alert(packet.text);
+            returnToMenu();
+            break;
+    }
+}
+
+function dispatchPlayerTransformPacket() {
+    let packet = {
+        type: "transformUpdateStream",
+        id: myNetworkId,
+        x: player.x,
+        y: player.y,
+        z: player.z,
+        rotY: player.mesh.rotation.y,
+        walk: player.walk
+    };
+
+    if(isNetHost) {
+        broadcastToNetwork(packet);
+    } else if(targetHostConnection && targetHostConnection.open) {
+        targetHostConnection.send(packet);
+    }
+}
+
+function dispatchWorldStateSync() {
+    if(!isNetHost) return;
+
+    // Pack player states sequentially
+    let pStates = [{
+        id: myNetworkId, name: localPlayerUsername, coins: player.coins, speedLevel: player.speedLevel, color: player.color,
+        magT: player.magnetTimer, dblT: player.doubleCoinsTimer, ffT: player.forceFieldTimer
+    }];
+    Object.keys(remotePlayers).forEach(id => {
+        let rp = remotePlayers[id];
+        pStates.push({
+            id: rp.id, name: rp.name, coins: rp.coins, speedLevel: rp.speedLevel, color: rp.color,
+            magT: rp.magnetTimer, dblT: rp.doubleCoinsTimer, ffT: rp.forceFieldTimer
+        });
+    });
+
+    let syncPacket = {
+        type: "worldMasterSync",
+        level: currentLevel,
+        coinsCollected: coinsCollectedThisLevel,
+        coinsNeeded: coinsNeededForNextLevel,
+        coinsArray: coins,
+        powerUpsArray: powerUps,
+        playerStateArray: pStates,
+        chicken: {
+            visible: chicken.mesh.visible,
+            x: chicken.mesh.position.x,
+            y: chicken.mesh.position.y,
+            z: chicken.mesh.position.z,
+            rotY: chicken.mesh.rotation.y
+        }
+    };
+
+    broadcastToNetwork(syncPacket);
+}
+
+function broadcastToNetwork(packet) {
+    networkConnections.forEach(conn => {
+        if(conn.open) conn.send(packet);
+    });
+}
+
+function synchronizeClientCoinMeshes(serverCoins) {
+    // Purge old 3D coin representations
+    coins3D.forEach(c => scene.remove(c));
+    coins3D = [];
+    coins = [];
+
+    // Reconstruct scene architecture from the host's authoritative network positions
+    serverCoins.forEach(sc => {
+        coins.push(sc);
+        const coinGeo = new THREE.CylinderGeometry(12, 12, 4, 12);
+        const coinMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3 });
+        const cMesh = new THREE.Mesh(coinGeo, coinMat);
+        cMesh.rotation.x = Math.PI / 2;
+        cMesh.position.set(sc.x, sc.y + (currentLevel < 11 ? 5 : 0), sc.z);
+        cMesh.castShadow = true;
+        scene.add(cMesh);
+        coins3D.push(cMesh);
+    });
+}
+
+function synchronizeClientPowerUpMeshes(serverPowerUps) {
+    powerUps3D.forEach(p => scene.remove(p));
+    powerUps3D = [];
+    powerUps = [];
+
+    serverPowerUps.forEach(spu => {
+        powerUps.push(spu);
+        let geo = new THREE.SphereGeometry(12, 12, 12);
+        let matColor = spu.type === 'magnet' ? 0x00d2ff : (spu.type === 'double' ? 0xff00ff : 0x00ffcc);
+        let mat = new THREE.MeshStandardMaterial({ color: matColor, roughness: 0.2, metalness: 0.6 });
+        let mesh = new THREE.Mesh(geo, mat);
+        mesh.position.set(spu.x, spu.y + 5, spu.z);
+        scene.add(mesh);
+        powerUps3D.push(mesh);
+    });
+}
+
+function handleNetworkDisconnection(conn) {
+    if(isNetHost) {
+        let dcClientId = conn.peer;
+        if(remotePlayers[dcClientId]) {
+            if(remotePlayers[dcClientId].mesh) scene.remove(remotePlayers[dcClientId].mesh);
+            delete remotePlayers[dcClientId];
+        }
+        networkConnections = networkConnections.filter(c => c !== conn);
+        document.getElementById("netStatus").textContent = `Clients bound: ${networkConnections.length}`;
+        dispatchWorldStateSync();
+    } else {
+        alert("The host connection was terminated!");
+        returnToMenu();
+    }
+}
+
+function disconnectOnlineEngine() {
+    isOnlineMode = false;
+    isNetHost = false;
+
+    if(targetHostConnection) { targetHostConnection.close(); targetHostConnection = null; }
+    networkConnections.forEach(c => c.close());
+    networkConnections = [];
+
+    Object.keys(remotePlayers).forEach(id => {
+        if(remotePlayers[id].mesh) scene.remove(remotePlayers[id].mesh);
+    });
+    remotePlayers = {};
+
+    if(peerNetworkNode) {
+        peerNetworkNode.destroy();
+        peerNetworkNode = null;
+    }
+    document.getElementById("netStatus").textContent = "Offline System Standby";
+}
+
+// Global hook modifications intercepting upgrade events for synchronization shifts
+function triggerLocalSpeedUpgrade() {
+    if(!isOnlineMode) {
+        buySpeed(player);
+    } else {
+        if(isNetHost) {
+            buySpeed(player);
+            dispatchWorldStateSync();
+        } else {
+            targetHostConnection.send({ type: "shopPurchaseNotification", upgradeType: "speed" });
+        }
+    }
+}
+
+function triggerLocalSkinUpgrade(colorHex, cost) {
+    if(!isOnlineMode) {
+        buySkin(player, colorHex, cost);
+    } else {
+        if(isNetHost) {
+            buySkin(player, colorHex, cost);
+            dispatchWorldStateSync();
+        } else {
+            targetHostConnection.send({ type: "shopPurchaseNotification", upgradeType: "skin", colorHex: colorHex, cost: cost });
+        }
+    }
+}
+// --- ONLINE MENU CONTROLS ---
+function openOnlineMenu() {
+    document.getElementById("onlineMenuScreen").style.display = "flex";
+}
+
+function closeOnlineMenu() {
+    document.getElementById("onlineMenuScreen").style.display = "none";
+}
+
+function handleOnlineAction(action) {
+    const playerName = document.getElementById("playerNameInput").value.trim();
+    const roomCode = document.getElementById("roomCodeInput").value.trim();
+
+    if (!playerName) {
+        alert("Please enter a player name before proceeding!");
+        return;
+    }
+    if (!roomCode) {
+        alert("Please enter a valid room code!");
+        return;
+    }
+
+    // Showcase action choice simulation
+    alert(`Success! Action: [${action.toUpperCase()}] Room: ${roomCode} as User: ${playerName}`);
+    
+    // Close the popup view 
+    closeOnlineMenu();
+    
+    // Launch the game in multiplayer mode as a baseline
+    startGame(true, 'medium'); 
+    
+    /* NOTE: This is where you would hook in networking libraries 
+       (e.g., Socket.io, PeerJS, or Firebase Realtime Database) 
+       to synchronize players over the web.
+    */
+}
+// Force baseline initial component setup
+setLanguage('en');
 updateUI();
 </script>
 </body>
