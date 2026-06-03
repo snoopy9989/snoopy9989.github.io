@@ -138,8 +138,6 @@ body{
     border:4px solid #7dd86e;
     display:none;
     z-index:20;
-    text-align: center;
-    white-space: nowrap;
 }
 
 .shopButton{
@@ -305,7 +303,7 @@ body{
     <div id="gameTitle">Gooblet Forest 3D</div>
 
     <div id="subtitle">
-        <span id="subtitleText">3D v1.6.3</span>
+        <span id="subtitleText">3D v1.6.4</span>
         <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:20px;">
             <button id="easyButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy')">Easy 🌱</button>
             <button id="easyMediumButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy-medium')">Easy Medium 🐤</button>
@@ -500,10 +498,10 @@ function getTheme() {
 }
 
 const translations = {
-    en:{ title:'Gooblet Forest 3D', subtitle:' 3D v1.5', settings:'Settings ⚙️', music:'Music:', particles:'Particles:', fullscreen:'Fullscreen', fullscreenButton:'Toggle Fullscreen', toggleMusic:'Toggle Music', toggleParticles:'Toggle Particles', back:'Back', p1shop:'P1 Shop', p2shop:'P2 Shop', menu:'Menu', easy:'Easy 🌱', easyMedium:'Easy Medium 🐤', medium:'Medium 🐔', hard:'Hard ⚠️', mpMedium:'Multiplayer Medium', mpHard:'Multiplayer Hard', language:'Language', level:'Level', touch:'Touch Controls:', toggleTouch:'Toggle Touch' },
+    en:{ title:'Gooblet Forest 3D', subtitle:' 3D v1.2', settings:'Settings ⚙️', music:'Music:', particles:'Particles:', fullscreen:'Fullscreen', fullscreenButton:'Toggle Fullscreen', toggleMusic:'Toggle Music', toggleParticles:'Toggle Particles', back:'Back', p1shop:'P1 Shop', p2shop:'P2 Shop', menu:'Menu', easy:'Easy 🌱', easyMedium:'Easy Medium 🐤', medium:'Medium 🐔', hard:'Hard ⚠️', mpMedium:'Multiplayer Medium', mpHard:'Multiplayer Hard', language:'Language', level:'Level', touch:'Touch Controls:', toggleTouch:'Toggle Touch' },
     es:{ title:'Bosque Gooblet 3D', subtitle:'Aventuras lindas del bosque 🌿', settings:'Configuración ⚙️', music:'Música:', particles:'Partículas:', fullscreen:'Pantalla completa', fullscreenButton:'Cambiar pantalla completa', toggleMusic:'Alternar música', toggleParticles:'Alternar partículas', back:'Atrás', p1shop:'Tienda J1', p2shop:'Tienda J2', menu:'Menú', easy:'Fácil 🌱', easyMedium:'Medio Fácil 🐤', medium:'Medio 🐔', hard:'Difícil ⚠️', mpMedium:'Multijugador Medio', mpHard:'Multijugador Difícil', language:'Idioma', level:'Nivel', touch:'Controles táctiles:', toggleTouch:'Alternar táctil' },
     fr:{ title:'Forêt Gooblet 3D', subtitle:'Mignonnes aventures en forêt 🌿', settings:'Paramètres ⚙️', music:'Musique :', particles:'Particules :', fullscreen:'Plein écran', fullscreenButton:'Basculer plein écran', toggleMusic:'Activer musique', toggleParticles:'Activer particules', back:'Retour', p1shop:'Boutique J1', p2shop:'Boutique J2', menu:'Menu', easy:'Facile 🌱', easyMedium:'Moyen Facile 🐤', medium:'Moyen 🐔', hard:'Difficile ⚠️', mpMedium:'Multijoueur Moyen', mpHard:'Multijoueur Difficile', language:'Langue', level:'Niveau', touch:'Contrôles tactiles :', toggleTouch:'Basculer tactile' },
-    jp:{ title:'グーブレットの森 3D', subtitle:'かわいい森の冒険 🌿', settings:'設定 ⚙️', music:'音楽:', particles:'パーティクル:', fullscreen:'フルスクリーン', fullscreenButton:'フルスクリーン切替', toggleMusic:'音楽を切替', toggleParticles:'パーティクル切替', back:'戻る', p1shop:'P1ショップ', p2shop:'P2ショップ', menu:'メニュー', easy:'かんたん 🌱', easyMedium:'かんたんふつう 🐤', medium:'ふつう 🐔', hard:'むずかしい ⚠️', mpMedium:'マルチプレイヤー 普通', mpHard:'マルチプレイヤー 難しい', language:'言語', level:'レベル', touch:'タッチコントロール:', toggleTouch:'タッチ切替' }
+    jp:{ title:'グーブレットの森 3D', subtitle:'かわいい森 of 冒険 🌿', settings:'設定 ⚙️', music:'音楽:', particles:'パーティクル:', fullscreen:'フルスクリーン', fullscreenButton:'フルスクリーン切替', toggleMusic:'音楽を切替', toggleParticles:'パーティクル切替', back:'戻る', p1shop:'P1ショップ', p2shop:'P2ショップ', menu:'メニュー', easy:'かんたん 🌱', easyMedium:'かんたんふつう 🐤', medium:'ふつう 🐔', hard:'むずかしい ⚠️', mpMedium:'マルチプレイヤー 普通', mpHard:'マルチプレイヤー 難しい', language:'言語', level:'レベル', touch:'タッチコントロール:', toggleTouch:'タッチ切替' }
 };
 
 function setLanguage(lang){
@@ -609,7 +607,6 @@ function rebuildEnvironment() {
     powerUps = [];
 
     if(goalMesh) { scene.remove(goalMesh); goalMesh = null; }
-    winGoal = { x: 0, y: 0, w: 0, h: 0 };
 
     if (currentLevel < 11) {
         groundMesh.position.set(arenaWidth/2, -10, arenaHeight/2);
@@ -624,7 +621,7 @@ function rebuildEnvironment() {
         document.getElementById("btnJump").style.display = "none";
     } else {
         // Platformer sizing modifications
-        groundMesh.position.set(arenaWidth/2, -500, arenaHeight/2); 
+        groundMesh.position.set(4200 / 2, -500, arenaHeight / 2); 
         if(touchControlsEnabled && gameStarted) document.getElementById("btnJump").style.display = "flex";
     }
 }
@@ -884,7 +881,7 @@ function returnToMenu(){
     updateUI();
 }
 
-// --- LEVEL 11 - 15 3D PLATFORMER GENERATOR ENGINE ---
+// --- LEVEL 11, 12, 13, & 14 EXTENDED 3D PLATFORMER GENERATOR ENGINE ---
 function setupPlatformerLevel(resetPositions = true) {
     platforms = [];
     hazards = [];
@@ -902,7 +899,7 @@ function setupPlatformerLevel(resetPositions = true) {
     if(goalMesh) { scene.remove(goalMesh); goalMesh = null; }
 
     const theme = getTheme();
-    const w = arenaWidth;
+    const w = 4200; // Extra extended level space width length layout
     
     if (resetPositions) {
         player.x = 80; player.y = 200; player.z = arenaHeight / 2; player.vy = 0; p1Grounded = false;
@@ -937,7 +934,24 @@ function setupPlatformerLevel(resetPositions = true) {
         platforms3D.push(platGroup);
     }
 
-    function addWinGoal(gx, gy) {
+    function add3DSpikes(hx, hw, color = 0xff3838) {
+        hazards.push({ x: hx, y: 0, w: hw, h: 40 });
+
+        const hazGroup = new THREE.Group();
+        const spikeMat = new THREE.MeshToonMaterial({ color: color });
+        let totalSpikes = Math.ceil(hw / 24);
+        for(let i=0; i<totalSpikes; i++) {
+            const spikeGeo = new THREE.ConeGeometry(12, 35, 4);
+            const spike = new THREE.Mesh(spikeGeo, spikeMat);
+            spike.position.set(i * 24 + 12, 17.5, 0);
+            hazGroup.add(spike);
+        }
+        hazGroup.position.set(hx, 0, arenaHeight / 2);
+        scene.add(hazGroup);
+        hazards3D.push(hazGroup);
+    }
+
+    function createGoalMesh(gx, gy) {
         winGoal = { x: gx, y: gy, w: 60, h: 90 };
 
         const goalGroup = new THREE.Group();
@@ -952,99 +966,111 @@ function setupPlatformerLevel(resetPositions = true) {
         cup.position.y = 35;
         goalGroup.add(cup);
 
-        goalGroup.position.set(winGoal.x + 30, winGoal.y, arenaHeight / 2);
+        goalGroup.position.set(gx + 30, gy, arenaHeight / 2);
         scene.add(goalGroup);
         goalMesh = goalGroup;
     }
 
-    function addSpikes(hazX, hazW) {
-        hazards.push({ x: hazX, y: 0, w: hazW, h: 40 });
-
-        const hazGroup = new THREE.Group();
-        const spikeMat = new THREE.MeshToonMaterial({ color: 0xd63031 });
-        let totalSpikes = Math.ceil(hazW / 24);
-        for(let i=0; i<totalSpikes; i++) {
-            const spikeGeo = new THREE.ConeGeometry(12, 35, 4);
-            const spike = new THREE.Mesh(spikeGeo, spikeMat);
-            spike.position.set(i * 24 + 12, 17.5, 0);
-            hazGroup.add(spike);
-        }
-        hazGroup.position.set(hazX, 0, arenaHeight / 2);
-        scene.add(hazGroup);
-        hazards3D.push(hazGroup);
-    }
-
     if (currentLevel === 11) {
         chicken.mesh.visible = false;
-        add3DPlatform(0, 120, w * 0.25, 500); 
-        add3DPlatform(w * 0.32, 220, w * 0.15, 40);
-        add3DPlatform(w * 0.52, 340, w * 0.15, 40);
-        add3DPlatform(w * 0.72, 260, w * 0.12, 40);
-        add3DPlatform(w * 0.88, 400, w * 0.14, 800);
+        // Long structural ascent map layout chain sequence
+        add3DPlatform(0, 150, 450, 500); 
+        add3DPlatform(550, 230, 250, 40);
+        add3DPlatform(900, 310, 250, 40);
+        add3DPlatform(1250, 380, 200, 40);
+        add3DPlatform(1550, 290, 250, 40);
+        add3DPlatform(1900, 350, 200, 40);
+        add3DPlatform(2200, 430, 250, 40);
+        add3DPlatform(2550, 360, 200, 40);
+        add3DPlatform(2850, 280, 250, 40);
+        add3DPlatform(3200, 370, 200, 40);
+        add3DPlatform(3500, 450, 250, 40);
+        add3DPlatform(3850, 500, 450, 900);
         
-        addWinGoal(w * 0.90, 400);
-        for (let i = 0; i < 6; i++) spawnPlatformerCoin();
+        createGoalMesh(4000, 500);
+
+        for (let i = 0; i < 15; i++) spawnPlatformerCoin();
     } 
     else if (currentLevel === 12) {
         chicken.mesh.visible = false;
-        add3DPlatform(0, 150, w * 0.22, 500);
-        add3DPlatform(w * 0.26, 240, w * 0.10, 30);
-        add3DPlatform(w * 0.40, 350, w * 0.12, 30);
-        add3DPlatform(w * 0.57, 440, w * 0.14, 30);
-        add3DPlatform(w * 0.75, 520, w * 0.12, 30);
-        add3DPlatform(w * 0.88, 620, w * 0.15, 900);
+        // Long hazardous gap map featuring distributed check platform jumps
+        add3DPlatform(0, 150, 400, 500);
+        add3DPlatform(500, 240, 180, 30);
+        add3DPlatform(780, 330, 180, 30);
+        add3DPlatform(1060, 420, 180, 30);
+        add3DPlatform(1340, 320, 180, 30);
+        add3DPlatform(1620, 240, 200, 30);
+        add3DPlatform(1920, 350, 180, 30);
+        add3DPlatform(2200, 440, 180, 30);
+        add3DPlatform(2480, 520, 180, 30);
+        add3DPlatform(2760, 420, 200, 30);
+        add3DPlatform(3060, 320, 180, 30);
+        add3DPlatform(3340, 430, 180, 30);
+        add3DPlatform(3620, 520, 180, 30);
+        add3DPlatform(3880, 620, 400, 900);
 
-        addSpikes(w * 0.22, w * 0.66);
-        addWinGoal(w * 0.90, 620);
+        add3DSpikes(400, 3480, 0xff3838);
 
-        for (let i = 0; i < 6; i++) spawnPlatformerCoin();
+        createGoalMesh(4050, 620);
+
+        for (let i = 0; i < 15; i++) spawnPlatformerCoin();
     }
     else if (currentLevel === 13) {
         chicken.mesh.visible = false;
-        add3DPlatform(0, 150, w * 0.16, 500);
-        add3DPlatform(w * 0.20, 260, w * 0.08, 30);
-        add3DPlatform(w * 0.32, 220, w * 0.08, 30);
-        add3DPlatform(w * 0.44, 340, w * 0.08, 30);
-        add3DPlatform(w * 0.56, 450, w * 0.12, 30);
-        add3DPlatform(w * 0.73, 360, w * 0.08, 30);
-        add3DPlatform(w * 0.86, 500, w * 0.14, 900);
+        // Precision distance runner spanning across deep toxic spike drops
+        add3DPlatform(0, 150, 350, 500);
+        add3DPlatform(450, 260, 120, 30);
+        add3DPlatform(670, 220, 120, 30);
+        add3DPlatform(890, 340, 120, 30);
+        add3DPlatform(1110, 450, 150, 30);
+        add3DPlatform(1360, 360, 120, 30);
+        add3DPlatform(1580, 260, 120, 30);
+        add3DPlatform(1800, 350, 140, 30);
+        add3DPlatform(2040, 460, 120, 30);
+        add3DPlatform(2260, 360, 120, 30);
+        add3DPlatform(2480, 260, 120, 30);
+        add3DPlatform(2700, 380, 150, 30);
+        add3DPlatform(2950, 480, 120, 30);
+        add3DPlatform(3170, 380, 120, 30);
+        add3DPlatform(3390, 280, 120, 30);
+        add3DPlatform(3610, 400, 140, 30);
+        add3DPlatform(3850, 500, 400, 900);
 
-        addSpikes(w * 0.16, w * 0.70);
-        addWinGoal(w * 0.89, 500);
+        add3DSpikes(350, 3500, 0xd63031);
 
-        for (let i = 0; i < 6; i++) spawnPlatformerCoin();
+        createGoalMesh(4000, 500);
+
+        for (let i = 0; i < 15; i++) spawnPlatformerCoin();
     }
     else if (currentLevel === 14) {
         chicken.mesh.visible = false;
-        add3DPlatform(0, 300, w * 0.15, 600);
-        add3DPlatform(w * 0.18, 200, w * 0.10, 30);
-        add3DPlatform(w * 0.32, 140, w * 0.10, 30);
-        add3DPlatform(w * 0.46, 260, w * 0.12, 30);
-        add3DPlatform(w * 0.62, 380, w * 0.08, 30);
-        add3DPlatform(w * 0.75, 250, w * 0.08, 30);
-        add3DPlatform(w * 0.86, 400, w * 0.14, 700);
+        // LEVEL 14: THE ULTIMATE CHAMPIONSHIP HIGH-LOW COURSE
+        add3DPlatform(0, 150, 300, 500);
+        add3DPlatform(400, 250, 90, 30);
+        add3DPlatform(580, 350, 90, 30);
+        add3DPlatform(760, 450, 90, 30);
+        add3DPlatform(940, 320, 100, 30);
+        add3DPlatform(1140, 200, 90, 30);
+        add3DPlatform(1320, 300, 90, 30);
+        add3DPlatform(1500, 420, 120, 30);
+        add3DPlatform(1720, 520, 90, 30);
+        add3DPlatform(1900, 400, 90, 30);
+        add3DPlatform(2080, 280, 90, 30);
+        add3DPlatform(2260, 180, 100, 30);
+        add3DPlatform(2460, 300, 90, 30);
+        add3DPlatform(2640, 420, 90, 30);
+        add3DPlatform(2820, 520, 110, 30);
+        add3DPlatform(3030, 400, 90, 30);
+        add3DPlatform(3210, 280, 90, 30);
+        add3DPlatform(3390, 380, 90, 30);
+        add3DPlatform(3570, 480, 100, 30);
+        add3DPlatform(3800, 580, 450, 900);
 
-        addSpikes(w * 0.15, w * 0.71);
-        addWinGoal(w * 0.90, 400);
+        add3DSpikes(300, 3500, 0x2d3436); // Industrial dark spike matrix
 
-        for (let i = 0; i < 6; i++) spawnPlatformerCoin();
-    }
-    else if (currentLevel === 15) {
-        chicken.mesh.visible = false;
-        add3DPlatform(0, 100, w * 0.12, 400);
-        add3DPlatform(w * 0.15, 220, w * 0.06, 30);
-        add3DPlatform(w * 0.25, 340, w * 0.06, 30);
-        add3DPlatform(w * 0.35, 460, w * 0.06, 30);
-        add3DPlatform(w * 0.45, 300, w * 0.10, 30);
-        add3DPlatform(w * 0.58, 420, w * 0.06, 30);
-        add3DPlatform(w * 0.68, 240, w * 0.06, 30);
-        add3DPlatform(w * 0.78, 360, w * 0.06, 30);
-        add3DPlatform(w * 0.88, 500, w * 0.12, 800);
+        createGoalMesh(3980, 580);
 
-        addSpikes(w * 0.12, w * 0.76);
-        addWinGoal(w * 0.91, 500);
-
-        for (let i = 0; i < 6; i++) spawnPlatformerCoin();
+        for (let i = 0; i < 20; i++) spawnPlatformerCoin();
     }
     
     if(touchControlsEnabled && gameStarted) {
@@ -1055,7 +1081,8 @@ function setupPlatformerLevel(resetPositions = true) {
 
 function spawnCoin(){
     if(!gameStarted || gamePaused) return;
-    if(coins.length >= 10) return;
+    let maxCoins = currentLevel >= 11 ? 25 : 10;
+    if(coins.length >= maxCoins) return;
 
     if (currentLevel < 11) {
         let cx = Math.random() * (arenaWidth - 60) + 30;
@@ -1098,7 +1125,8 @@ function spawnPlatformerCoin() {
 // --- POWER UP SPARK SPONSOR ENGINE ---
 function spawnPowerUp() {
     if(!gameStarted || gamePaused) return;
-    if(powerUps.length >= 2) return; 
+    let maxPowerUps = currentLevel >= 11 ? 5 : 2;
+    if(powerUps.length >= maxPowerUps) return; 
 
     // Weighted selection pool for power ups
     let rand = Math.random();
@@ -1190,24 +1218,27 @@ function collectCoins(p){
             // Dynamic evaluation matching multiplier bonuses
             let gain = (p.doubleCoinsTimer > 0) ? 2 : 1;
             p.coins += gain;
+            coinsCollectedThisLevel += gain;
             
-            // Coin level up triggers strictly below Level 11
-            if (currentLevel < 11) {
-                coinsCollectedThisLevel += gain;
-                if(coinsCollectedThisLevel >= coinsNeededForNextLevel){
-                    currentLevel++;
-                    coinsCollectedThisLevel = 0;
-                    coinsNeededForNextLevel = 10 + (currentLevel - 1) * 5;
-                    levelUpTimer = 90; 
-                    
-                    rebuildEnvironment();
-                    if (currentLevel >= 11) {
-                        setupPlatformerLevel(true);
-                    } else {
-                        resetPositionsAll();
-                    }
-                    return; 
+            if(coinsCollectedThisLevel >= coinsNeededForNextLevel){
+                if(currentLevel >= 11){
+                    // Extended platformer gauntlets are won via physical endpoint trophy tracking
+                    updateUI();
+                    return;
                 }
+
+                currentLevel++;
+                coinsCollectedThisLevel = 0;
+                coinsNeededForNextLevel = 10 + (currentLevel - 1) * 5;
+                levelUpTimer = 90; 
+                
+                rebuildEnvironment();
+                if (currentLevel >= 11) {
+                    setupPlatformerLevel(true);
+                } else {
+                    resetPositionsAll();
+                }
+                return; 
             }
             updateUI();
         }
@@ -1225,7 +1256,7 @@ function collectPowerUps(p) {
         if(dist < (p.size/2 + pu.size/2)) {
             if(pu.type === 'magnet') p.magnetTimer = 600; 
             if(pu.type === 'double') p.doubleCoinsTimer = 600;
-            if(pu.type === 'forcefield') p.forceFieldTimer = 600; // 10 seconds protection shield
+            if(pu.type === 'forcefield') p.forceFieldTimer = 600; 
 
             if (particlesEnabled) {
                 let pColor = pu.type === 'magnet' ? 0x00d2ff : (pu.type === 'double' ? 0xff00ff : 0x00ffcc);
@@ -1283,9 +1314,8 @@ function checkHazardsAndGoals(p, isP2) {
     for (let haz of hazards) {
         if (p.x > haz.x && p.x < haz.x + haz.w && p.y > haz.y && p.y < haz.y + haz.h + 20) {
             if (p.forceFieldTimer > 0) {
-                // Shield bounce mechanic saves player from falling into spikes
                 p.vy = 12;
-                p.forceFieldTimer = Math.max(0, p.forceFieldTimer - 90); // Small shield penalty deduction
+                p.forceFieldTimer = Math.max(0, p.forceFieldTimer - 90); 
             } else {
                 resetPlatformerPosition(p);
             }
@@ -1293,20 +1323,22 @@ function checkHazardsAndGoals(p, isP2) {
         }
     }
 
-    // Touch Trophy Goal Progression System
-    if (winGoal && winGoal.w > 0 && p.x > winGoal.x && p.x < winGoal.x + winGoal.w && p.y > winGoal.y && p.y < winGoal.y + winGoal.h) {
-        if (currentLevel < 15) {
+    if (currentLevel >= 11 && p.x > winGoal.x && p.x < winGoal.x + winGoal.w && p.y > winGoal.y && p.y < winGoal.y + winGoal.h) {
+        if (currentLevel === 14) {
+            gamePaused = true;
+            showWinScreen(multiplayer 
+                ? (isP2 ? 'PLAYER 2 CONQUERED THE GAUNTLET OVERLORD! 🎉' : 'PLAYER 1 CONQUERED THE GAUNTLET OVERLORD! 🎉')
+                : 'YOU CONQUERED ALL 14 GAUNTLET LEVELS! YOU ARE A MASTER! 🎉');
+        } else {
+            gamePaused = true;
             currentLevel++;
             coinsCollectedThisLevel = 0;
-            levelUpTimer = 90;
+            coinsNeededForNextLevel = 10 + (currentLevel - 1) * 5;
+            levelUpTimer = 90; 
+            
             rebuildEnvironment();
             setupPlatformerLevel(true);
             updateUI();
-        } else {
-            gamePaused = true;
-            showWinScreen(multiplayer 
-                ? (isP2 ? 'PLAYER 2 BEAT THE FINAL GAUNTLET! 🎉' : 'PLAYER 1 BEAT THE FINAL GAUNTLET! 🎉')
-                : 'YOU BEAT THE 15-LEVEL GAUNTLET! YOU WIN! 🎉');
         }
     }
 }
@@ -1433,10 +1465,9 @@ function update(){
             let chaseDist = Math.hypot(chicken.x - target.x, chicken.z - target.z);
             if(chaseDist < 35) {
                 if(target.forceFieldTimer > 0) {
-                    // Shield impact reflects the chicken backward
                     chicken.x -= Math.cos(angle) * 150;
                     chicken.z -= Math.sin(angle) * 150;
-                    target.forceFieldTimer = Math.max(0, target.forceFieldTimer - 120); // Discharges shield on impact
+                    target.forceFieldTimer = Math.max(0, target.forceFieldTimer - 120); 
                 } else {
                     alert('The chicken caught you!');
                     returnToMenu();
@@ -1497,7 +1528,8 @@ function processPlatformerPhysics(p, leftKey, rightKey, jumpKey, isP2) {
         spawnWalkParticle(p.x, arenaHeight / 2);
     }
 
-    p.x = Math.max(20, Math.min(arenaWidth - 20, p.x));
+    let currentWidth = currentLevel >= 11 ? 4200 : arenaWidth;
+    p.x = Math.max(20, Math.min(currentWidth - 20, p.x));
     p.mesh.position.set(p.x, p.y, arenaHeight / 2);
 
     if (p.y < -100) resetPlatformerPosition(p);
@@ -1609,16 +1641,6 @@ function buySpeed(p){
     }
 }
 
-// Leaderboard / Cheats
-function buyWin(p){
-    if(p.coins >= 100){
-        p.coins -= 100;
-        const playerName = prompt("Enter your name for the leaderboard:") || "Player";
-        console.log(`Leaderboard updated: ${playerName} achieved ${p.coins + 100} points!`);
-        showWinScreen(multiplayer ? (p === player ? 'PLAYER 1 WINS! 🎉' : 'PLAYER 2 WINS! 🎉') : 'YOU WIN! 🎉');
-    }
-}
-
 function buySkin(p, colorHex, cost){
     if(p.coins >= cost){
         p.coins -= cost;
@@ -1630,6 +1652,16 @@ function buySkin(p, colorHex, cost){
     }
 }
 
+// Custom win wrapper score handling updates
+function buyWin(p){
+    if(p.coins >= 100){
+        p.coins -= 100;
+        const playerName = prompt("Enter your name for the leaderboard:") || "Player";
+        console.log(`Leaderboard updated: ${playerName} achieved ${p.coins + 100} points!`);
+        showWinScreen(multiplayer ? (p === player ? 'PLAYER 1 WINS! 🎉' : 'PLAYER 2 WINS! 🎉') : 'YOU WIN! 🎉');
+    }
+}
+
 function updateUI(){
     document.getElementById("coinCount1").textContent = player.coins;
     document.getElementById("speedLevel1").textContent = player.speedLevel;
@@ -1637,13 +1669,7 @@ function updateUI(){
     document.getElementById("speedLevel2").textContent = player2.speedLevel;
 
     const prefix = translations[currentLanguage]?.level || "Level";
-    
-    // Change layout display based on whether it is standard or platformer
-    if (currentLevel < 11) {
-        document.getElementById("levelDisplay").textContent = `${prefix} ${currentLevel} (${coinsCollectedThisLevel}/${coinsNeededForNextLevel} 🪙)`;
-    } else {
-        document.getElementById("levelDisplay").textContent = `${prefix} ${currentLevel} (Reach the Trophy! 🏆)`;
-    }
+    document.getElementById("levelDisplay").textContent = `${prefix} ${currentLevel} (${coinsCollectedThisLevel}/${coinsNeededForNextLevel} 🪙)`;
 }
 
 window.addEventListener("resize", () => {
