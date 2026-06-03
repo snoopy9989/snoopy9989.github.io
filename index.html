@@ -138,6 +138,8 @@ body{
     border:4px solid #7dd86e;
     display:none;
     z-index:20;
+    text-align: center;
+    white-space: nowrap;
 }
 
 .shopButton{
@@ -303,7 +305,7 @@ body{
     <div id="gameTitle">Gooblet Forest 3D</div>
 
     <div id="subtitle">
-        <span id="subtitleText">3D v1.6.1</span>
+        <span id="subtitleText">3D v1.6.3</span>
         <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:20px;">
             <button id="easyButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy')">Easy 🌱</button>
             <button id="easyMediumButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy-medium')">Easy Medium 🐤</button>
@@ -489,7 +491,7 @@ const levelThemes = [
     { skyTop: 0x0f172a, skyBottom: 0x1e293b, ground: 0x0f766e, trunk: 0x111827, leaves: 0x14b8a6, leafParticle: 0x2dd4bf },
     { skyTop: 0xff9f43, skyBottom: 0xee5253, ground: 0x10ac84, trunk: 0x576574, leaves: 0x1dd1a1, leafParticle: 0x1dd1a1 },
     { skyTop: 0xa0e0ff, skyBottom: 0xe0f7ff, ground: 0x2980b9, trunk: 0x34495e, leaves: 0x2980b9, leafParticle: 0x3498db },
-    { skyTop: 0x2c3e50, skyBottom: 0xe74c3c, ground: 0x7f8c8d, trunk: 0x2c3e50, leaves: 0xc0392b, leafParticle: 0xe67e22 }
+    { skyTop: 0x2c3e50, skyBottom: 0xe74c3c, ground: 0x7f8c8d, trunk: 0x2c3e50, leaves: 0xc0392b, leafParticle: 0xe67e22 },
 ];
 
 function getTheme() {
@@ -498,7 +500,7 @@ function getTheme() {
 }
 
 const translations = {
-    en:{ title:'Gooblet Forest 3D', subtitle:' 3D v1.2', settings:'Settings ⚙️', music:'Music:', particles:'Particles:', fullscreen:'Fullscreen', fullscreenButton:'Toggle Fullscreen', toggleMusic:'Toggle Music', toggleParticles:'Toggle Particles', back:'Back', p1shop:'P1 Shop', p2shop:'P2 Shop', menu:'Menu', easy:'Easy 🌱', easyMedium:'Easy Medium 🐤', medium:'Medium 🐔', hard:'Hard ⚠️', mpMedium:'Multiplayer Medium', mpHard:'Multiplayer Hard', language:'Language', level:'Level', touch:'Touch Controls:', toggleTouch:'Toggle Touch' },
+    en:{ title:'Gooblet Forest 3D', subtitle:' 3D v1.5', settings:'Settings ⚙️', music:'Music:', particles:'Particles:', fullscreen:'Fullscreen', fullscreenButton:'Toggle Fullscreen', toggleMusic:'Toggle Music', toggleParticles:'Toggle Particles', back:'Back', p1shop:'P1 Shop', p2shop:'P2 Shop', menu:'Menu', easy:'Easy 🌱', easyMedium:'Easy Medium 🐤', medium:'Medium 🐔', hard:'Hard ⚠️', mpMedium:'Multiplayer Medium', mpHard:'Multiplayer Hard', language:'Language', level:'Level', touch:'Touch Controls:', toggleTouch:'Toggle Touch' },
     es:{ title:'Bosque Gooblet 3D', subtitle:'Aventuras lindas del bosque 🌿', settings:'Configuración ⚙️', music:'Música:', particles:'Partículas:', fullscreen:'Pantalla completa', fullscreenButton:'Cambiar pantalla completa', toggleMusic:'Alternar música', toggleParticles:'Alternar partículas', back:'Atrás', p1shop:'Tienda J1', p2shop:'Tienda J2', menu:'Menú', easy:'Fácil 🌱', easyMedium:'Medio Fácil 🐤', medium:'Medio 🐔', hard:'Difícil ⚠️', mpMedium:'Multijugador Medio', mpHard:'Multijugador Difícil', language:'Idioma', level:'Nivel', touch:'Controles táctiles:', toggleTouch:'Alternar táctil' },
     fr:{ title:'Forêt Gooblet 3D', subtitle:'Mignonnes aventures en forêt 🌿', settings:'Paramètres ⚙️', music:'Musique :', particles:'Particules :', fullscreen:'Plein écran', fullscreenButton:'Basculer plein écran', toggleMusic:'Activer musique', toggleParticles:'Activer particules', back:'Retour', p1shop:'Boutique J1', p2shop:'Boutique J2', menu:'Menu', easy:'Facile 🌱', easyMedium:'Moyen Facile 🐤', medium:'Moyen 🐔', hard:'Difficile ⚠️', mpMedium:'Multijoueur Moyen', mpHard:'Multijoueur Difficile', language:'Langue', level:'Niveau', touch:'Contrôles tactiles :', toggleTouch:'Basculer tactile' },
     jp:{ title:'グーブレットの森 3D', subtitle:'かわいい森の冒険 🌿', settings:'設定 ⚙️', music:'音楽:', particles:'パーティクル:', fullscreen:'フルスクリーン', fullscreenButton:'フルスクリーン切替', toggleMusic:'音楽を切替', toggleParticles:'パーティクル切替', back:'戻る', p1shop:'P1ショップ', p2shop:'P2ショップ', menu:'メニュー', easy:'かんたん 🌱', easyMedium:'かんたんふつう 🐤', medium:'ふつう 🐔', hard:'むずかしい ⚠️', mpMedium:'マルチプレイヤー 普通', mpHard:'マルチプレイヤー 難しい', language:'言語', level:'レベル', touch:'タッチコントロール:', toggleTouch:'タッチ切替' }
@@ -607,6 +609,7 @@ function rebuildEnvironment() {
     powerUps = [];
 
     if(goalMesh) { scene.remove(goalMesh); goalMesh = null; }
+    winGoal = { x: 0, y: 0, w: 0, h: 0 };
 
     if (currentLevel < 11) {
         groundMesh.position.set(arenaWidth/2, -10, arenaHeight/2);
@@ -881,7 +884,7 @@ function returnToMenu(){
     updateUI();
 }
 
-// --- LEVEL 11, 12, & 13 3D PLATFORMER GENERATOR ENGINE ---
+// --- LEVEL 11 - 15 3D PLATFORMER GENERATOR ENGINE ---
 function setupPlatformerLevel(resetPositions = true) {
     platforms = [];
     hazards = [];
@@ -934,75 +937,8 @@ function setupPlatformerLevel(resetPositions = true) {
         platforms3D.push(platGroup);
     }
 
-    if (currentLevel === 11) {
-        chicken.mesh.visible = false;
-        add3DPlatform(0, 120, w * 0.25, 500); 
-        add3DPlatform(w * 0.32, 220, w * 0.15, 40);
-        add3DPlatform(w * 0.52, 340, w * 0.15, 40);
-        add3DPlatform(w * 0.72, 260, w * 0.12, 40);
-        add3DPlatform(w * 0.88, 400, w * 0.14, 800);
-        
-        for (let i = 0; i < 8; i++) spawnPlatformerCoin();
-    } 
-    else if (currentLevel === 12) {
-        chicken.mesh.visible = false;
-        add3DPlatform(0, 150, w * 0.22, 500);
-        add3DPlatform(w * 0.26, 240, w * 0.10, 30);
-        add3DPlatform(w * 0.40, 350, w * 0.12, 30);
-        add3DPlatform(w * 0.57, 440, w * 0.14, 30);
-        add3DPlatform(w * 0.75, 520, w * 0.12, 30);
-        add3DPlatform(w * 0.88, 620, w * 0.15, 900);
-
-        let hazX = w * 0.22;
-        let hazW = w * 0.66;
-        hazards.push({ x: hazX, y: 0, w: hazW, h: 40 });
-
-        const hazGroup = new THREE.Group();
-        const spikeMat = new THREE.MeshToonMaterial({ color: 0xff3838 });
-        let totalSpikes = Math.ceil(hazW / 24);
-        for(let i=0; i<totalSpikes; i++) {
-            const spikeGeo = new THREE.ConeGeometry(12, 35, 4);
-            const spike = new THREE.Mesh(spikeGeo, spikeMat);
-            spike.position.set(i * 24 + 12, 17.5, 0);
-            hazGroup.add(spike);
-        }
-        hazGroup.position.set(hazX, 0, arenaHeight / 2);
-        scene.add(hazGroup);
-        hazards3D.push(hazGroup);
-
-        for (let i = 0; i < 8; i++) spawnPlatformerCoin();
-    }
-    else if (currentLevel === 13) {
-        // EXTRA PLATFORMER GAUNTLET LEVEL
-        chicken.mesh.visible = false;
-        add3DPlatform(0, 150, w * 0.16, 500);
-        add3DPlatform(w * 0.20, 260, w * 0.08, 30);
-        add3DPlatform(w * 0.32, 220, w * 0.08, 30);
-        add3DPlatform(w * 0.44, 340, w * 0.08, 30);
-        add3DPlatform(w * 0.56, 450, w * 0.12, 30);
-        add3DPlatform(w * 0.73, 360, w * 0.08, 30);
-        add3DPlatform(w * 0.86, 500, w * 0.14, 900);
-
-        // Dangerous spike hazard floors across the entire mid gap
-        let hazX = w * 0.16;
-        let hazW = w * 0.70;
-        hazards.push({ x: hazX, y: 0, w: hazW, h: 40 });
-
-        const hazGroup = new THREE.Group();
-        const spikeMat = new THREE.MeshToonMaterial({ color: 0xd63031 });
-        let totalSpikes = Math.ceil(hazW / 24);
-        for(let i=0; i<totalSpikes; i++) {
-            const spikeGeo = new THREE.ConeGeometry(12, 35, 4);
-            const spike = new THREE.Mesh(spikeGeo, spikeMat);
-            spike.position.set(i * 24 + 12, 17.5, 0);
-            hazGroup.add(spike);
-        }
-        hazGroup.position.set(hazX, 0, arenaHeight / 2);
-        scene.add(hazGroup);
-        hazards3D.push(hazGroup);
-
-        // Ultimate Golden Trophy at the end line
-        winGoal = { x: w * 0.89, y: 500, w: 60, h: 90 };
+    function addWinGoal(gx, gy) {
+        winGoal = { x: gx, y: gy, w: 60, h: 90 };
 
         const goalGroup = new THREE.Group();
         const baseGeo = new THREE.CylinderGeometry(15, 20, 15, 8);
@@ -1019,8 +955,96 @@ function setupPlatformerLevel(resetPositions = true) {
         goalGroup.position.set(winGoal.x + 30, winGoal.y, arenaHeight / 2);
         scene.add(goalGroup);
         goalMesh = goalGroup;
+    }
 
-        for (let i = 0; i < 5; i++) spawnPlatformerCoin();
+    function addSpikes(hazX, hazW) {
+        hazards.push({ x: hazX, y: 0, w: hazW, h: 40 });
+
+        const hazGroup = new THREE.Group();
+        const spikeMat = new THREE.MeshToonMaterial({ color: 0xd63031 });
+        let totalSpikes = Math.ceil(hazW / 24);
+        for(let i=0; i<totalSpikes; i++) {
+            const spikeGeo = new THREE.ConeGeometry(12, 35, 4);
+            const spike = new THREE.Mesh(spikeGeo, spikeMat);
+            spike.position.set(i * 24 + 12, 17.5, 0);
+            hazGroup.add(spike);
+        }
+        hazGroup.position.set(hazX, 0, arenaHeight / 2);
+        scene.add(hazGroup);
+        hazards3D.push(hazGroup);
+    }
+
+    if (currentLevel === 11) {
+        chicken.mesh.visible = false;
+        add3DPlatform(0, 120, w * 0.25, 500); 
+        add3DPlatform(w * 0.32, 220, w * 0.15, 40);
+        add3DPlatform(w * 0.52, 340, w * 0.15, 40);
+        add3DPlatform(w * 0.72, 260, w * 0.12, 40);
+        add3DPlatform(w * 0.88, 400, w * 0.14, 800);
+        
+        addWinGoal(w * 0.90, 400);
+        for (let i = 0; i < 6; i++) spawnPlatformerCoin();
+    } 
+    else if (currentLevel === 12) {
+        chicken.mesh.visible = false;
+        add3DPlatform(0, 150, w * 0.22, 500);
+        add3DPlatform(w * 0.26, 240, w * 0.10, 30);
+        add3DPlatform(w * 0.40, 350, w * 0.12, 30);
+        add3DPlatform(w * 0.57, 440, w * 0.14, 30);
+        add3DPlatform(w * 0.75, 520, w * 0.12, 30);
+        add3DPlatform(w * 0.88, 620, w * 0.15, 900);
+
+        addSpikes(w * 0.22, w * 0.66);
+        addWinGoal(w * 0.90, 620);
+
+        for (let i = 0; i < 6; i++) spawnPlatformerCoin();
+    }
+    else if (currentLevel === 13) {
+        chicken.mesh.visible = false;
+        add3DPlatform(0, 150, w * 0.16, 500);
+        add3DPlatform(w * 0.20, 260, w * 0.08, 30);
+        add3DPlatform(w * 0.32, 220, w * 0.08, 30);
+        add3DPlatform(w * 0.44, 340, w * 0.08, 30);
+        add3DPlatform(w * 0.56, 450, w * 0.12, 30);
+        add3DPlatform(w * 0.73, 360, w * 0.08, 30);
+        add3DPlatform(w * 0.86, 500, w * 0.14, 900);
+
+        addSpikes(w * 0.16, w * 0.70);
+        addWinGoal(w * 0.89, 500);
+
+        for (let i = 0; i < 6; i++) spawnPlatformerCoin();
+    }
+    else if (currentLevel === 14) {
+        chicken.mesh.visible = false;
+        add3DPlatform(0, 300, w * 0.15, 600);
+        add3DPlatform(w * 0.18, 200, w * 0.10, 30);
+        add3DPlatform(w * 0.32, 140, w * 0.10, 30);
+        add3DPlatform(w * 0.46, 260, w * 0.12, 30);
+        add3DPlatform(w * 0.62, 380, w * 0.08, 30);
+        add3DPlatform(w * 0.75, 250, w * 0.08, 30);
+        add3DPlatform(w * 0.86, 400, w * 0.14, 700);
+
+        addSpikes(w * 0.15, w * 0.71);
+        addWinGoal(w * 0.90, 400);
+
+        for (let i = 0; i < 6; i++) spawnPlatformerCoin();
+    }
+    else if (currentLevel === 15) {
+        chicken.mesh.visible = false;
+        add3DPlatform(0, 100, w * 0.12, 400);
+        add3DPlatform(w * 0.15, 220, w * 0.06, 30);
+        add3DPlatform(w * 0.25, 340, w * 0.06, 30);
+        add3DPlatform(w * 0.35, 460, w * 0.06, 30);
+        add3DPlatform(w * 0.45, 300, w * 0.10, 30);
+        add3DPlatform(w * 0.58, 420, w * 0.06, 30);
+        add3DPlatform(w * 0.68, 240, w * 0.06, 30);
+        add3DPlatform(w * 0.78, 360, w * 0.06, 30);
+        add3DPlatform(w * 0.88, 500, w * 0.12, 800);
+
+        addSpikes(w * 0.12, w * 0.76);
+        addWinGoal(w * 0.91, 500);
+
+        for (let i = 0; i < 6; i++) spawnPlatformerCoin();
     }
     
     if(touchControlsEnabled && gameStarted) {
@@ -1166,27 +1190,24 @@ function collectCoins(p){
             // Dynamic evaluation matching multiplier bonuses
             let gain = (p.doubleCoinsTimer > 0) ? 2 : 1;
             p.coins += gain;
-            coinsCollectedThisLevel += gain;
             
-            if(coinsCollectedThisLevel >= coinsNeededForNextLevel){
-                if(currentLevel === 13){
-                    // Final platformer gauntlet is explicitly won via reaching the golden trophy instead
-                    updateUI();
-                    return;
+            // Coin level up triggers strictly below Level 11
+            if (currentLevel < 11) {
+                coinsCollectedThisLevel += gain;
+                if(coinsCollectedThisLevel >= coinsNeededForNextLevel){
+                    currentLevel++;
+                    coinsCollectedThisLevel = 0;
+                    coinsNeededForNextLevel = 10 + (currentLevel - 1) * 5;
+                    levelUpTimer = 90; 
+                    
+                    rebuildEnvironment();
+                    if (currentLevel >= 11) {
+                        setupPlatformerLevel(true);
+                    } else {
+                        resetPositionsAll();
+                    }
+                    return; 
                 }
-
-                currentLevel++;
-                coinsCollectedThisLevel = 0;
-                coinsNeededForNextLevel = 10 + (currentLevel - 1) * 5;
-                levelUpTimer = 90; 
-                
-                rebuildEnvironment();
-                if (currentLevel >= 11) {
-                    setupPlatformerLevel(true);
-                } else {
-                    resetPositionsAll();
-                }
-                return; 
             }
             updateUI();
         }
@@ -1272,11 +1293,21 @@ function checkHazardsAndGoals(p, isP2) {
         }
     }
 
-    if (currentLevel === 13 && p.x > winGoal.x && p.x < winGoal.x + winGoal.w && p.y > winGoal.y && p.y < winGoal.y + winGoal.h) {
-        gamePaused = true;
-        showWinScreen(multiplayer 
-            ? (isP2 ? 'PLAYER 2 BEAT THE GAUNTLET! 🎉' : 'PLAYER 1 BEAT THE GAUNTLET! 🎉')
-            : 'YOU BEAT THE 13-LEVEL GAUNTLET! YOU WIN! 🎉');
+    // Touch Trophy Goal Progression System
+    if (winGoal && winGoal.w > 0 && p.x > winGoal.x && p.x < winGoal.x + winGoal.w && p.y > winGoal.y && p.y < winGoal.y + winGoal.h) {
+        if (currentLevel < 15) {
+            currentLevel++;
+            coinsCollectedThisLevel = 0;
+            levelUpTimer = 90;
+            rebuildEnvironment();
+            setupPlatformerLevel(true);
+            updateUI();
+        } else {
+            gamePaused = true;
+            showWinScreen(multiplayer 
+                ? (isP2 ? 'PLAYER 2 BEAT THE FINAL GAUNTLET! 🎉' : 'PLAYER 1 BEAT THE FINAL GAUNTLET! 🎉')
+                : 'YOU BEAT THE 15-LEVEL GAUNTLET! YOU WIN! 🎉');
+        }
     }
 }
 
@@ -1578,6 +1609,16 @@ function buySpeed(p){
     }
 }
 
+// Leaderboard / Cheats
+function buyWin(p){
+    if(p.coins >= 100){
+        p.coins -= 100;
+        const playerName = prompt("Enter your name for the leaderboard:") || "Player";
+        console.log(`Leaderboard updated: ${playerName} achieved ${p.coins + 100} points!`);
+        showWinScreen(multiplayer ? (p === player ? 'PLAYER 1 WINS! 🎉' : 'PLAYER 2 WINS! 🎉') : 'YOU WIN! 🎉');
+    }
+}
+
 function buySkin(p, colorHex, cost){
     if(p.coins >= cost){
         p.coins -= cost;
@@ -1589,15 +1630,6 @@ function buySkin(p, colorHex, cost){
     }
 }
 
-function buyWin(p){
-    if(p.coins >= 100){
-        p.coins -= 100;
-        const playerName = prompt("Enter your name for the leaderboard:") || "Player";
-        console.log(`Leaderboard updated: ${playerName} achieved ${p.coins + 100} points!`);
-        showWinScreen(multiplayer ? (p === player ? 'PLAYER 1 WINS! 🎉' : 'PLAYER 2 WINS! 🎉') : 'YOU WIN! 🎉');
-    }
-}
-
 function updateUI(){
     document.getElementById("coinCount1").textContent = player.coins;
     document.getElementById("speedLevel1").textContent = player.speedLevel;
@@ -1605,7 +1637,13 @@ function updateUI(){
     document.getElementById("speedLevel2").textContent = player2.speedLevel;
 
     const prefix = translations[currentLanguage]?.level || "Level";
-    document.getElementById("levelDisplay").textContent = `${prefix} ${currentLevel} (${coinsCollectedThisLevel}/${coinsNeededForNextLevel} 🪙)`;
+    
+    // Change layout display based on whether it is standard or platformer
+    if (currentLevel < 11) {
+        document.getElementById("levelDisplay").textContent = `${prefix} ${currentLevel} (${coinsCollectedThisLevel}/${coinsNeededForNextLevel} 🪙)`;
+    } else {
+        document.getElementById("levelDisplay").textContent = `${prefix} ${currentLevel} (Reach the Trophy! 🏆)`;
+    }
 }
 
 window.addEventListener("resize", () => {
