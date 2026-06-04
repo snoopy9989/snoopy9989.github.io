@@ -303,7 +303,7 @@ body{
     <div id="gameTitle">Gooblet Forest 3D</div>
 
     <div id="subtitle">
-        <span id="subtitleText">3D v1.6.4</span>
+        <span id="subtitleText">3D v1.6.5</span>
         <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:20px;">
             <button id="easyButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy')">Easy 🌱</button>
             <button id="easyMediumButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy-medium')">Easy Medium 🐤</button>
@@ -736,6 +736,74 @@ addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; });
 let player = { x:200, y:400, z:200, vy:0, size:42, color:"#9cff8f", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null, magnetTimer:0, doubleCoinsTimer:0, forceFieldTimer:0 };
 let player2 = { x:500, y:400, z:250, vy:0, size:42, color:"#7fd8ff", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null, magnetTimer:0, doubleCoinsTimer:0, forceFieldTimer:0 };
 
+// --- COOKIE & OFFLINE COOKIE-FALLBACK ENGINE ---
+function saveGameData() {
+    const data = {
+        musicEnabled: musicEnabled,
+        particlesEnabled: particlesEnabled,
+        touchControlsEnabled: touchControlsEnabled,
+        currentLanguage: currentLanguage,
+        player: { coins: player.coins, speed: player.speed, speedLevel: player.speedLevel, speedCost: player.speedCost, color: player.color },
+        player2: { coins: player2.coins, speed: player2.speed, speedLevel: player2.speedLevel, speedCost: player2.speedCost, color: player2.color }
+    };
+    const jsonStr = JSON.stringify(data);
+    
+    // Save cookie
+    document.cookie = "gooblet_forest_save=" + encodeURIComponent(jsonStr) + "; max-age=31536000; path=/; SameSite=Lax";
+    
+    // Fallback mirror for direct offline execution (file:// protocol)
+    try { localStorage.setItem("gooblet_forest_save", jsonStr); } catch(e){}
+}
+
+function loadGameData() {
+    let jsonStr = null;
+    
+    // Extract data from document cookies
+    let nameEQ = "gooblet_forest_save=";
+    let ca = document.cookie.split(';');
+    for(let i=0; i < ca.length; i++) {
+        let c = ca[i];
+        while (c.charAt(0)==' ') c = c.substring(1,c.length);
+        if (c.indexOf(nameEQ) == 0) {
+            jsonStr = decodeURIComponent(c.substring(nameEQ.length, c.length));
+            break;
+        }
+    }
+    
+    // Fallback extraction if running offline and cookies are blocked
+    if (!jsonStr) {
+        try { jsonStr = localStorage.getItem("gooblet_forest_save"); } catch(e){}
+    }
+
+    if (jsonStr) {
+        try {
+            const data = JSON.parse(jsonStr);
+            if (data.musicEnabled !== undefined) musicEnabled = data.musicEnabled;
+            if (data.particlesEnabled !== undefined) particlesEnabled = data.particlesEnabled;
+            if (data.touchControlsEnabled !== undefined) touchControlsEnabled = data.touchControlsEnabled;
+            if (data.currentLanguage) currentLanguage = data.currentLanguage;
+            
+            if (data.player) {
+                player.coins = data.player.coins ?? 0;
+                player.speed = data.player.speed ?? 5;
+                player.speedLevel = data.player.speedLevel ?? 1;
+                player.speedCost = data.player.speedCost ?? 10;
+                player.color = data.player.color ?? "#9cff8f";
+            }
+            if (data.player2) {
+                player2.coins = data.player2.coins ?? 0;
+                player2.speed = data.player2.speed ?? 5;
+                player2.speedLevel = data.player2.speedLevel ?? 1;
+                player2.speedCost = data.player2.speedCost ?? 10;
+                player2.color = data.player2.color ?? "#7fd8ff";
+            }
+        } catch(e) { console.error("Could not parse save file structures:", e); }
+    }
+}
+
+// Run load operations before initializing meshes
+loadGameData();
+
 let p1Grounded = false;
 let p2Grounded = false;
 
@@ -750,9 +818,9 @@ let fallingLeaves = [];
 let winnerText = '';
 let winnerTimer = 0;
 
-// Setup meshes
-player.mesh = create3DGooblet(0x9cff8f);
-player2.mesh = create3DGooblet(0x7fd8ff);
+// Setup meshes matching custom colors
+player.mesh = create3DGooblet(parseInt(player.color.replace('#', '0x')));
+player2.mesh = create3DGooblet(parseInt(player2.color.replace('#', '0x')));
 chicken.mesh = create3DChicken();
 
 function startGame(isMultiplayer, mode){
@@ -827,11 +895,13 @@ function toggleMusic(){
     musicEnabled = !musicEnabled;
     document.getElementById("musicStatus").textContent = musicEnabled ? "ON" : "OFF";
     if(musicEnabled) bgMusic.play().catch(()=>{}); else bgMusic.pause();
+    saveGameData();
 }
 
 function toggleParticles(){
     particlesEnabled = !particlesEnabled;
     document.getElementById("particleStatus").textContent = particlesEnabled ? "ON" : "OFF";
+    saveGameData();
 }
 
 function toggleFullscreen(){
@@ -841,6 +911,7 @@ function toggleFullscreen(){
 function toggleTouchControls(){
     touchControlsEnabled = !touchControlsEnabled;
     document.getElementById("touchStatus").textContent = touchControlsEnabled ? "ON" : "OFF";
+    saveGameData();
 }
 
 function returnToMenu(){
@@ -858,14 +929,17 @@ function returnToMenu(){
     gameStarted = false;
     multiplayer = false;
 
-    player.coins = 0; player.speed = 5; player.speedLevel = 1; player.speedCost = 10;
-    player2.coins = 0; player2.speed = 5; player2.speedLevel = 1; player2.speedCost = 10;
+    // Restore persistent upgrades when moving back to the setup menu
+    loadGameData();
     player.magnetTimer = 0; player.doubleCoinsTimer = 0; player.forceFieldTimer = 0;
     player2.magnetTimer = 0; player2.doubleCoinsTimer = 0; player2.forceFieldTimer = 0;
     player.mesh.position.set(200, 0, 300);
     player2.mesh.position.set(500, 0, 350);
     player2.mesh.visible = false;
     chicken.mesh.visible = false;
+
+    if(player.mesh && player.mesh.userData.bodyMesh) player.mesh.userData.bodyMesh.material.color.set(player.color);
+    if(player2.mesh && player2.mesh.userData.bodyMesh) player2.mesh.userData.bodyMesh.material.color.set(player2.color);
 
     keys = {};
 
@@ -1349,16 +1423,6 @@ function resetPlatformerPosition(p) {
     p.vy = 0;
 }
 
-function showWinScreen(text) {
-    winnerText = text;
-    winnerTimer = 300;
-    alert(text);
-    setTimeout(() => {
-        if(gameStarted) returnToMenu();
-    }, 1500);
-    updateUI();
-}
-
 // --- MOVEMENT ENGINE PROCESSING LOOP ---
 function update(){
     if(!gameStarted || gamePaused || winnerTimer > 0) return;
@@ -1545,6 +1609,16 @@ function spawnWalkParticle(x, z) {
     walkParticles.push({ mesh: pMesh, vx: (Math.random()-0.5)*2, vy: Math.random()*2, vz: (Math.random()-0.5)*2, life: 20 });
 }
 
+function showWinScreen(text) {
+    winnerText = text;
+    winnerTimer = 300;
+    alert(text);
+    setTimeout(() => {
+        if(gameStarted) returnToMenu();
+    }, 1500);
+    updateUI();
+}
+
 // --- DPAD/BUTTON BINDING WRAPPERS ---
 function setupTouchInput(elementId, targetKey) {
     const el = document.getElementById(elementId);
@@ -1652,7 +1726,6 @@ function buySkin(p, colorHex, cost){
     }
 }
 
-// Custom win wrapper score handling updates
 function buyWin(p){
     if(p.coins >= 100){
         p.coins -= 100;
@@ -1670,6 +1743,9 @@ function updateUI(){
 
     const prefix = translations[currentLanguage]?.level || "Level";
     document.getElementById("levelDisplay").textContent = `${prefix} ${currentLevel} (${coinsCollectedThisLevel}/${coinsNeededForNextLevel} 🪙)`;
+    
+    // Auto-save changes dynamically whenever data/UI alterations hit the engine
+    saveGameData();
 }
 
 window.addEventListener("resize", () => {
@@ -1677,6 +1753,12 @@ window.addEventListener("resize", () => {
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 });
+
+// Sync UI states with cookie load variables on deployment
+document.getElementById("musicStatus").textContent = musicEnabled ? "ON" : "OFF";
+document.getElementById("particleStatus").textContent = particlesEnabled ? "ON" : "OFF";
+document.getElementById("touchStatus").textContent = touchControlsEnabled ? "ON" : "OFF";
+setLanguage(currentLanguage);
 
 updateUI();
 </script>
