@@ -1832,6 +1832,22 @@ if ('serviceWorker' in navigator) {
             .catch(err => console.log('Service Worker Registration Failed:', err));
     });
 }    
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    // 1. Update Gamepad Status first so movement logics read current inputs
+    pollGamepads();
+
+    // 2. Existing physics updates, player movement, and collision checking
+    if (gameStarted && !gamePaused) {
+        updatePlayerMovement(); // Wherever your keys['w', 'a', 's', 'd'] is evaluated
+        updateGameObjects();
+    }
+
+    // 3. Render WebGL Scene
+    renderer.render(scene, camera);
+}
     
 </script>
 </body>
