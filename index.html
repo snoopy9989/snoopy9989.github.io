@@ -731,6 +731,67 @@ function create3DChicken() {
 }
 
 // --- INITIALIZE ENTITY OBJECTS ---
+
+// Keep track of connected gamepads
+let gamepads = {};
+
+window.addEventListener("gamepadconnected", (e) => {
+    console.log(`Gamepad connected at index ${e.gamepad.index}: ${e.gamepad.id}`);
+    gamepads[e.gamepad.index] = e.gamepad;
+});
+
+window.addEventListener("gamepaddisconnected", (e) => {
+    console.log(`Gamepad disconnected from index ${e.gamepad.index}`);
+    delete gamepads[e.gamepad.index];
+});
+
+function pollGamepads() {
+    // Navigator.getGamepads() must be called every frame to get accurate, fresh snapshots
+    const activeGamepads = navigator.getGamepads ? navigator.getGamepads() : [];
+    
+    // Clear previous frame state if you want gamepad to simulate keyboard strings directly
+    // Instead of overriding 'keys' globally, we assign separate controllers for Player 1 and Player 2!
+    
+    // Player 1 Gamepad (Index 0)
+    if (activeGamepads[0]) {
+        const gp = activeGamepads[0];
+        
+        // Joystick Axes (Axis 0 = X, Axis 1 = Y)
+        const axisX = gp.axes[0];
+        const axisY = gp.axes[1];
+        const deadzone = 0.25; // Ignore slight joystick drifts
+
+        // Map Left Analog Stick to Player 1 Directional commands
+        keys['a'] = axisX < -deadzone;
+        keys['d'] = axisX > deadzone;
+        keys['w'] = axisY < -deadzone;
+        keys['s'] = axisY > deadzone;
+
+        // Map 'A' button (Button 0) or 'X' button to Jump
+        // You can also add mapping for any other buttons if needed
+        keys[' '] = gp.buttons[0].pressed; 
+    }
+
+    // Player 2 Gamepad (Index 1) - ONLY if Multiplayer is active!
+    if (multiplayer && activeGamepads[1]) {
+        const gp = activeGamepads[1];
+        
+        const axisX = gp.axes[0];
+        const axisY = gp.axes[1];
+        const deadzone = 0.25;
+
+        // Map Left Analog Stick to Player 2 Directional commands (Arrow keys)
+        keys['arrowleft'] = axisX < -deadzone;
+        keys['arrowright'] = axisX > deadzone;
+        keys['arrowup'] = axisY < -deadzone;
+        keys['arrowdown'] = axisY > deadzone;
+
+        // Map Button 0 (A / Cross) to Player 2's Jump key if it uses a specific one
+        // (Adjust the key string below depending on what Player 2 uses for jump in your game)
+        keys['shift'] = gp.buttons[0].pressed; 
+    }
+}
+    
 let keys = {};
 addEventListener("keydown", e => { keys[e.key.toLowerCase()] = true; });
 addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; });
