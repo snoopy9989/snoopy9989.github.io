@@ -3,38 +3,43 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Arcade Game Launcher</title>
-    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <title>loading...</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-primary: #0f111a;
-            --bg-secondary: #1a1d2e;
-            --accent-neon: #00ffcc;
-            --accent-purple: #7000ff;
-            --accent-pink: #ff007c;
-            --text-main: #ffffff;
-            --text-muted: #8b92b5;
+            --bg-forest: #87d37c;
+            --gradient-start: #b9ffb0;
+            --gradient-mid: #7dd86e;
+            --gradient-end: #5fb553;
+            --wood-dark: #8b5a2b;
+            --wood-light: #cd853f;
+            --text-dark: #2d5a27;
+            --text-light: #ffffff;
+            --card-bg: rgba(255, 255, 255, 0.92);
         }
 
         body {
             margin: 0;
             padding: 0;
-            background-color: var(--bg-primary);
-            color: var(--text-main);
-            font-family: 'Poppins', sans-serif;
+            background: radial-gradient(circle at top, var(--gradient-start), var(--gradient-mid) 60%, var(--gradient-end));
+            background-attachment: fixed;
+            color: var(--text-dark);
+            font-family: 'Fredoka', sans-serif;
+            min-height: 100vh;
             overflow-x: hidden;
             user-select: none;
         }
 
-        /* Top Bar Navigation Dashboard */
+        /* Whimsical Header */
         header {
-            background: linear-gradient(135deg, var(--bg-secondary), #131625);
-            padding: 20px 40px;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            padding: 25px 40px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid rgba(255, 255, 255, 0.05);
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+            border-bottom: 4px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 0 8px 32px rgba(95, 181, 83, 0.3);
         }
 
         .brand {
@@ -44,57 +49,48 @@
         }
 
         .logo-icon {
-            width: 45px;
-            height: 45px;
-            background: linear-gradient(45deg, var(--accent-pink), var(--accent-purple));
-            border-radius: 12px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 24px;
-            box-shadow: 0 0 15px rgba(255, 0, 124, 0.4);
+            font-size: 42px;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.15));
+            animation: bounce 3s ease-in-out infinite;
         }
 
         .brand h1 {
             margin: 0;
-            font-size: 26px;
-            font-weight: 800;
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text-light);
+            text-shadow: 3px 3px 0px var(--wood-dark), -1px -1px 0px var(--wood-dark), 1px -1px 0px var(--wood-dark), -1px 1px 0px var(--wood-dark), 2px 2px 10px rgba(0,0,0,0.2);
             letter-spacing: 1px;
-            background: linear-gradient(to right, #fff, #a5b4fc);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
         }
 
-        .action-bar {
-            display: flex;
-            gap: 15px;
-            align-items: center;
+        .btn-utility {
+            background: linear-gradient(135deg, #fffae6, #ffd966);
+            color: var(--wood-dark);
+            padding: 12px 24px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 700;
+            font-family: 'Fredoka', sans-serif;
+            border: 3px solid var(--wood-dark);
+            box-shadow: 0 6px 0px var(--wood-dark);
+            cursor: pointer;
+            transition: all 0.15s ease;
+        }
+
+        .btn-utility:hover {
+            transform: translateY(2px);
+            box-shadow: 0 4px 0px var(--wood-dark);
+        }
+        
+        .btn-utility:active {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0px var(--wood-dark);
         }
 
         .file-input-wrapper {
             position: relative;
             overflow: hidden;
             display: inline-block;
-        }
-
-        .btn-utility {
-            background: #252942;
-            color: #fff;
-            padding: 10px 18px;
-            border-radius: 12px;
-            font-size: 14px;
-            font-weight: 600;
-            border: 1px solid rgba(255,255,255,0.1);
-            cursor: pointer;
-            transition: 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .btn-utility:hover {
-            background: #2f3454;
-            border-color: var(--accent-neon);
         }
 
         .file-input-wrapper input[type=file] {
@@ -107,178 +103,192 @@
         }
 
         main {
-            max-width: 1400px;
-            margin: 40px auto;
+            max-width: 1200px;
+            margin: 50px auto;
             padding: 0 20px;
         }
 
         .catalog-title {
-            font-size: 32px;
-            font-weight: 800;
-            margin-bottom: 30px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            font-size: 38px;
+            font-weight: 700;
+            color: var(--text-light);
+            text-shadow: 2px 2px 0px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            margin-bottom: 40px;
         }
 
-        .catalog-title::after {
-            content: '';
-            flex-grow: 1;
-            height: 2px;
-            background: linear-gradient(to right, rgba(0, 255, 204, 0.5), transparent);
-            margin-left: 15px;
-        }
-
-        /* Grid Layout Configuration */
+        /* Grid Layout */
         .game-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-            gap: 30px;
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 40px;
         }
 
-        /* Card Mechanics CSS styling */
+        /* Playful Mushroom/Forest Card design */
         .game-card {
-            background: var(--bg-secondary);
-            border-radius: 24px;
+            background: var(--card-bg);
+            border-radius: 35px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            border: 2px solid rgba(255, 255, 255, 0.03);
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            width: 340px;
+            box-shadow: 0 15px 0px rgba(0, 0, 0, 0.1), 0 20px 30px rgba(45, 90, 39, 0.2);
+            border: 4px solid var(--text-light);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
             display: flex;
             flex-direction: column;
             position: relative;
         }
 
         .game-card:hover {
-            transform: translateY(-8px) scale(1.02);
-            border-color: var(--card-glow, var(--accent-neon));
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(var(--card-glow-rgb, 0, 255, 204), 0.15);
+            transform: scale(1.04) translateY(-5px);
+            box-shadow: 0 20px 0px rgba(0, 0, 0, 0.08), 0 25px 35px rgba(45, 90, 39, 0.3);
         }
 
         .game-banner {
-            height: 180px;
-            background: var(--banner-bg, #2a2d42);
+            height: 160px;
+            background: linear-gradient(to bottom, rgba(255,255,255,0.4), transparent);
             position: relative;
             display: flex;
             justify-content: center;
             align-items: center;
-            overflow: hidden;
+            border-bottom: 4px dashed rgba(45, 90, 39, 0.15);
         }
 
         .banner-icon {
-            font-size: 64px;
-            filter: drop-shadow(0 8px 10px rgba(0,0,0,0.3));
-            transition: transform 0.3s ease;
+            font-size: 80px;
+            filter: drop-shadow(0 8px 0px rgba(0,0,0,0.1));
+            transition: transform 0.2s ease;
         }
 
         .game-card:hover .banner-icon {
-            transform: scale(1.15) rotate(4deg);
+            transform: scale(1.15) rotate(5deg);
         }
 
         .game-tags {
             position: absolute;
             top: 15px;
             left: 15px;
-            display: flex;
-            gap: 8px;
         }
 
         .tag {
-            background: rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
+            background: var(--wood-dark);
+            padding: 4px 14px;
+            border-radius: 15px;
+            font-size: 13px;
+            font-weight: 700;
             color: #fff;
-            border: 1px solid rgba(255, 255, 255, 0.1);
         }
 
         .game-details {
-            padding: 25px;
+            padding: 30px;
             display: flex;
             flex-direction: column;
             flex-grow: 1;
+            text-align: center;
         }
 
         .game-details h3 {
-            margin: 0 0 10px 0;
-            font-size: 22px;
+            margin: 0 0 12px 0;
+            font-size: 26px;
             font-weight: 700;
         }
 
         .game-details p {
-            margin: 0 0 20px 0;
-            color: var(--text-muted);
-            font-size: 14px;
-            line-height: 1.5;
+            margin: 0 0 25px 0;
+            color: #4a6b45;
+            font-size: 15px;
+            line-height: 1.6;
             flex-grow: 1;
         }
 
+        /* Big Play Buttons */
         .launch-btn {
-            background: linear-gradient(135deg, var(--card-glow, var(--accent-neon)), var(--btn-secondary, #00b3ff));
-            color: #000;
+            background: linear-gradient(135deg, #ff8c42, #ff6b1a);
+            color: white;
             font-weight: 700;
-            font-size: 16px;
-            border: none;
+            font-size: 18px;
+            font-family: 'Fredoka', sans-serif;
+            border: 3px solid var(--wood-dark);
             padding: 14px;
-            border-radius: 16px;
+            border-radius: 25px;
             cursor: pointer;
             display: flex;
             justify-content: center;
             align-items: center;
             gap: 10px;
-            transition: all 0.2s ease;
+            box-shadow: 0 6px 0px var(--wood-dark);
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.3);
+            transition: all 0.1s ease;
         }
 
         .launch-btn:hover {
-            filter: brightness(1.1);
-            box-shadow: 0 6px 20px rgba(var(--card-glow-rgb, 0, 255, 204), 0.3);
+            filter: brightness(1.05);
+            transform: translateY(2px);
+            box-shadow: 0 4px 0px var(--wood-dark);
         }
 
-        /* Fullscreen Arcade Cabinet System Overlay */
+        .launch-btn:active {
+            transform: translateY(6px);
+            box-shadow: 0 0px 0px var(--wood-dark);
+        }
+
+        /* Dynamic Colors per Card */
+        .card-gooblet h3 { color: #3c8c35; }
+        .card-gooblet .game-banner { background: radial-gradient(circle, #ffd4d4, transparent 70%); }
+        
+        .card-test h3 { color: #e65c00; }
+        .card-test .game-banner { background: radial-gradient(circle, #ffe3b3, transparent 70%); }
+
+        /* Fullscreen Cabinet View Overlay */
         #cabinetOverlay {
             position: fixed;
             inset: 0;
-            background: #000;
+            background: var(--gradient-end);
             z-index: 9999;
             display: none;
             flex-direction: column;
         }
 
         #cabinetHeader {
-            background: #0d0f16;
-            height: 55px;
-            padding: 0 20px;
+            background: var(--wood-dark);
+            height: 65px;
+            padding: 0 25px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 2px solid rgba(255,255,255,0.05);
+            border-bottom: 4px solid rgba(0,0,0,0.2);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         }
 
         .cabinet-title {
-            font-weight: 600;
-            font-size: 16px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 20px;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
 
         .exit-btn {
-            background: #ff3366;
-            border: none;
+            background: #ff4d4d;
+            border: 3px solid #800000;
             color: white;
-            padding: 8px 18px;
-            font-family: 'Poppins', sans-serif;
-            font-weight: 600;
-            border-radius: 10px;
+            padding: 8px 20px;
+            font-family: 'Fredoka', sans-serif;
+            font-weight: 700;
+            font-size: 15px;
+            border-radius: 18px;
             cursor: pointer;
-            transition: 0.2s;
+            box-shadow: 0 4px 0px #800000;
+            transition: 0.1s;
         }
 
         .exit-btn:hover {
-            background: #ff0044;
-            transform: scale(1.03);
+            transform: translateY(1px);
+            box-shadow: 0 3px 0px #800000;
+        }
+        
+        .exit-btn:active {
+            transform: translateY(4px);
+            box-shadow: 0 0px 0px #800000;
         }
 
         #gameFrame {
@@ -287,55 +297,58 @@
             border: none;
             background: #000;
         }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
+        }
     </style>
 </head>
 <body>
 
     <header>
         <div class="brand">
-            <div class="logo-icon">🕹️</div>
-            <h1>ARCADE STATION</h1>
+            <div class="logo-icon">🍄</div>
+            <h1>GOOBLET FOREST</h1>
         </div>
         <div class="action-bar">
             <div class="file-input-wrapper">
-                <button class="btn-utility">📂 Open Another File...</button>
-                <input type="file" accept=".html,.txt" onchange="loadDirectFile(event)">
+                <button class="btn-utility">📂 Load External File</button>
+                <input type="file" accept=".html" onchange="loadDirectFile(event)">
             </div>
         </div>
     </header>
 
     <main>
-        <div class="catalog-title">Active Station Programs</div>
+        <div class="catalog-title">Choose Your Forest Adventure!</div>
         
         <div class="game-grid">
             
-            <div class="game-card" style="--card-glow: #7dd86e; --card-glow-rgb: 125, 216, 110; --banner-bg: radial-gradient(circle, #b9ffb0, #5fb553); --btn-secondary: #3c8c35;">
+            <div class="game-card card-gooblet">
                 <div class="game-banner">
                     <div class="game-tags">
-                        <span class="tag">Main Build</span>
-                        <span class="tag">3D Engine</span>
+                        <span class="tag">Main Game</span>
                     </div>
                     <div class="banner-icon">🍄</div>
                 </div>
                 <div class="game-details">
-                    <h3 style="font-family: 'Fredoka', sans-serif; color: #7dd86e;">Gooblet Forest 3D</h3>
-                    <p>Explore an immersive 3D forest environment, collect golden coins, avoid rogue chickens, upgrade your attributes in the shop, and play co-op mode!</p>
-                    <button class="launch-btn" onclick="launchGame('gooblet.html', 'Gooblet Forest 3D')">Launch Game 🚀</button>
+                    <h3>Gooblet Forest 3D</h3>
+                    <p>Explore an immersive 3D world, collect shiny golden coins, dodge wild chickens, upgrade your powers at the local shop, and play with friends!</p>
+                    <button class="launch-btn" onclick="launchGame('gooblet.html', 'Gooblet Forest 3D')">Play Now! 🚀</button>
                 </div>
             </div>
 
-            <div class="game-card" style="--card-glow: #ff007c; --card-glow-rgb: 255, 0, 124; --banner-bg: radial-gradient(circle, #ffbcd9, #ff007c); --btn-secondary: #b30056;">
+            <div class="game-card card-test">
                 <div class="game-banner">
                     <div class="game-tags">
-                        <span class="tag">Testing</span>
                         <span class="tag">Sandbox</span>
                     </div>
                     <div class="banner-icon">🧪</div>
                 </div>
                 <div class="game-details">
-                    <h3 style="color: #ff007c;">Test Environment</h3>
-                    <p>Run separate experimental setups, debug code implementations, analyze logic, or execute custom game feature iterations inside this sandbox module.</p>
-                    <button class="launch-btn" onclick="launchGame('test.html', 'Test Environment')">Launch Test 🚀</button>
+                    <h3>Test Sandbox</h3>
+                    <p>Run rapid experiments, review feature drafts, tweak object mechanics, or test clean game variations safely in this local lab zone.</p>
+                    <button class="launch-btn" onclick="launchGame('test.html', 'Test Sandbox')">Boot Sandbox 🚀</button>
                 </div>
             </div>
 
@@ -344,8 +357,8 @@
 
     <div id="cabinetOverlay">
         <div id="cabinetHeader">
-            <div class="cabinet-title">🎮 Playing: <span id="currentRunningTitle" style="color: var(--accent-neon);">None</span></div>
-            <button class="exit-btn" onclick="closeCabinet()">Exit to Launcher 🏠</button>
+            <div class="cabinet-title">🌳 Current game: <span id="currentRunningTitle" style="color: #fffbbf;">None</span></div>
+            <button class="exit-btn" onclick="closeCabinet()">Leave Game 🏠</button>
         </div>
         <iframe id="gameFrame" src=""></iframe>
     </div>
@@ -364,11 +377,10 @@
 
         function closeCabinet() {
             cabinet.style.display = 'none';
-            frame.src = ''; // Clear source to stop canvas threads and sound loops
+            frame.src = ''; 
             document.body.style.overflow = 'auto';
         }
 
-        // Drop down loose picker handler channel fallback
         function loadDirectFile(event) {
             const file = event.target.files[0];
             if (!file) return;
