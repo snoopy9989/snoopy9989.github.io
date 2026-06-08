@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Gooblet Forest Launcher</title>
+    <title>loading...</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -248,7 +248,7 @@
             display: none;
         }
 
-        /* 🌟 Floating Corner Controls Overlay (Replaces the Solid Gray Bar) */
+        /* Floating Corner Controls Overlay */
         .floating-controls {
             position: absolute;
             top: 20px;
@@ -256,12 +256,12 @@
             display: flex;
             gap: 12px;
             z-index: 10000;
-            opacity: 0.4; /* Fades out during gameplay so it's not distracting */
+            opacity: 0.4;
             transition: opacity 0.2s ease;
         }
 
         .floating-controls:hover {
-            opacity: 1; /* Completely visible when moving mouse over it */
+            opacity: 1;
         }
 
         .cabinet-btn {
@@ -290,6 +290,7 @@
             background: linear-gradient(135deg, #ff4d4d, #cc0000);
             border-color: #800000;
             box-shadow: 0 4px 0px #800000;
+            display: block; /* Managed dynamically via JavaScript */
         }
 
         .exit-btn:hover { transform: translateY(1px); box-shadow: 0 3px 0px #800000; }
@@ -364,7 +365,7 @@
     <div id="cabinetOverlay">
         <div class="floating-controls">
             <button class="cabinet-btn fs-btn" onclick="toggleFullscreen()">Toggle Fullscreen 📺</button>
-            <button class="cabinet-btn exit-btn" onclick="closeCabinet()">Leave Game 🏠</button>
+            <button class="cabinet-btn exit-btn" id="leaveGameBtn" onclick="closeCabinet()">Leave Game 🏠</button>
         </div>
         <iframe id="gameFrame" src=""></iframe>
     </div>
@@ -372,6 +373,7 @@
     <script>
         const cabinet = document.getElementById('cabinetOverlay');
         const frame = document.getElementById('gameFrame');
+        const leaveGameBtn = document.getElementById('leaveGameBtn');
 
         function launchGame(url, title) {
             frame.src = url;
@@ -386,17 +388,33 @@
             cabinet.style.display = 'none';
             frame.src = ''; 
             document.body.style.overflow = 'auto';
+            
+            // Safety fallback reset
+            leaveGameBtn.style.display = 'block';
         }
 
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
-                cabinet.requestFullscreen().catch(err => {
+                cabinet.requestFullscreen().then(() => {
+                    leaveGameBtn.style.display = 'none';
+                }).catch(err => {
                     alert(`Could not activate fullscreen mode: ${err.message}`);
                 });
             } else {
                 document.exitFullscreen();
             }
         }
+
+        // Native Fullscreen change listener to handle 'Esc' button exits seamlessly
+        document.addEventListener('fullscreenchange', () => {
+            if (!document.fullscreenElement) {
+                // If we exited fullscreen mode, bring back the Leave Game button
+                leaveGameBtn.style.display = 'block';
+            } else {
+                // Double check to hide it if user enters fullscreen using another method
+                leaveGameBtn.style.display = 'none';
+            }
+        });
 
         function loadDirectFile(event) {
             const file = event.target.files[0];
