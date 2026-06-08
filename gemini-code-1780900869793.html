@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Arcade Game Launcher</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f111a;
+            --bg-secondary: #1a1d2e;
+            --accent-neon: #00ffcc;
+            --accent-purple: #7000ff;
+            --accent-pink: #ff007c;
+            --text-main: #ffffff;
+            --text-muted: #8b92b5;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-primary);
+            color: var(--text-main);
+            font-family: 'Poppins', sans-serif;
+            overflow-x: hidden;
+            user-select: none;
+        }
+
+        /* Top Bar Navigation Dashboard */
+        header {
+            background: linear-gradient(135deg, var(--bg-secondary), #131625);
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .logo-icon {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(45deg, var(--accent-pink), var(--accent-purple));
+            border-radius: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            box-shadow: 0 0 15px rgba(255, 0, 124, 0.4);
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            background: linear-gradient(to right, #fff, #a5b4fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .action-bar {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+
+        .btn-utility {
+            background: #252942;
+            color: #fff;
+            padding: 10px 18px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            border: 1px solid rgba(255,255,255,0.1);
+            cursor: pointer;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-utility:hover {
+            background: #2f3454;
+            border-color: var(--accent-neon);
+        }
+
+        .file-input-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        main {
+            max-width: 1400px;
+            margin: 40px auto;
+            padding: 0 20px;
+        }
+
+        .catalog-title {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .catalog-title::after {
+            content: '';
+            flex-grow: 1;
+            height: 2px;
+            background: linear-gradient(to right, rgba(0, 255, 204, 0.5), transparent);
+            margin-left: 15px;
+        }
+
+        /* Grid Layout Configuration */
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 30px;
+        }
+
+        /* Card Mechanics CSS styling */
+        .game-card {
+            background: var(--bg-secondary);
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            border: 2px solid rgba(255, 255, 255, 0.03);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .game-card:hover {
+            transform: translateY(-8px) scale(1.02);
+            border-color: var(--card-glow, var(--accent-neon));
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(var(--card-glow-rgb, 0, 255, 204), 0.15);
+        }
+
+        .game-banner {
+            height: 180px;
+            background: var(--banner-bg, #2a2d42);
+            position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        .banner-icon {
+            font-size: 64px;
+            filter: drop-shadow(0 8px 10px rgba(0,0,0,0.3));
+            transition: transform 0.3s ease;
+        }
+
+        .game-card:hover .banner-icon {
+            transform: scale(1.15) rotate(4deg);
+        }
+
+        .game-tags {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            display: flex;
+            gap: 8px;
+        }
+
+        .tag {
+            background: rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .game-details {
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+
+        .game-details h3 {
+            margin: 0 0 10px 0;
+            font-size: 22px;
+            font-weight: 700;
+        }
+
+        .game-details p {
+            margin: 0 0 20px 0;
+            color: var(--text-muted);
+            font-size: 14px;
+            line-height: 1.5;
+            flex-grow: 1;
+        }
+
+        .launch-btn {
+            background: linear-gradient(135deg, var(--card-glow, var(--accent-neon)), var(--btn-secondary, #00b3ff));
+            color: #000;
+            font-weight: 700;
+            font-size: 16px;
+            border: none;
+            padding: 14px;
+            border-radius: 16px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .launch-btn:hover {
+            filter: brightness(1.1);
+            box-shadow: 0 6px 20px rgba(var(--card-glow-rgb, 0, 255, 204), 0.3);
+        }
+
+        /* Fullscreen Arcade Cabinet System Overlay */
+        #cabinetOverlay {
+            position: fixed;
+            inset: 0;
+            background: #000;
+            z-index: 9999;
+            display: none;
+            flex-direction: column;
+        }
+
+        #cabinetHeader {
+            background: #0d0f16;
+            height: 55px;
+            padding: 0 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid rgba(255,255,255,0.05);
+        }
+
+        .cabinet-title {
+            font-weight: 600;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .exit-btn {
+            background: #ff3366;
+            border: none;
+            color: white;
+            padding: 8px 18px;
+            font-family: 'Poppins', sans-serif;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .exit-btn:hover {
+            background: #ff0044;
+            transform: scale(1.03);
+        }
+
+        #gameFrame {
+            width: 100%;
+            flex-grow: 1;
+            border: none;
+            background: #000;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="brand">
+            <div class="logo-icon">🕹️</div>
+            <h1>ARCADE STATION</h1>
+        </div>
+        <div class="action-bar">
+            <div class="file-input-wrapper">
+                <button class="btn-utility">📂 Open Another File...</button>
+                <input type="file" accept=".html,.txt" onchange="loadDirectFile(event)">
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="catalog-title">Active Station Programs</div>
+        
+        <div class="game-grid">
+            
+            <div class="game-card" style="--card-glow: #7dd86e; --card-glow-rgb: 125, 216, 110; --banner-bg: radial-gradient(circle, #b9ffb0, #5fb553); --btn-secondary: #3c8c35;">
+                <div class="game-banner">
+                    <div class="game-tags">
+                        <span class="tag">Main Build</span>
+                        <span class="tag">3D Engine</span>
+                    </div>
+                    <div class="banner-icon">🍄</div>
+                </div>
+                <div class="game-details">
+                    <h3 style="font-family: 'Fredoka', sans-serif; color: #7dd86e;">Gooblet Forest 3D</h3>
+                    <p>Explore an immersive 3D forest environment, collect golden coins, avoid rogue chickens, upgrade your attributes in the shop, and play co-op mode!</p>
+                    <button class="launch-btn" onclick="launchGame('gooblet.html', 'Gooblet Forest 3D')">Launch Game 🚀</button>
+                </div>
+            </div>
+
+            <div class="game-card" style="--card-glow: #ff007c; --card-glow-rgb: 255, 0, 124; --banner-bg: radial-gradient(circle, #ffbcd9, #ff007c); --btn-secondary: #b30056;">
+                <div class="game-banner">
+                    <div class="game-tags">
+                        <span class="tag">Testing</span>
+                        <span class="tag">Sandbox</span>
+                    </div>
+                    <div class="banner-icon">🧪</div>
+                </div>
+                <div class="game-details">
+                    <h3 style="color: #ff007c;">Test Environment</h3>
+                    <p>Run separate experimental setups, debug code implementations, analyze logic, or execute custom game feature iterations inside this sandbox module.</p>
+                    <button class="launch-btn" onclick="launchGame('test.html', 'Test Environment')">Launch Test 🚀</button>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <div id="cabinetOverlay">
+        <div id="cabinetHeader">
+            <div class="cabinet-title">🎮 Playing: <span id="currentRunningTitle" style="color: var(--accent-neon);">None</span></div>
+            <button class="exit-btn" onclick="closeCabinet()">Exit to Launcher 🏠</button>
+        </div>
+        <iframe id="gameFrame" src=""></iframe>
+    </div>
+
+    <script>
+        const cabinet = document.getElementById('cabinetOverlay');
+        const frame = document.getElementById('gameFrame');
+        const titleSpan = document.getElementById('currentRunningTitle');
+
+        function launchGame(url, title) {
+            titleSpan.textContent = title;
+            frame.src = url;
+            cabinet.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeCabinet() {
+            cabinet.style.display = 'none';
+            frame.src = ''; // Clear source to stop canvas threads and sound loops
+            document.body.style.overflow = 'auto';
+        }
+
+        // Drop down loose picker handler channel fallback
+        function loadDirectFile(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const objectUrl = URL.createObjectURL(file);
+            launchGame(objectUrl, `File: ${file.name}`);
+        }
+    </script>
+</body>
+</html>
