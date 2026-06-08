@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>loading...</title>
+    <title>Loading...</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -248,8 +248,8 @@
             display: none;
         }
 
-        /* Floating Corner Controls Overlay */
-        .floating-controls {
+        /* Floating Corner Controls Container */
+        #controlsLayer {
             position: absolute;
             top: 20px;
             right: 20px;
@@ -260,7 +260,7 @@
             transition: opacity 0.2s ease;
         }
 
-        .floating-controls:hover {
+        #controlsLayer:hover {
             opacity: 1;
         }
 
@@ -290,7 +290,6 @@
             background: linear-gradient(135deg, #ff4d4d, #cc0000);
             border-color: #800000;
             box-shadow: 0 4px 0px #800000;
-            display: block; /* Managed dynamically via JavaScript */
         }
 
         .exit-btn:hover { transform: translateY(1px); box-shadow: 0 3px 0px #800000; }
@@ -363,9 +362,9 @@
     </main>
 
     <div id="cabinetOverlay">
-        <div class="floating-controls">
+        <div id="controlsLayer">
             <button class="cabinet-btn fs-btn" onclick="toggleFullscreen()">Toggle Fullscreen 📺</button>
-            <button class="cabinet-btn exit-btn" id="leaveGameBtn" onclick="closeCabinet()">Leave Game 🏠</button>
+            <button class="cabinet-btn exit-btn" onclick="closeCabinet()">Leave Game 🏠</button>
         </div>
         <iframe id="gameFrame" src=""></iframe>
     </div>
@@ -373,12 +372,13 @@
     <script>
         const cabinet = document.getElementById('cabinetOverlay');
         const frame = document.getElementById('gameFrame');
-        const leaveGameBtn = document.getElementById('leaveGameBtn');
+        const controlsLayer = document.getElementById('controlsLayer');
 
         function launchGame(url, title) {
             frame.src = url;
             cabinet.style.display = 'block';
             document.body.style.overflow = 'hidden';
+            controlsLayer.style.display = 'flex'; // Reset layer view on boot
         }
 
         function closeCabinet() {
@@ -388,15 +388,14 @@
             cabinet.style.display = 'none';
             frame.src = ''; 
             document.body.style.overflow = 'auto';
-            
-            // Safety fallback reset
-            leaveGameBtn.style.display = 'block';
+            controlsLayer.style.display = 'flex';
         }
 
         function toggleFullscreen() {
             if (!document.fullscreenElement) {
                 cabinet.requestFullscreen().then(() => {
-                    leaveGameBtn.style.display = 'none';
+                    // Hide the entire action block when full display takes over
+                    controlsLayer.style.display = 'none';
                 }).catch(err => {
                     alert(`Could not activate fullscreen mode: ${err.message}`);
                 });
@@ -405,14 +404,14 @@
             }
         }
 
-        // Native Fullscreen change listener to handle 'Esc' button exits seamlessly
+        // Monitors fullscreen transitions (handles keyboard Esc changes flawlessly)
         document.addEventListener('fullscreenchange', () => {
             if (!document.fullscreenElement) {
-                // If we exited fullscreen mode, bring back the Leave Game button
-                leaveGameBtn.style.display = 'block';
+                // If exiting fullscreen, bring both buttons back instantly
+                controlsLayer.style.display = 'flex';
             } else {
-                // Double check to hide it if user enters fullscreen using another method
-                leaveGameBtn.style.display = 'none';
+                // Keep them hidden when full display takes over
+                controlsLayer.style.display = 'none';
             }
         });
 
