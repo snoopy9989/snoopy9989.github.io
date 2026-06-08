@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>loading...</title>
+    <title>Gooblet Forest Launcher</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -267,8 +267,13 @@
             text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
         }
 
-        .exit-btn {
-            background: #ff4d4d;
+        .cabinet-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .cabinet-btn {
             border: 3px solid #800000;
             color: white;
             padding: 8px 20px;
@@ -277,19 +282,26 @@
             font-size: 15px;
             border-radius: 18px;
             cursor: pointer;
-            box-shadow: 0 4px 0px #800000;
-            transition: 0.1s;
+            transition: all 0.1s ease;
         }
 
-        .exit-btn:hover {
-            transform: translateY(1px);
-            box-shadow: 0 3px 0px #800000;
+        .fs-btn {
+            background: linear-gradient(135deg, #4da6ff, #0066cc);
+            border-color: #003366;
+            box-shadow: 0 4px 0px #003366;
         }
-        
-        .exit-btn:active {
-            transform: translateY(4px);
-            box-shadow: 0 0px 0px #800000;
+
+        .fs-btn:hover { transform: translateY(1px); box-shadow: 0 3px 0px #003366; }
+        .fs-btn:active { transform: translateY(4px); box-shadow: 0 0px 0px #003366; }
+
+        .exit-btn {
+            background: linear-gradient(135deg, #ff4d4d, #cc0000);
+            border-color: #800000;
+            box-shadow: 0 4px 0px #800000;
         }
+
+        .exit-btn:hover { transform: translateY(1px); box-shadow: 0 3px 0px #800000; }
+        .exit-btn:active { transform: translateY(4px); box-shadow: 0 0px 0px #800000; }
 
         #gameFrame {
             width: 100%;
@@ -309,7 +321,7 @@
     <header>
         <div class="brand">
             <div class="logo-icon">🍄</div>
-            <h1>GOOBLET FOREST</h1>
+            <h1>GOOBLET LAUNCHER</h1>
         </div>
         <div class="action-bar">
             <div class="file-input-wrapper">
@@ -357,8 +369,11 @@
 
     <div id="cabinetOverlay">
         <div id="cabinetHeader">
-            <div class="cabinet-title">🌳 Current game: <span id="currentRunningTitle" style="color: #fffbbf;">None</span></div>
-            <button class="exit-btn" onclick="closeCabinet()">Leave Game 🏠</button>
+            <div class="cabinet-title">🌳 Current Realm: <span id="currentRunningTitle" style="color: #fffbbf;">None</span></div>
+            <div class="cabinet-actions">
+                <button class="cabinet-btn fs-btn" onclick="toggleFullscreen()">Toggle Fullscreen 📺</button>
+                <button class="cabinet-btn exit-btn" onclick="closeCabinet()">Leave Game 🏠</button>
+            </div>
         </div>
         <iframe id="gameFrame" src=""></iframe>
     </div>
@@ -376,9 +391,24 @@
         }
 
         function closeCabinet() {
+            // Force exit HTML fullscreen if it's running before shutting window down
+            if (document.fullscreenElement) {
+                document.exitFullscreen().catch(err => console.log(err));
+            }
             cabinet.style.display = 'none';
             frame.src = ''; 
             document.body.style.overflow = 'auto';
+        }
+
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                // Request full monitor immersion for the entire game cabinet interface
+                cabinet.requestFullscreen().catch(err => {
+                    alert(`Could not activate fullscreen mode: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
         }
 
         function loadDirectFile(event) {
