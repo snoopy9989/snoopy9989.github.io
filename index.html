@@ -57,6 +57,24 @@ body{
     to{ transform:translateY(110vh) rotate(360deg); }
 }
 
+.confetti{
+    position:absolute;
+    top:-20px;
+    width:12px;
+    height:12px;
+    opacity:0.95;
+    animation:confettiFall linear forwards;
+    z-index:5;
+    pointer-events:none;
+}
+
+@keyframes confettiFall{
+    0%{ transform:translateY(0) rotate(0deg); opacity:1; }
+    100%{ transform:translateY(110vh) rotate(720deg); opacity:0.3; }
+}
+
+#gameTitle{ cursor:pointer; }
+
 #gameTitle{
     font-size:82px;
     color:white;
@@ -300,10 +318,10 @@ body{
     <div class="leaf" style="left:60%; animation-duration:14s;"></div>
     <div class="leaf" style="left:80%; animation-duration:11s;"></div>
 
-    <div id="gameTitle">Gooblet Forest 3D</div>
+    <div id="gameTitle" onclick="handleTitleClick()">Gooblet Forest 3D</div>
 
     <div id="subtitle">
-        <span id="subtitleText">3D v1.6.9</span>
+        <span id="subtitleText">3D v1.7.0</span>
         <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:20px;">
             <button id="easyButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy')">Easy 🌱</button>
             <button id="easyMediumButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy-medium')">Easy Medium 🐤</button>
@@ -316,8 +334,8 @@ body{
             <button class="menuButton" id="settingsButton" onclick="openSettings()">Settings ⚙️</button>
         </div>
         <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:10px;">
-            <a href="https://vavstorage.github.io/mpy" target="_blank" rel="noopener" class="menuButton" style="width:180px; font-size:22px; text-decoration:none; display:flex; align-items:center; justify-content:center;">beta 3D game</a>
-            <a href="https://vavstorage.github.io/game" target="_blank" rel="noopener" class="menuButton" style="width:180px; font-size:22px; text-decoration:none; display:flex; align-items:center; justify-content:center;">stable 3D Game</a>
+            <a href="https://vavstorage.github.io/mpy" target="_blank" rel="noopener" class="menuButton" style="width:180px; font-size:22px; text-decoration:none; display:flex; align-items:center; justify-content:center;">MPY</a>
+            <a href="https://vavstorage.github.io/game" target="_blank" rel="noopener" class="menuButton" style="width:180px; font-size:22px; text-decoration:none; display:flex; align-items:center; justify-content:center;">Game</a>
         </div>
     </div>
 </div>
@@ -354,6 +372,7 @@ body{
     <button class="shopItem" onclick="buySkin(player,'#7fb8ff',24)">Ocean Skin (24)</button>
     <button class="shopItem" onclick="buySkin(player,'#b58cff',28)">Dream Skin (28)</button>
     <button class="shopItem" onclick="buySkin(player,'#ffe066',35)">Golden Glow Skin (35)</button>
+    <button class="shopItem" style="background:linear-gradient(90deg,#ff3333,#ffd700,#33ff55,#3388ff,#aa33ff);" onclick="buySkin(player,'rainbow',50)">🌈 Rainbow Skin (50)</button>
 </div>
 
 <div class="shop" id="shop2">
@@ -367,6 +386,7 @@ body{
     <button class="shopItem" onclick="buySkin(player2,'#7fb8ff',24)">Ocean Skin (24)</button>
     <button class="shopItem" onclick="buySkin(player2,'#b58cff',28)">Dream Skin (28)</button>
     <button class="shopItem" onclick="buySkin(player2,'#ffe066',35)">Golden Glow Skin (35)</button>
+    <button class="shopItem" style="background:linear-gradient(90deg,#ff3333,#ffd700,#33ff55,#3388ff,#aa33ff);" onclick="buySkin(player2,'rainbow',50)">🌈 Rainbow Skin (50)</button>
 </div>
 
 <div id="settingsScreen">
@@ -387,6 +407,10 @@ body{
         <div class="settingRow">
             <span id="touchLabel">Touch Controls:</span> <span id="touchStatus">OFF</span><br>
             <button id="toggleTouchButton" class="settingButton" onclick="toggleTouchControls()">Toggle Touch</button>
+        </div>
+        <div class="settingRow">
+            <span>🌙 Night Mode:</span> <span id="nightModeStatus">OFF</span><br>
+            <button class="settingButton" onclick="toggleNightMode()">Toggle Night Mode</button>
         </div>
         <div class="settingRow">
             <span id="languageLabel">Language</span><br><br>
@@ -445,6 +469,12 @@ dirLight.shadow.camera.top = d;
 dirLight.shadow.camera.bottom = -d;
 scene.add(dirLight);
 
+// --- NIGHT MODE LANTERN LIGHTS (follow each player when enabled) ---
+const lanternLight1 = new THREE.PointLight(0xffcc88, 0, 260, 2);
+scene.add(lanternLight1);
+const lanternLight2 = new THREE.PointLight(0x88ccff, 0, 260, 2);
+scene.add(lanternLight2);
+
 // --- GAME LOGIC STRUCTURES ---
 const startScreen = document.getElementById("startScreen");
 const ui = document.getElementById("ui");
@@ -468,6 +498,10 @@ bgMusic.volume = 0.7;
 let particlesEnabled = true;
 let touchControlsEnabled = false;
 let currentLanguage = 'en';
+let nightModeEnabled = false;
+let beeSwarms = [];
+let titleClickCount = 0;
+let titleClickResetTimer = null;
 
 let currentLevel = 1;
 let coinsCollectedThisLevel = 0;
@@ -502,7 +536,7 @@ function getTheme() {
 }
 
 const translations = {
-    en:{ title:'Gooblet Forest 3D', subtitle:' 3D v1.6.5', settings:'Settings ⚙️', music:'Music:', particles:'Particles:', fullscreen:'Fullscreen', fullscreenButton:'Toggle Fullscreen', toggleMusic:'Toggle Music', toggleParticles:'Toggle Particles', back:'Back', p1shop:'P1 Shop', p2shop:'P2 Shop', menu:'Menu', easy:'Easy 🌱', easyMedium:'Easy Medium 🐤', medium:'Medium 🐔', hard:'Hard ⚠️', mpMedium:'Multiplayer Medium', mpHard:'Multiplayer Hard', language:'Language', level:'Level', touch:'Touch Controls:', toggleTouch:'Toggle Touch' },
+    en:{ title:'Gooblet Forest 3D', subtitle:' 3D v1.7.0', settings:'Settings ⚙️', music:'Music:', particles:'Particles:', fullscreen:'Fullscreen', fullscreenButton:'Toggle Fullscreen', toggleMusic:'Toggle Music', toggleParticles:'Toggle Particles', back:'Back', p1shop:'P1 Shop', p2shop:'P2 Shop', menu:'Menu', easy:'Easy 🌱', easyMedium:'Easy Medium 🐤', medium:'Medium 🐔', hard:'Hard ⚠️', mpMedium:'Multiplayer Medium', mpHard:'Multiplayer Hard', language:'Language', level:'Level', touch:'Touch Controls:', toggleTouch:'Toggle Touch' },
     es:{ title:'Bosque Gooblet 3D', subtitle:'Aventuras lindas del bosque 🌿', settings:'Configuración ⚙️', music:'Música:', particles:'Partículas:', fullscreen:'Pantalla completa', fullscreenButton:'Cambiar pantalla completa', toggleMusic:'Alternar música', toggleParticles:'Alternar partículas', back:'Atrás', p1shop:'Tienda J1', p2shop:'Tienda J2', menu:'Menú', easy:'Fácil 🌱', easyMedium:'Medio Fácil 🐤', medium:'Medio 🐔', hard:'Difícil ⚠️', mpMedium:'Multijugador Medio', mpHard:'Multijugador Difícil', language:'Idioma', level:'Nivel', touch:'Controles táctiles:', toggleTouch:'Alternar táctil' },
     fr:{ title:'Forêt Gooblet 3D', subtitle:'Mignonnes aventures en forêt 🌿', settings:'Paramètres ⚙️', music:'Musique :', particles:'Particules :', fullscreen:'Plein écran', fullscreenButton:'Basculer plein écran', toggleMusic:'Activer musique', toggleParticles:'Activer particules', back:'Retour', p1shop:'Boutique J1', p2shop:'Boutique J2', menu:'Menu', easy:'Facile 🌱', easyMedium:'Moyen Facile 🐤', medium:'Moyen 🐔', hard:'Difficile ⚠️', mpMedium:'Multijoueur Moyen', mpHard:'Multijoueur Difficile', language:'Langue', level:'Niveau', touch:'Contrôles tactiles :', toggleTouch:'Basculer tactile' },
     jp:{ title:'グーブレットの森 3D', subtitle:'かわいい森 of 冒険 🌿', settings:'設定 ⚙️', music:'音楽:', particles:'パーティクル:', fullscreen:'フルスクリーン', fullscreenButton:'フルスクリーン切替', toggleMusic:'音楽を切替', toggleParticles:'パーティクル切替', back:'戻る', p1shop:'P1ショップ', p2shop:'P2ショップ', menu:'メニュー', easy:'かんたん 🌱', easyMedium:'かんたんふつう 🐤', medium:'ふつう 🐔', hard:'むずかしい ⚠️', mpMedium:'マルチプレイヤー 普通', mpHard:'マルチプレイヤー 難しい', language:'言語', level:'レベル', touch:'タッチコントロール:', toggleTouch:'タッチ切替' }
@@ -609,6 +643,8 @@ function rebuildEnvironment() {
     powerUps3D.forEach(p => scene.remove(p));
     powerUps3D = [];
     powerUps = [];
+    beeSwarms.forEach(b => scene.remove(b.mesh));
+    beeSwarms = [];
 
     if(goalMesh) { scene.remove(goalMesh); goalMesh = null; }
 
@@ -623,6 +659,10 @@ function rebuildEnvironment() {
         }
         // Reposition jump button out of view in top down modes if touch is enabled
         document.getElementById("btnJump").style.display = "none";
+
+        // Spawn 1-2 stationary bee swarm hazards for open-world levels
+        let swarmCount = currentLevel >= 4 ? 2 : 1;
+        for(let i = 0; i < swarmCount; i++) spawnBeeSwarm();
     } else {
         // Platformer sizing modifications
         groundMesh.position.set(4200 / 2, -500, arenaHeight / 2); 
@@ -732,6 +772,66 @@ function create3DChicken() {
     return group;
 }
 
+function create3DBeeSwarm() {
+    const group = new THREE.Group();
+    const bodyMat = new THREE.MeshToonMaterial({ color: 0xf4c430 });
+    const stripeMat = new THREE.MeshToonMaterial({ color: 0x1a1a1a });
+    for(let i = 0; i < 5; i++){
+        const bee = new THREE.Group();
+        const bodyGeo = new THREE.SphereGeometry(6, 8, 8);
+        const body = new THREE.Mesh(bodyGeo, i % 2 === 0 ? bodyMat : stripeMat);
+        bee.add(body);
+        const wingGeo = new THREE.CircleGeometry(4, 8);
+        const wingMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.5, side: THREE.DoubleSide });
+        const wing = new THREE.Mesh(wingGeo, wingMat);
+        wing.position.set(0, 4, 0);
+        wing.rotation.x = Math.PI / 2;
+        bee.add(wing);
+        bee.position.set((Math.random()-0.5) * 30, Math.random() * 20 + 10, (Math.random()-0.5) * 30);
+        bee.userData.orbitOffset = Math.random() * Math.PI * 2;
+        group.add(bee);
+    }
+    scene.add(group);
+    return group;
+}
+
+// --- BEE SWARM HAZARD (stationary, stings players who wander too close) ---
+function spawnBeeSwarm() {
+    let bx, bz, tries = 0;
+    do {
+        bx = Math.random() * (arenaWidth - 200) + 100;
+        bz = Math.random() * (arenaHeight - 200) + 100;
+        tries++;
+    } while (Math.hypot(bx - 200, bz - 300) < 180 && tries < 10);
+    const mesh = create3DBeeSwarm();
+    mesh.position.set(bx, 0, bz);
+    beeSwarms.push({ x: bx, z: bz, radius: 45, mesh: mesh });
+}
+
+function checkBeeSwarms(p) {
+    if (currentLevel >= 11) return;
+    for (let swarm of beeSwarms) {
+        let dx = p.x - swarm.x;
+        let dz = p.z - swarm.z;
+        let dist = Math.sqrt(dx*dx + dz*dz);
+        if (dist < swarm.radius + p.size/2) {
+            if (p.stingTimer <= 0 && p.forceFieldTimer <= 0) {
+                p.stingTimer = 150; // ~2.5s slowdown
+                if (particlesEnabled) {
+                    for(let j=0; j<6; j++) {
+                        const pGeo = new THREE.SphereGeometry(2, 4, 4);
+                        const pMat = new THREE.MeshBasicMaterial({ color: 0xf4c430 });
+                        const pMesh = new THREE.Mesh(pGeo, pMat);
+                        pMesh.position.set(p.x, 20, p.z);
+                        scene.add(pMesh);
+                        walkParticles.push({ mesh: pMesh, vx: (Math.random()-0.5)*5, vy: Math.random()*4, vz: (Math.random()-0.5)*5, life: 20 });
+                    }
+                }
+            }
+        }
+    }
+}
+
 // --- INITIALIZE ENTITY OBJECTS ---
 
 // Keep track of connected gamepads
@@ -798,8 +898,16 @@ let keys = {};
 addEventListener("keydown", e => { keys[e.key.toLowerCase()] = true; });
 addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; });
 
-let player = { x:200, y:400, z:200, vy:0, size:42, color:"#9cff8f", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null, magnetTimer:0, doubleCoinsTimer:0, forceFieldTimer:0 };
-let player2 = { x:500, y:400, z:250, vy:0, size:42, color:"#7fd8ff", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null, magnetTimer:0, doubleCoinsTimer:0, forceFieldTimer:0 };
+let player = { x:200, y:400, z:200, vy:0, size:42, color:"#9cff8f", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null, magnetTimer:0, doubleCoinsTimer:0, forceFieldTimer:0, speedBoostTimer:0, stingTimer:0, rainbowSkin:false };
+let player2 = { x:500, y:400, z:250, vy:0, size:42, color:"#7fd8ff", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null, magnetTimer:0, doubleCoinsTimer:0, forceFieldTimer:0, speedBoostTimer:0, stingTimer:0, rainbowSkin:false };
+
+// Effective movement speed for a player, factoring in temporary speed-boost power-up and bee stings
+function getSpeed(p){
+    let s = p.speed;
+    if(p.speedBoostTimer > 0) s += 4;
+    if(p.stingTimer > 0) s *= 0.5;
+    return s;
+}
 
 // --- COOKIE & OFFLINE COOKIE-FALLBACK ENGINE ---
 function saveGameData() {
@@ -808,8 +916,9 @@ function saveGameData() {
         particlesEnabled: particlesEnabled,
         touchControlsEnabled: touchControlsEnabled,
         currentLanguage: currentLanguage,
-        player: { coins: player.coins, speed: player.speed, speedLevel: player.speedLevel, speedCost: player.speedCost, color: player.color },
-        player2: { coins: player2.coins, speed: player2.speed, speedLevel: player2.speedLevel, speedCost: player2.speedCost, color: player2.color }
+        nightModeEnabled: nightModeEnabled,
+        player: { coins: player.coins, speed: player.speed, speedLevel: player.speedLevel, speedCost: player.speedCost, color: player.color, rainbowSkin: player.rainbowSkin },
+        player2: { coins: player2.coins, speed: player2.speed, speedLevel: player2.speedLevel, speedCost: player2.speedCost, color: player2.color, rainbowSkin: player2.rainbowSkin }
     };
     const jsonStr = JSON.stringify(data);
     
@@ -847,6 +956,7 @@ function loadGameData() {
             if (data.particlesEnabled !== undefined) particlesEnabled = data.particlesEnabled;
             if (data.touchControlsEnabled !== undefined) touchControlsEnabled = data.touchControlsEnabled;
             if (data.currentLanguage) currentLanguage = data.currentLanguage;
+            if (data.nightModeEnabled !== undefined) nightModeEnabled = data.nightModeEnabled;
             
             if (data.player) {
                 player.coins = data.player.coins ?? 0;
@@ -854,6 +964,7 @@ function loadGameData() {
                 player.speedLevel = data.player.speedLevel ?? 1;
                 player.speedCost = data.player.speedCost ?? 10;
                 player.color = data.player.color ?? "#9cff8f";
+                player.rainbowSkin = data.player.rainbowSkin ?? false;
             }
             if (data.player2) {
                 player2.coins = data.player2.coins ?? 0;
@@ -861,6 +972,7 @@ function loadGameData() {
                 player2.speedLevel = data.player2.speedLevel ?? 1;
                 player2.speedCost = data.player2.speedCost ?? 10;
                 player2.color = data.player2.color ?? "#7fd8ff";
+                player2.rainbowSkin = data.player2.rainbowSkin ?? false;
             }
         } catch(e) { console.error("Could not parse save file structures:", e); }
     }
@@ -922,6 +1034,11 @@ function startGame(isMultiplayer, mode){
 
     rebuildEnvironment();
     resetPositionsAll();
+
+    // Fresh game start: clear any lingering power-up effects from a previous session
+    player.magnetTimer = 0; player.doubleCoinsTimer = 0; player.forceFieldTimer = 0; player.speedBoostTimer = 0; player.stingTimer = 0;
+    player2.magnetTimer = 0; player2.doubleCoinsTimer = 0; player2.forceFieldTimer = 0; player2.speedBoostTimer = 0; player2.stingTimer = 0;
+
     updateUI();
 
     if(touchControlsEnabled) {
@@ -944,13 +1061,23 @@ function resetPositionsAll() {
     powerUps3D.forEach(p => scene.remove(p));
     powerUps3D = [];
     powerUps = [];
-    
-    player.magnetTimer = 0;
-    player.doubleCoinsTimer = 0;
-    player.forceFieldTimer = 0;
-    player2.magnetTimer = 0;
-    player2.doubleCoinsTimer = 0;
-    player2.forceFieldTimer = 0;
+    // Note: power-up timers (magnet/2x/shield/speed/sting) are intentionally NOT reset here
+    // so active effects carry over across level transitions. They're only cleared on a fresh
+    // game start (startGame) or when returning to the menu.
+}
+
+// Used when advancing to a new open-world level: clears coins/power-ups and resets the
+// chicken, but leaves each player's x/z position untouched so they stay where they were.
+function clearLevelObjects() {
+    chicken.x = 700; chicken.y = 0; chicken.z = 500;
+
+    coins3D.forEach(c => scene.remove(c));
+    coins3D = [];
+    coins = [];
+
+    powerUps3D.forEach(p => scene.remove(p));
+    powerUps3D = [];
+    powerUps = [];
 }
 
 function openSettings(){ document.getElementById("settingsScreen").style.display = "flex"; }
@@ -979,6 +1106,61 @@ function toggleTouchControls(){
     saveGameData();
 }
 
+function toggleNightMode(){
+    nightModeEnabled = !nightModeEnabled;
+    document.getElementById("nightModeStatus").textContent = nightModeEnabled ? "ON" : "OFF";
+    applyNightMode();
+    saveGameData();
+}
+
+function applyNightMode(){
+    if(nightModeEnabled){
+        ambientLight.intensity = 0.18;
+        dirLight.intensity = 0.25;
+        lanternLight1.intensity = 1.6;
+        lanternLight2.intensity = 1.6;
+    } else {
+        ambientLight.intensity = 0.6;
+        dirLight.intensity = 0.8;
+        lanternLight1.intensity = 0;
+        lanternLight2.intensity = 0;
+    }
+}
+
+// --- EASTER EGG: click the title 7 times quickly for a confetti party ---
+function handleTitleClick(){
+    titleClickCount++;
+    clearTimeout(titleClickResetTimer);
+    titleClickResetTimer = setTimeout(() => { titleClickCount = 0; }, 1500);
+
+    if(titleClickCount >= 7){
+        titleClickCount = 0;
+        triggerPartyMode();
+    }
+}
+
+function triggerPartyMode(){
+    const titleEl = document.getElementById("gameTitle");
+    const originalText = titleEl.textContent;
+    titleEl.textContent = "🎉 PARTY MODE! 🎉";
+
+    const colors = ["#ff3333","#ffd700","#33ff55","#3388ff","#aa33ff","#ff66cc","#00e6e6"];
+    for(let i = 0; i < 60; i++){
+        setTimeout(() => {
+            const conf = document.createElement("div");
+            conf.className = "confetti";
+            conf.style.left = Math.random() * 100 + "%";
+            conf.style.background = colors[Math.floor(Math.random() * colors.length)];
+            conf.style.borderRadius = Math.random() > 0.5 ? "50%" : "2px";
+            conf.style.animationDuration = (1.8 + Math.random() * 1.4) + "s";
+            startScreen.appendChild(conf);
+            setTimeout(() => conf.remove(), 3500);
+        }, i * 40);
+    }
+
+    setTimeout(() => { titleEl.textContent = originalText; }, 3000);
+}
+
 function returnToMenu(){
     ui.style.display = "none";
     document.getElementById("levelDisplay").style.display = "none";
@@ -996,8 +1178,8 @@ function returnToMenu(){
 
     // Restore persistent upgrades when moving back to the setup menu
     loadGameData();
-    player.magnetTimer = 0; player.doubleCoinsTimer = 0; player.forceFieldTimer = 0;
-    player2.magnetTimer = 0; player2.doubleCoinsTimer = 0; player2.forceFieldTimer = 0;
+    player.magnetTimer = 0; player.doubleCoinsTimer = 0; player.forceFieldTimer = 0; player.speedBoostTimer = 0; player.stingTimer = 0;
+    player2.magnetTimer = 0; player2.doubleCoinsTimer = 0; player2.forceFieldTimer = 0; player2.speedBoostTimer = 0; player2.stingTimer = 0;
     player.mesh.position.set(200, 0, 300);
     player2.mesh.position.set(500, 0, 350);
     player2.mesh.visible = false;
@@ -1042,11 +1224,10 @@ function setupPlatformerLevel(resetPositions = true) {
     
     if (resetPositions) {
         player.x = 80; player.y = 200; player.z = arenaHeight / 2; player.vy = 0; p1Grounded = false;
-        player.magnetTimer = 0; player.doubleCoinsTimer = 0; player.forceFieldTimer = 0;
         if (multiplayer) {
             player2.x = 160; player2.y = 200; player2.z = arenaHeight / 2; player2.vy = 0; p2Grounded = false;
-            player2.magnetTimer = 0; player2.doubleCoinsTimer = 0; player2.forceFieldTimer = 0;
         }
+        // Power-up timers intentionally left untouched so effects carry across levels.
     }
     
     let platMat = new THREE.MeshToonMaterial({ color: theme.ground });
@@ -1226,11 +1407,12 @@ function spawnCoin(){
     if (currentLevel < 11) {
         let cx = Math.random() * (arenaWidth - 60) + 30;
         let cz = Math.random() * (arenaHeight - 60) + 30;
+        let isLucky = Math.random() < 0.08;
         
-        coins.push({ x: cx, y: 15, z: cz, size: 24 });
+        coins.push({ x: cx, y: 15, z: cz, size: isLucky ? 32 : 24, value: isLucky ? 5 : 1 });
         
-        const coinGeo = new THREE.CylinderGeometry(12, 12, 4, 12);
-        const coinMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3 });
+        const coinGeo = new THREE.CylinderGeometry(isLucky ? 16 : 12, isLucky ? 16 : 12, 4, 12);
+        const coinMat = new THREE.MeshStandardMaterial({ color: isLucky ? 0x39ff14 : 0xffd700, roughness: 0.2, metalness: isLucky ? 0.8 : 0.3 });
         const cMesh = new THREE.Mesh(coinGeo, coinMat);
         cMesh.rotation.x = Math.PI / 2;
         cMesh.position.set(cx, 20, cz);
@@ -1248,11 +1430,12 @@ function spawnPlatformerCoin() {
     let cx = plat.x + Math.random() * (plat.w - 30) + 15;
     let cy = plat.y + 35;
     let cz = arenaHeight / 2;
+    let isLucky = Math.random() < 0.08;
 
-    coins.push({ x: cx, y: cy, z: cz, size: 24 });
+    coins.push({ x: cx, y: cy, z: cz, size: isLucky ? 32 : 24, value: isLucky ? 5 : 1 });
 
-    const coinGeo = new THREE.CylinderGeometry(12, 12, 4, 12);
-    const coinMat = new THREE.MeshStandardMaterial({ color: 0xffd700, roughness: 0.3 });
+    const coinGeo = new THREE.CylinderGeometry(isLucky ? 16 : 12, isLucky ? 16 : 12, 4, 12);
+    const coinMat = new THREE.MeshStandardMaterial({ color: isLucky ? 0x39ff14 : 0xffd700, roughness: 0.2, metalness: isLucky ? 0.8 : 0.3 });
     const cMesh = new THREE.Mesh(coinGeo, coinMat);
     cMesh.rotation.x = Math.PI / 2;
     cMesh.position.set(cx, cy, cz);
@@ -1270,8 +1453,9 @@ function spawnPowerUp() {
     // Weighted selection pool for power ups
     let rand = Math.random();
     let type = 'magnet';
-    if (rand > 0.66) type = 'double';
-    else if (rand > 0.33) type = 'forcefield';
+    if (rand > 0.75) type = 'speed';
+    else if (rand > 0.5) type = 'double';
+    else if (rand > 0.25) type = 'forcefield';
 
     let cx, cy, cz;
 
@@ -1291,7 +1475,7 @@ function spawnPowerUp() {
 
     // Distinctive 3D base mesh configurations
     let geo = new THREE.SphereGeometry(12, 12, 12);
-    let matColor = type === 'magnet' ? 0x00d2ff : (type === 'double' ? 0xff00ff : 0x00ffcc);
+    let matColor = type === 'magnet' ? 0x00d2ff : (type === 'double' ? 0xff00ff : (type === 'speed' ? 0xffe600 : 0x00ffcc));
     let mat = new THREE.MeshStandardMaterial({ color: matColor, roughness: 0.2, metalness: 0.6 });
     let mesh = new THREE.Mesh(geo, mat);
 
@@ -1310,6 +1494,12 @@ function spawnPowerUp() {
         let innerGeo = new THREE.IcosahedronGeometry(7, 0);
         let innerMat = new THREE.MeshBasicMaterial({ color: 0xffff00, wireframe: true });
         let innerMesh = new THREE.Mesh(innerGeo, innerMat);
+        mesh.add(innerMesh);
+    } else if (type === 'speed') {
+        let innerGeo = new THREE.ConeGeometry(5, 16, 4);
+        let innerMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        let innerMesh = new THREE.Mesh(innerGeo, innerMat);
+        innerMesh.rotation.z = Math.PI / 8;
         mesh.add(innerMesh);
     }
 
@@ -1333,19 +1523,21 @@ function collectCoins(p){
         let dist = Math.sqrt(dx*dx + dy*dy + dz*dz);
 
         if(dist < (p.size/2 + c.size/2)) {
+            let isLuckyCoin = (c.value || 1) > 1;
             if (particlesEnabled) {
-                for(let j=0; j<8; j++) {
-                    const pGeo = new THREE.SphereGeometry(2, 4, 4);
-                    const pMat = new THREE.MeshBasicMaterial({ color: 0xffea00 });
+                let burstCount = isLuckyCoin ? 18 : 8;
+                for(let j=0; j<burstCount; j++) {
+                    const pGeo = new THREE.SphereGeometry(isLuckyCoin ? 3 : 2, 4, 4);
+                    const pMat = new THREE.MeshBasicMaterial({ color: isLuckyCoin ? 0x39ff14 : 0xffea00 });
                     const pMesh = new THREE.Mesh(pGeo, pMat);
                     pMesh.position.set(c.x, c.y, c.z);
                     scene.add(pMesh);
                     walkParticles.push({
                         mesh: pMesh,
-                        vx: (Math.random() - 0.5) * 6,
-                        vy: (Math.random() - 0.5) * 6,
-                        vz: (Math.random() - 0.5) * 6,
-                        life: 25
+                        vx: (Math.random() - 0.5) * (isLuckyCoin ? 9 : 6),
+                        vy: (Math.random() - 0.5) * (isLuckyCoin ? 9 : 6),
+                        vz: (Math.random() - 0.5) * (isLuckyCoin ? 9 : 6),
+                        life: isLuckyCoin ? 35 : 25
                     });
                 }
             }
@@ -1356,6 +1548,7 @@ function collectCoins(p){
             
             // Dynamic evaluation matching multiplier bonuses
             let gain = (p.doubleCoinsTimer > 0) ? 2 : 1;
+            gain *= (c.value || 1);
             p.coins += gain;
             coinsCollectedThisLevel += gain;
             
@@ -1375,7 +1568,7 @@ function collectCoins(p){
                 if (currentLevel >= 11) {
                     setupPlatformerLevel(true);
                 } else {
-                    resetPositionsAll();
+                    clearLevelObjects();
                 }
                 return; 
             }
@@ -1396,9 +1589,10 @@ function collectPowerUps(p) {
             if(pu.type === 'magnet') p.magnetTimer = 600; 
             if(pu.type === 'double') p.doubleCoinsTimer = 600;
             if(pu.type === 'forcefield') p.forceFieldTimer = 600; 
+            if(pu.type === 'speed') p.speedBoostTimer = 480;
 
             if (particlesEnabled) {
-                let pColor = pu.type === 'magnet' ? 0x00d2ff : (pu.type === 'double' ? 0xff00ff : 0x00ffcc);
+                let pColor = pu.type === 'magnet' ? 0x00d2ff : (pu.type === 'double' ? 0xff00ff : (pu.type === 'speed' ? 0xffe600 : 0x00ffcc));
                 for(let j=0; j<12; j++) {
                     const pGeo = new THREE.SphereGeometry(2.5, 4, 4);
                     const pMat = new THREE.MeshBasicMaterial({ color: pColor });
@@ -1496,6 +1690,8 @@ function update(){
     if(player.magnetTimer > 0) player.magnetTimer--;
     if(player.doubleCoinsTimer > 0) player.doubleCoinsTimer--;
     if(player.forceFieldTimer > 0) player.forceFieldTimer--;
+    if(player.speedBoostTimer > 0) player.speedBoostTimer--;
+    if(player.stingTimer > 0) player.stingTimer--;
     
     // Toggle 3D mesh shield visible nodes dynamically
     if(player.mesh && player.mesh.userData.shieldMesh) {
@@ -1506,6 +1702,8 @@ function update(){
         if(player2.magnetTimer > 0) player2.magnetTimer--;
         if(player2.doubleCoinsTimer > 0) player2.doubleCoinsTimer--;
         if(player2.forceFieldTimer > 0) player2.forceFieldTimer--;
+        if(player2.speedBoostTimer > 0) player2.speedBoostTimer--;
+        if(player2.stingTimer > 0) player2.stingTimer--;
         if(player2.mesh && player2.mesh.userData.shieldMesh) {
             player2.mesh.userData.shieldMesh.visible = (player2.forceFieldTimer > 0);
         }
@@ -1519,14 +1717,18 @@ function update(){
     let p1Txt = "";
     if(player.magnetTimer > 0) p1Txt += `🧲 Magnet: ${Math.ceil(player.magnetTimer/60)}s `;
     if(player.doubleCoinsTimer > 0) p1Txt += `✨ 2x Coins: ${Math.ceil(player.doubleCoinsTimer/60)}s `;
-    if(player.forceFieldTimer > 0) p1Txt += `🛡️ Shield: ${Math.ceil(player.forceFieldTimer/60)}s`;
+    if(player.forceFieldTimer > 0) p1Txt += `🛡️ Shield: ${Math.ceil(player.forceFieldTimer/60)}s `;
+    if(player.speedBoostTimer > 0) p1Txt += `⚡ Speed: ${Math.ceil(player.speedBoostTimer/60)}s `;
+    if(player.stingTimer > 0) p1Txt += `🐝 Stung: ${Math.ceil(player.stingTimer/60)}s`;
     document.getElementById("p1PowerUps").innerHTML = p1Txt;
 
     let p2Txt = "";
     if(multiplayer) {
         if(player2.magnetTimer > 0) p2Txt += `🧲 Magnet: ${Math.ceil(player2.magnetTimer/60)}s `;
         if(player2.doubleCoinsTimer > 0) p2Txt += `✨ 2x Coins: ${Math.ceil(player2.doubleCoinsTimer/60)}s `;
-        if(player2.forceFieldTimer > 0) p2Txt += `🛡️ Shield: ${Math.ceil(player2.forceFieldTimer/60)}s`;
+        if(player2.forceFieldTimer > 0) p2Txt += `🛡️ Shield: ${Math.ceil(player2.forceFieldTimer/60)}s `;
+        if(player2.speedBoostTimer > 0) p2Txt += `⚡ Speed: ${Math.ceil(player2.speedBoostTimer/60)}s `;
+        if(player2.stingTimer > 0) p2Txt += `🐝 Stung: ${Math.ceil(player2.stingTimer/60)}s`;
         document.getElementById("p2PowerUps").innerHTML = p2Txt;
     }
 
@@ -1535,10 +1737,11 @@ function update(){
         
         // P1 Controls (WASD)
         let p1Moving = false;
-        if(keys["w"]) { player.z -= player.speed; p1Moving = true; player.mesh.rotation.y = Math.PI; }
-        if(keys["s"]) { player.z += player.speed; p1Moving = true; player.mesh.rotation.y = 0; }
-        if(keys["a"]) { player.x -= player.speed; p1Moving = true; player.mesh.rotation.y = -Math.PI/2; }
-        if(keys["d"]) { player.x += player.speed; p1Moving = true; player.mesh.rotation.y = Math.PI/2; }
+        let p1Spd = getSpeed(player);
+        if(keys["w"]) { player.z -= p1Spd; p1Moving = true; player.mesh.rotation.y = Math.PI; }
+        if(keys["s"]) { player.z += p1Spd; p1Moving = true; player.mesh.rotation.y = 0; }
+        if(keys["a"]) { player.x -= p1Spd; p1Moving = true; player.mesh.rotation.y = -Math.PI/2; }
+        if(keys["d"]) { player.x += p1Spd; p1Moving = true; player.mesh.rotation.y = Math.PI/2; }
         
         if (p1Moving) {
             player.walk += 0.25;
@@ -1550,14 +1753,16 @@ function update(){
         player.z = Math.max(20, Math.min(arenaHeight - 20, player.z));
         player.mesh.position.set(player.x, player.mesh.position.y, player.z);
         collectCoins(player);
+        checkBeeSwarms(player);
 
         // P2 Controls (Arrows)
         if(multiplayer) {
             let p2Moving = false;
-            if(keys["arrowup"]) { player2.z -= player2.speed; p2Moving = true; player2.mesh.rotation.y = Math.PI; }
-            if(keys["arrowdown"]) { player2.z += player2.speed; p2Moving = true; player2.mesh.rotation.y = 0; }
-            if(keys["arrowleft"]) { player2.x -= player2.speed; p2Moving = true; player2.mesh.rotation.y = -Math.PI/2; }
-            if(keys["arrowright"]) { player2.x += player2.speed; p2Moving = true; player2.mesh.rotation.y = Math.PI/2; }
+            let p2Spd = getSpeed(player2);
+            if(keys["arrowup"]) { player2.z -= p2Spd; p2Moving = true; player2.mesh.rotation.y = Math.PI; }
+            if(keys["arrowdown"]) { player2.z += p2Spd; p2Moving = true; player2.mesh.rotation.y = 0; }
+            if(keys["arrowleft"]) { player2.x -= p2Spd; p2Moving = true; player2.mesh.rotation.y = -Math.PI/2; }
+            if(keys["arrowright"]) { player2.x += p2Spd; p2Moving = true; player2.mesh.rotation.y = Math.PI/2; }
             
             if (p2Moving) {
                 player2.walk += 0.25;
@@ -1569,6 +1774,7 @@ function update(){
             player2.z = Math.max(20, Math.min(arenaHeight - 20, player2.z));
             player2.mesh.position.set(player2.x, player2.mesh.position.y, player2.z);
             collectCoins(player2);
+            checkBeeSwarms(player2);
         }
 
         // Hostile Chicken 3D AI Chase Script
@@ -1620,8 +1826,9 @@ function processPlatformerPhysics(p, leftKey, rightKey, jumpKey, isP2) {
     let oldX = p.x;
     let moving = false;
 
-    if (keys[leftKey]) { p.x -= p.speed; moving = true; p.mesh.rotation.y = -Math.PI/2; }
-    if (keys[rightKey]) { p.x += p.speed; moving = true; p.mesh.rotation.y = Math.PI/2; }
+    let curSpd = getSpeed(p);
+    if (keys[leftKey]) { p.x -= curSpd; moving = true; p.mesh.rotation.y = -Math.PI/2; }
+    if (keys[rightKey]) { p.x += curSpd; moving = true; p.mesh.rotation.y = Math.PI/2; }
 
     for (let plat of platforms) {
         if (p.x < plat.x + plat.w && p.x + 30 > plat.x && p.y < plat.y && p.y > plat.y - plat.h) {
@@ -1733,6 +1940,32 @@ function renderLoop(){
     powerUps3D.forEach(puMesh => { puMesh.rotation.y += 0.05; puMesh.rotation.x += 0.02; });
     if(goalMesh) goalMesh.rotation.y += 0.02;
 
+    // Animate bee swarms bobbing/orbiting around their hazard center
+    let t = performance.now() * 0.003;
+    beeSwarms.forEach(swarm => {
+        swarm.mesh.children.forEach((bee, idx) => {
+            let off = bee.userData.orbitOffset + idx;
+            bee.position.x = Math.cos(t + off) * 22;
+            bee.position.z = Math.sin(t + off) * 22;
+            bee.position.y = 14 + Math.sin(t * 2 + off) * 6;
+            bee.rotation.y = t + off;
+        });
+    });
+
+    // Rainbow legendary skin: continuously cycle hue for players who bought it
+    if(player.rainbowSkin && player.mesh && player.mesh.userData.bodyMesh) {
+        player.mesh.userData.bodyMesh.material.color.setHSL((performance.now() * 0.0002) % 1, 0.85, 0.6);
+    }
+    if(player2.rainbowSkin && player2.mesh && player2.mesh.userData.bodyMesh) {
+        player2.mesh.userData.bodyMesh.material.color.setHSL((performance.now() * 0.0002 + 0.5) % 1, 0.85, 0.6);
+    }
+
+    // Night mode lantern lights follow each active player
+    if(nightModeEnabled){
+        lanternLight1.position.set(player.x, 90, player.z);
+        if(multiplayer) lanternLight2.position.set(player2.x, 90, player2.z);
+    }
+
     // Spin active forcefield visual wireframe lines
     if(player.mesh && player.mesh.userData.shieldMesh.visible) {
         player.mesh.userData.shieldMesh.rotation.y += 0.02;
@@ -1783,9 +2016,14 @@ function buySpeed(p){
 function buySkin(p, colorHex, cost){
     if(p.coins >= cost){
         p.coins -= cost;
-        p.color = colorHex;
-        if(p.mesh && p.mesh.userData.bodyMesh) {
-            p.mesh.userData.bodyMesh.material.color.set(colorHex);
+        if(colorHex === 'rainbow'){
+            p.rainbowSkin = true;
+        } else {
+            p.rainbowSkin = false;
+            p.color = colorHex;
+            if(p.mesh && p.mesh.userData.bodyMesh) {
+                p.mesh.userData.bodyMesh.material.color.set(colorHex);
+            }
         }
         updateUI();
     }
@@ -1823,6 +2061,8 @@ window.addEventListener("resize", () => {
 document.getElementById("musicStatus").textContent = musicEnabled ? "ON" : "OFF";
 document.getElementById("particleStatus").textContent = particlesEnabled ? "ON" : "OFF";
 document.getElementById("touchStatus").textContent = touchControlsEnabled ? "ON" : "OFF";
+document.getElementById("nightModeStatus").textContent = nightModeEnabled ? "ON" : "OFF";
+applyNightMode();
 setLanguage(currentLanguage);
 
 updateUI();
