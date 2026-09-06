@@ -211,7 +211,7 @@ body{
 }
 .shopItem:hover{ background:#5aae50; }
 
-#settingsScreen{
+#settingsScreen, #raceTrackSelect, #raceResultScreen{
     position:absolute;
     inset:0;
     background:rgba(20,40,20,0.92);
@@ -248,6 +248,66 @@ body{
     font-family:'Fredoka', sans-serif;
 }
 .settingButton:hover{ background:#58a84f; }
+
+/* --- RACE MODE STYLES --- */
+#raceHud{
+    position:absolute;
+    top:12px;
+    left:50%;
+    transform:translateX(-50%);
+    background:rgba(255,255,255,0.92);
+    padding:12px 26px;
+    border-radius:20px;
+    color:#2c5f2a;
+    font-size:18px;
+    font-weight:700;
+    box-shadow:0 6px 18px rgba(0,0,0,0.2);
+    border:4px solid #f39c12;
+    display:none;
+    z-index:20;
+    text-align:center;
+    min-width:280px;
+}
+#raceHud .raceHudRow{ margin-top:4px; font-size:16px; }
+.raceProgressBar{
+    width:260px;
+    height:14px;
+    background:#e0e0e0;
+    border-radius:8px;
+    margin:8px auto 4px;
+    overflow:hidden;
+    border:2px solid #4f9a46;
+}
+#raceProgressFill{
+    height:100%;
+    width:0%;
+    background:linear-gradient(90deg,#f39c12,#e74c3c);
+    transition:width 0.1s linear;
+}
+#raceCountdownOverlay{
+    position:absolute;
+    inset:0;
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:90;
+    pointer-events:none;
+}
+#raceCountdownText{
+    font-size:140px;
+    color:white;
+    text-shadow:0 6px 0 #d35400, 0 12px 30px rgba(0,0,0,0.4);
+    font-weight:700;
+}
+#raceQuitButton{ right:15px; background:#d35400; box-shadow:0 5px 0 #a04000; }
+.raceTrackRow{
+    width:100%;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+}
+.raceTrackBest{ font-size:14px; color:#3d7c38; font-weight:700; margin-top:2px; }
 
 /* --- TOUCH CONTROLS STYLES --- */
 #touchControls {
@@ -307,6 +367,86 @@ body{
     color: white;
     transform: scale(0.95);
 }
+
+/* --- DEBUG TERMINAL (F7) --- */
+#debugTerminal {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+    width: 520px;
+    max-width: 85vw;
+    height: 320px;
+    max-height: 60vh;
+    background: rgba(10, 14, 10, 0.92);
+    border: 2px solid #4dff88;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 500;
+    display: none;
+    flex-direction: column;
+    font-family: 'Courier New', monospace;
+    overflow: hidden;
+}
+
+#debugTerminalHeader {
+    background: #163018;
+    color: #7dffa3;
+    font-size: 13px;
+    padding: 6px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #4dff88;
+    cursor: default;
+}
+
+#debugTerminalClose {
+    cursor: pointer;
+    color: #7dffa3;
+    background: none;
+    border: none;
+    font-family: inherit;
+    font-size: 14px;
+}
+#debugTerminalClose:hover { color: #fff; }
+
+#debugTerminalOutput {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px 10px;
+    color: #8cffab;
+    font-size: 13px;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+#debugTerminalOutput .term-cmd { color: #ffffff; }
+#debugTerminalOutput .term-err { color: #ff8080; }
+#debugTerminalOutput .term-ok { color: #8cffab; }
+
+#debugTerminalInputRow {
+    display: flex;
+    align-items: center;
+    border-top: 1px solid #2a5a34;
+    padding: 6px 10px;
+    background: rgba(0,0,0,0.25);
+}
+
+#debugTerminalPrompt {
+    color: #4dff88;
+    margin-right: 6px;
+    font-size: 14px;
+}
+
+#debugTerminalInput {
+    flex: 1;
+    background: none;
+    border: none;
+    outline: none;
+    color: #eaffea;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+}
 </style>
 </head>
 <body>
@@ -327,6 +467,9 @@ body{
             <button id="easyMediumButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy-medium')">Easy Medium 🐤</button>
             <button id="mediumButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'medium')">Medium 🐔</button>
             <button id="hardButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'hard')">Hard ⚠️</button>
+        </div>
+        <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:10px;">
+            <button id="raceModeButton" class="menuButton" style="width:220px; font-size:26px; background:#fff2d9; color:#c0392b; box-shadow:0 8px 0 #e67e22;" onclick="openRaceTrackSelect()">🏎️ Race Mode</button>
         </div>
         <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:10px;">
             <button id="mpMediumButton" class="menuButton" style="width:250px; font-size:24px;" onclick="startGame(true,'medium')">Multiplayer Medium</button>
@@ -427,6 +570,39 @@ body{
     </div>
 </div>
 
+<div id="raceTrackSelect">
+    <div class="settingsPanel" style="width:460px;">
+        <div class="settingsTitle" style="font-size:34px;">🏎️ Race Mode</div>
+        <div style="color:#4f9a46; font-size:18px; margin-bottom:10px;">Pick a track — dodge barrels, grab boosts, beat the rivals!</div>
+        <div id="raceTrackList" style="display:flex; flex-direction:column; gap:10px; max-height:50vh; overflow-y:auto; padding:4px;"></div>
+        <button class="menuButton" style="width:220px; font-size:24px; margin-top:18px;" onclick="document.getElementById('raceTrackSelect').style.display='none'; startScreen.style.display='flex';">Back</button>
+    </div>
+</div>
+
+<div id="raceResultScreen">
+    <div class="settingsPanel">
+        <div class="settingsTitle" id="raceResultTitle" style="font-size:36px;">🏁 FINISH!</div>
+        <div class="settingRow" id="raceResultDetail">Time: 0.0s</div>
+        <div style="display:flex; flex-wrap:wrap; gap:10px; justify-content:center; margin-top:10px;">
+            <button class="settingButton" onclick="buildRaceTrack(raceTrackIndex)">Race Again</button>
+            <button class="settingButton" id="raceNextTrackButton" onclick="buildRaceTrack(raceTrackIndex + 1)">Next Track</button>
+            <button class="settingButton" onclick="exitRaceToTrackSelect()">Track Select</button>
+            <button class="settingButton" style="background:#6dbd63;" onclick="exitRaceToMainMenu()">Main Menu</button>
+        </div>
+    </div>
+</div>
+
+<div id="raceCountdownOverlay"><div id="raceCountdownText">3</div></div>
+
+<div id="raceHud">
+    <div id="raceTrackNameDisplay">Track</div>
+    <div class="raceHudRow">Place: <span id="racePlace">-</span></div>
+    <div class="raceProgressBar"><div id="raceProgressFill"></div></div>
+    <div class="raceHudRow">⏱ <span id="raceTimer">0.0s</span> &nbsp; 🏎️ <span id="raceSpeed">0 km/h</span></div>
+</div>
+
+<button class="shopButton" id="raceQuitButton" onclick="exitRaceToTrackSelect()">Quit Race</button>
+
 <div id="touchControls">
     <div id="dpad">
         <button class="touchBtn" id="btnUp" style="grid-area: 1 / 2 / 2 / 3;">▲</button>
@@ -437,6 +613,18 @@ body{
     <button class="touchBtn" id="btnJump">JUMP</button>
 </div>
 
+<div id="debugTerminal">
+    <div id="debugTerminalHeader">
+        <span>DEBUG CONSOLE — F7 to toggle, "help" for commands</span>
+        <button id="debugTerminalClose" onclick="toggleDebugTerminal(false)">✕</button>
+    </div>
+    <div id="debugTerminalOutput"></div>
+    <div id="debugTerminalInputRow">
+        <span id="debugTerminalPrompt">&gt;</span>
+        <input id="debugTerminalInput" type="text" autocomplete="off" spellcheck="false" placeholder="type a command...">
+    </div>
+</div>
+
 <div id="gameContainer"></div>
 
 <script>
@@ -445,7 +633,7 @@ const container = document.getElementById("gameContainer");
 const scene = new THREE.Scene();
 
 // Camera setup
-const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 1, 2000);
+const camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 1, 2000);
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.setSize(window.innerWidth, window.innerHeight);
 renderer.shadowMap.enabled = true;
@@ -507,6 +695,7 @@ let currentLevel = 1;
 let coinsCollectedThisLevel = 0;
 let coinsNeededForNextLevel = 10;
 let levelUpTimer = 0;
+let chickenFrozenTimer = 0;
 
 let platforms = [];
 let hazards = [];
@@ -515,6 +704,61 @@ let hazards3D = [];
 let trees3D = [];
 let winGoal = { x: 0, y: 0, w: 0, h: 0 };
 let goalMesh = null;
+
+// --- NEW LEVEL-TYPE STATE ---
+// Hedge maze obstacles (open-world "maze" levels)
+let mazeWalls = [];
+let mazeWalls3D = [];
+// Oscillating elevator platforms (platformer "Elevator Shaft" levels)
+let animatedPlatforms = [];
+// Sideways gust zones that push airborne players (platformer "Wind Peaks" levels)
+let windZones = [];
+let windZones3D = [];
+// Rival racer pace, used by the "Rival Sprint" racing level
+let raceRivalSpeed = 0;
+
+// --- RACE MODE STATE (separate car-racing mode, picked from the main menu) ---
+let raceActive = false;
+let racePaused = false;
+let raceFinished = false;
+let raceTrackIndex = 0;
+let raceCountdown = 0;
+let raceElapsed = 0;
+let raceUnlockedTracks = 1;   // number of tracks unlocked so far (persisted)
+let raceBestResults = [];     // per-track best {place, time} (persisted)
+
+let racePlayerCar = null;
+let raceRivalCars = [];
+let raceObstacles3D = [];
+let raceBoosts3D = [];
+let raceRoadMeshes = [];
+
+const RACE_LANES = [-90, 0, 90];       // z offsets for the 3 lanes relative to track center
+const RACE_TRACK_CENTER_Z = 400;
+
+// Each track picks a forest theme (by index into levelThemes, resolved later) plus a rival roster.
+const raceTracks = [
+    { name: "Sunny Meadow Sprint", length: 2800, themeIndex: 0, obstacles: 6,  boosts: 3,
+      rivals: [ {name:'Mochi', color:0xffb347, baseSpeed:5.6}, {name:'Pip', color:0x6fc9ff, baseSpeed:5.4} ] },
+    { name: "Rocky Canyon Dash", length: 3400, themeIndex: 1, obstacles: 9,  boosts: 3,
+      rivals: [ {name:'Mochi', color:0xffb347, baseSpeed:6.0}, {name:'Pip', color:0x6fc9ff, baseSpeed:5.9}, {name:'Ruzz', color:0xb98cff, baseSpeed:5.7} ] },
+    { name: "Frostbite Freeway", length: 4000, themeIndex: 3, obstacles: 11, boosts: 4,
+      rivals: [ {name:'Mochi', color:0xffb347, baseSpeed:6.3}, {name:'Pip', color:0x6fc9ff, baseSpeed:6.2}, {name:'Ruzz', color:0xb98cff, baseSpeed:6.1} ] },
+    { name: "Volcano Blitz", length: 4700, themeIndex: 4, obstacles: 14, boosts: 4,
+      rivals: [ {name:'Mochi', color:0xffb347, baseSpeed:6.7}, {name:'Pip', color:0x6fc9ff, baseSpeed:6.6}, {name:'Ruzz', color:0xb98cff, baseSpeed:6.5} ] },
+    { name: "Championship Circuit", length: 5500, themeIndex: 6, obstacles: 18, boosts: 5,
+      rivals: [ {name:'Mochi', color:0xffb347, baseSpeed:7.1}, {name:'Pip', color:0x6fc9ff, baseSpeed:7.0}, {name:'Ruzz', color:0xb98cff, baseSpeed:6.9}, {name:'Tazz', color:0xff6b6b, baseSpeed:6.8} ] },
+    { name: "Mystic Grove Marathon", length: 6200, themeIndex: 2, obstacles: 20, boosts: 5,
+      rivals: [ {name:'Mochi', color:0xffb347, baseSpeed:7.4}, {name:'Pip', color:0x6fc9ff, baseSpeed:7.3}, {name:'Ruzz', color:0xb98cff, baseSpeed:7.2}, {name:'Tazz', color:0xff6b6b, baseSpeed:7.1} ] },
+    { name: "Coastal Highway Cruise", length: 6800, themeIndex: 5, obstacles: 22, boosts: 6,
+      rivals: [ {name:'Mochi', color:0xffb347, baseSpeed:7.7}, {name:'Pip', color:0x6fc9ff, baseSpeed:7.6}, {name:'Ruzz', color:0xb98cff, baseSpeed:7.5}, {name:'Tazz', color:0xff6b6b, baseSpeed:7.4} ] },
+    { name: "Desert Dune Derby", length: 7500, themeIndex: 4, obstacles: 25, boosts: 6,
+      rivals: [ {name:'Mochi', color:0xffb347, baseSpeed:8.0}, {name:'Pip', color:0x6fc9ff, baseSpeed:7.9}, {name:'Ruzz', color:0xb98cff, baseSpeed:7.8}, {name:'Tazz', color:0xff6b6b, baseSpeed:7.7}, {name:'Blaze', color:0xffd93d, baseSpeed:7.6} ] },
+    { name: "Neon Night Circuit", length: 8200, themeIndex: 3, obstacles: 28, boosts: 7,
+      rivals: [ {name:'Mochi', color:0xffb347, baseSpeed:8.3}, {name:'Pip', color:0x6fc9ff, baseSpeed:8.2}, {name:'Ruzz', color:0xb98cff, baseSpeed:8.1}, {name:'Tazz', color:0xff6b6b, baseSpeed:8.0}, {name:'Blaze', color:0xffd93d, baseSpeed:7.9} ] },
+    { name: "Grand Prix Finale", length: 9000, themeIndex: 6, obstacles: 32, boosts: 8,
+      rivals: [ {name:'Mochi', color:0xffb347, baseSpeed:8.6}, {name:'Pip', color:0x6fc9ff, baseSpeed:8.5}, {name:'Ruzz', color:0xb98cff, baseSpeed:8.4}, {name:'Tazz', color:0xff6b6b, baseSpeed:8.3}, {name:'Blaze', color:0xffd93d, baseSpeed:8.2} ] },
+];
 
 // Virtual bounds mapped directly from the original layout
 const arenaWidth = 1400;
@@ -534,6 +778,101 @@ function getTheme() {
     const index = (currentLevel - 1) % levelThemes.length;
     return levelThemes[index];
 }
+
+// --- LEVEL TYPE HELPERS ---
+// Open-world levels every 3rd level (3, 6, 9) are "hedge maze" levels with scattered obstacles.
+function isMazeLevel(level) {
+    return level < 11 && level % 3 === 0;
+}
+
+// A small rotation of maze layouts, cycled through as maze levels repeat/scale up.
+const mazeLayouts = [
+    [ // used at level 3 — light hedge garden
+        { x: 300, z: 500, w: 220, d: 50 },
+        { x: 650, z: 150, w: 50,  d: 220 },
+        { x: 950, z: 450, w: 220, d: 50 },
+        { x: 1100, z: 150, w: 50, d: 200 },
+    ],
+    [ // used at level 6 — medium hedge garden
+        { x: 250, z: 480, w: 200, d: 50 },
+        { x: 550, z: 200, w: 50,  d: 250 },
+        { x: 750, z: 550, w: 250, d: 50 },
+        { x: 950, z: 150, w: 50,  d: 220 },
+        { x: 1150, z: 400, w: 50, d: 250 },
+        { x: 450, z: 620, w: 220, d: 50 },
+    ],
+    [ // used at level 9 — dense hedge garden
+        { x: 250, z: 150, w: 200, d: 50 },
+        { x: 550, z: 350, w: 50,  d: 220 },
+        { x: 850, z: 120, w: 220, d: 50 },
+        { x: 1050, z: 420, w: 50, d: 250 },
+        { x: 300, z: 550, w: 220, d: 50 },
+        { x: 700, z: 600, w: 50,  d: 150 },
+        { x: 950, z: 620, w: 250, d: 50 },
+        { x: 100, z: 380, w: 50,  d: 200 },
+    ],
+];
+
+function buildMazeWalls(theme) {
+    mazeWalls3D.forEach(m => scene.remove(m));
+    mazeWalls3D = [];
+    mazeWalls = [];
+
+    if (!isMazeLevel(currentLevel)) return;
+
+    const layoutIndex = Math.floor(currentLevel / 3 - 1) % mazeLayouts.length;
+    const layout = mazeLayouts[layoutIndex];
+    const hedgeMat = new THREE.MeshToonMaterial({ color: theme.leaves });
+    const hedgeHeight = 70;
+
+    layout.forEach(wall => {
+        mazeWalls.push(wall);
+
+        const group = new THREE.Group();
+        const boxGeo = new THREE.BoxGeometry(wall.w, hedgeHeight, wall.d);
+        const mesh = new THREE.Mesh(boxGeo, hedgeMat);
+        mesh.position.set(wall.w / 2, hedgeHeight / 2, wall.d / 2);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        group.add(mesh);
+        group.position.set(wall.x, 0, wall.z);
+        scene.add(group);
+        mazeWalls3D.push(group);
+    });
+}
+
+// Generic AABB test used for player movement collision against hedge walls.
+function collidesMazeWall(x, z, halfSize = 21) {
+    for (let w of mazeWalls) {
+        if (x + halfSize > w.x && x - halfSize < w.x + w.w && z + halfSize > w.z && z - halfSize < w.z + w.d) {
+            return true;
+        }
+    }
+    return false;
+}
+
+// Used when picking a spawn point for coins/power-ups/bee swarms so they don't land inside a hedge.
+function pointNearMazeWalls(x, z, margin) {
+    for (let w of mazeWalls) {
+        if (x > w.x - margin && x < w.x + w.w + margin && z > w.z - margin && z < w.z + w.d + margin) return true;
+    }
+    return false;
+}
+
+// Friendly display name for the current level's "type", shown in the level pill.
+function getLevelTypeName(level) {
+    if (level >= 11) {
+        const names = {
+            11: 'Ascent', 12: 'Gap Gauntlet', 13: 'Precision Run', 14: 'Championship',
+            15: 'Elevator Shaft', 16: 'Frozen Falls', 17: 'Wind Peaks', 18: "Overlord's Gauntlet",
+            19: 'Rival Sprint'
+        };
+        return names[level] || 'Gauntlet';
+    }
+    if (isMazeLevel(level)) return 'Hedge Maze';
+    return 'Forest';
+}
+
 
 const translations = {
     en:{ title:'Gooblet Forest 3D', subtitle:' 3D v1.7.0', settings:'Settings ⚙️', music:'Music:', particles:'Particles:', fullscreen:'Fullscreen', fullscreenButton:'Toggle Fullscreen', toggleMusic:'Toggle Music', toggleParticles:'Toggle Particles', back:'Back', p1shop:'P1 Shop', p2shop:'P2 Shop', menu:'Menu', easy:'Easy 🌱', easyMedium:'Easy Medium 🐤', medium:'Medium 🐔', hard:'Hard ⚠️', mpMedium:'Multiplayer Medium', mpHard:'Multiplayer Hard', language:'Language', level:'Level', touch:'Touch Controls:', toggleTouch:'Toggle Touch' },
@@ -663,8 +1002,15 @@ function rebuildEnvironment() {
         // Spawn 1-2 stationary bee swarm hazards for open-world levels
         let swarmCount = currentLevel >= 4 ? 2 : 1;
         for(let i = 0; i < swarmCount; i++) spawnBeeSwarm();
+
+        // Every 3rd open-world level is a hedge maze — builds/clears itself as needed
+        buildMazeWalls(theme);
     } else {
         // Platformer sizing modifications
+        mazeWalls3D.forEach(m => scene.remove(m));
+        mazeWalls3D = [];
+        mazeWalls = [];
+
         groundMesh.position.set(4200 / 2, -500, arenaHeight / 2); 
         if(touchControlsEnabled && gameStarted) document.getElementById("btnJump").style.display = "flex";
     }
@@ -795,6 +1141,72 @@ function create3DBeeSwarm() {
     return group;
 }
 
+// --- RACE MODE 3D MODELS (cars / barrels / boost pads) ---
+function create3DCar(colorHex) {
+    const group = new THREE.Group();
+    const bodyMat = new THREE.MeshToonMaterial({ color: colorHex });
+    const darkMat = new THREE.MeshToonMaterial({ color: 0x1a1a1a });
+
+    const bodyGeo = new THREE.BoxGeometry(46, 16, 26);
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.position.y = 14;
+    body.castShadow = true;
+    group.add(body);
+    group.userData = { bodyMesh: body, baseColor: colorHex };
+
+    const cabinGeo = new THREE.BoxGeometry(22, 12, 20);
+    const cabin = new THREE.Mesh(cabinGeo, new THREE.MeshToonMaterial({ color: 0xdfffff }));
+    cabin.position.set(-2, 24, 0);
+    cabin.castShadow = true;
+    group.add(cabin);
+
+    const wheelGeo = new THREE.CylinderGeometry(8, 8, 8, 12);
+    [[16,6,15],[16,6,-15],[-16,6,15],[-16,6,-15]].forEach(pos => {
+        const wheel = new THREE.Mesh(wheelGeo, darkMat);
+        wheel.rotation.x = Math.PI / 2;
+        wheel.position.set(pos[0], pos[1], pos[2]);
+        group.add(wheel);
+    });
+
+    const spoilerGeo = new THREE.BoxGeometry(6, 10, 30);
+    const spoiler = new THREE.Mesh(spoilerGeo, darkMat);
+    spoiler.position.set(-24, 22, 0);
+    group.add(spoiler);
+
+    const lightGeo = new THREE.SphereGeometry(3, 6, 6);
+    const lightMat = new THREE.MeshBasicMaterial({ color: 0xffffcc });
+    [15, -15].forEach(zoff => {
+        const light = new THREE.Mesh(lightGeo, lightMat);
+        light.position.set(23, 14, zoff);
+        group.add(light);
+    });
+
+    scene.add(group);
+    return group;
+}
+
+function create3DBarrel() {
+    const group = new THREE.Group();
+    const geo = new THREE.CylinderGeometry(12, 12, 24, 10);
+    const mat = new THREE.MeshToonMaterial({ color: 0xe67e22 });
+    const barrel = new THREE.Mesh(geo, mat);
+    barrel.castShadow = true;
+    group.add(barrel);
+    const stripeGeo = new THREE.CylinderGeometry(12.2, 12.2, 4, 10);
+    const stripeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    group.add(new THREE.Mesh(stripeGeo, stripeMat));
+    scene.add(group);
+    return group;
+}
+
+function create3DBoostPad() {
+    const geo = new THREE.BoxGeometry(40, 2, 40);
+    const mat = new THREE.MeshBasicMaterial({ color: 0x00e6ff, transparent: true, opacity: 0.85 });
+    const mesh = new THREE.Mesh(geo, mat);
+    scene.add(mesh);
+    return mesh;
+}
+
 // --- BEE SWARM HAZARD (stationary, stings players who wander too close) ---
 function spawnBeeSwarm() {
     let bx, bz, tries = 0;
@@ -802,7 +1214,7 @@ function spawnBeeSwarm() {
         bx = Math.random() * (arenaWidth - 200) + 100;
         bz = Math.random() * (arenaHeight - 200) + 100;
         tries++;
-    } while (Math.hypot(bx - 200, bz - 300) < 180 && tries < 10);
+    } while ((Math.hypot(bx - 200, bz - 300) < 180 || pointNearMazeWalls(bx, bz, 60)) && tries < 15);
     const mesh = create3DBeeSwarm();
     mesh.position.set(bx, 0, bz);
     beeSwarms.push({ x: bx, z: bz, radius: 45, mesh: mesh });
@@ -898,8 +1310,8 @@ let keys = {};
 addEventListener("keydown", e => { keys[e.key.toLowerCase()] = true; });
 addEventListener("keyup", e => { keys[e.key.toLowerCase()] = false; });
 
-let player = { x:200, y:400, z:200, vy:0, size:42, color:"#9cff8f", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null, magnetTimer:0, doubleCoinsTimer:0, forceFieldTimer:0, speedBoostTimer:0, stingTimer:0, rainbowSkin:false };
-let player2 = { x:500, y:400, z:250, vy:0, size:42, color:"#7fd8ff", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null, magnetTimer:0, doubleCoinsTimer:0, forceFieldTimer:0, speedBoostTimer:0, stingTimer:0, rainbowSkin:false };
+let player = { x:200, y:400, z:200, vy:0, vx:0, onIce:false, size:42, color:"#9cff8f", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null, magnetTimer:0, doubleCoinsTimer:0, forceFieldTimer:0, speedBoostTimer:0, stingTimer:0, megaJumpTimer:0, rainbowSkin:false };
+let player2 = { x:500, y:400, z:250, vy:0, vx:0, onIce:false, size:42, color:"#7fd8ff", speed:5, walk:0, coins:0, speedLevel:1, speedCost:10, mesh:null, magnetTimer:0, doubleCoinsTimer:0, forceFieldTimer:0, speedBoostTimer:0, stingTimer:0, megaJumpTimer:0, rainbowSkin:false };
 
 // Effective movement speed for a player, factoring in temporary speed-boost power-up and bee stings
 function getSpeed(p){
@@ -918,7 +1330,9 @@ function saveGameData() {
         currentLanguage: currentLanguage,
         nightModeEnabled: nightModeEnabled,
         player: { coins: player.coins, speed: player.speed, speedLevel: player.speedLevel, speedCost: player.speedCost, color: player.color, rainbowSkin: player.rainbowSkin },
-        player2: { coins: player2.coins, speed: player2.speed, speedLevel: player2.speedLevel, speedCost: player2.speedCost, color: player2.color, rainbowSkin: player2.rainbowSkin }
+        player2: { coins: player2.coins, speed: player2.speed, speedLevel: player2.speedLevel, speedCost: player2.speedCost, color: player2.color, rainbowSkin: player2.rainbowSkin },
+        raceUnlockedTracks: raceUnlockedTracks,
+        raceBestResults: raceBestResults
     };
     const jsonStr = JSON.stringify(data);
     
@@ -974,6 +1388,8 @@ function loadGameData() {
                 player2.color = data.player2.color ?? "#7fd8ff";
                 player2.rainbowSkin = data.player2.rainbowSkin ?? false;
             }
+            raceUnlockedTracks = data.raceUnlockedTracks ?? 1;
+            raceBestResults = data.raceBestResults ?? [];
         } catch(e) { console.error("Could not parse save file structures:", e); }
     }
 }
@@ -1036,8 +1452,9 @@ function startGame(isMultiplayer, mode){
     resetPositionsAll();
 
     // Fresh game start: clear any lingering power-up effects from a previous session
-    player.magnetTimer = 0; player.doubleCoinsTimer = 0; player.forceFieldTimer = 0; player.speedBoostTimer = 0; player.stingTimer = 0;
-    player2.magnetTimer = 0; player2.doubleCoinsTimer = 0; player2.forceFieldTimer = 0; player2.speedBoostTimer = 0; player2.stingTimer = 0;
+    player.magnetTimer = 0; player.doubleCoinsTimer = 0; player.forceFieldTimer = 0; player.speedBoostTimer = 0; player.stingTimer = 0; player.megaJumpTimer = 0;
+    player2.magnetTimer = 0; player2.doubleCoinsTimer = 0; player2.forceFieldTimer = 0; player2.speedBoostTimer = 0; player2.stingTimer = 0; player2.megaJumpTimer = 0;
+    chickenFrozenTimer = 0;
 
     updateUI();
 
@@ -1178,8 +1595,9 @@ function returnToMenu(){
 
     // Restore persistent upgrades when moving back to the setup menu
     loadGameData();
-    player.magnetTimer = 0; player.doubleCoinsTimer = 0; player.forceFieldTimer = 0; player.speedBoostTimer = 0; player.stingTimer = 0;
-    player2.magnetTimer = 0; player2.doubleCoinsTimer = 0; player2.forceFieldTimer = 0; player2.speedBoostTimer = 0; player2.stingTimer = 0;
+    player.magnetTimer = 0; player.doubleCoinsTimer = 0; player.forceFieldTimer = 0; player.speedBoostTimer = 0; player.stingTimer = 0; player.megaJumpTimer = 0;
+    player2.magnetTimer = 0; player2.doubleCoinsTimer = 0; player2.forceFieldTimer = 0; player2.speedBoostTimer = 0; player2.stingTimer = 0; player2.megaJumpTimer = 0;
+    chickenFrozenTimer = 0;
     player.mesh.position.set(200, 0, 300);
     player2.mesh.position.set(500, 0, 350);
     player2.mesh.visible = false;
@@ -1202,7 +1620,7 @@ function returnToMenu(){
     updateUI();
 }
 
-// --- LEVEL 11, 12, 13, & 14 EXTENDED 3D PLATFORMER GENERATOR ENGINE ---
+// --- LEVEL 11-18 EXTENDED 3D PLATFORMER GENERATOR ENGINE ---
 function setupPlatformerLevel(resetPositions = true) {
     platforms = [];
     hazards = [];
@@ -1216,6 +1634,10 @@ function setupPlatformerLevel(resetPositions = true) {
     powerUps3D.forEach(p => scene.remove(p));
     powerUps3D = [];
     powerUps = [];
+    animatedPlatforms = [];
+    windZones3D.forEach(g => scene.remove(g));
+    windZones3D = [];
+    windZones = [];
 
     if(goalMesh) { scene.remove(goalMesh); goalMesh = null; }
 
@@ -1223,35 +1645,65 @@ function setupPlatformerLevel(resetPositions = true) {
     const w = 4200; // Extra extended level space width length layout
     
     if (resetPositions) {
-        player.x = 80; player.y = 200; player.z = arenaHeight / 2; player.vy = 0; p1Grounded = false;
+        player.x = 80; player.y = 200; player.z = arenaHeight / 2; player.vy = 0; player.vx = 0; player.onIce = false; p1Grounded = false;
         if (multiplayer) {
-            player2.x = 160; player2.y = 200; player2.z = arenaHeight / 2; player2.vy = 0; p2Grounded = false;
+            player2.x = 160; player2.y = 200; player2.z = arenaHeight / 2; player2.vy = 0; player2.vx = 0; player2.onIce = false; p2Grounded = false;
         }
         // Power-up timers intentionally left untouched so effects carry across levels.
     }
     
     let platMat = new THREE.MeshToonMaterial({ color: theme.ground });
     let leavesCapMat = new THREE.MeshToonMaterial({ color: theme.leaves });
+    let iceMat = new THREE.MeshToonMaterial({ color: 0xcdeeff });
+    let iceCapMat = new THREE.MeshToonMaterial({ color: 0xffffff });
 
-    function add3DPlatform(x, y, width, height) {
-        platforms.push({ x: x, y: y, w: width, h: height });
+    function add3DPlatform(x, y, width, height, icy = false) {
+        platforms.push({ x: x, y: y, w: width, h: height, icy: icy });
         
         const platGroup = new THREE.Group();
         const boxGeo = new THREE.BoxGeometry(width, height, 120); 
-        const mesh = new THREE.Mesh(boxGeo, platMat);
+        const mesh = new THREE.Mesh(boxGeo, icy ? iceMat : platMat);
         mesh.position.set(width/2, -height/2, 0);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
         platGroup.add(mesh);
 
         const capGeo = new THREE.BoxGeometry(width, 6, 122);
-        const capMesh = new THREE.Mesh(capGeo, leavesCapMat);
+        const capMesh = new THREE.Mesh(capGeo, icy ? iceCapMat : leavesCapMat);
         capMesh.position.set(width/2, 3, 0);
         platGroup.add(capMesh);
 
         platGroup.position.set(x, y, arenaHeight / 2);
         scene.add(platGroup);
         platforms3D.push(platGroup);
+    }
+
+    // Vertically oscillating "elevator" platform (Elevator Shaft level type). Because the
+    // grounding check re-reads plat.y fresh every frame, a player standing on one is
+    // automatically carried up and down as it moves — no extra rider logic needed.
+    function add3DMovingPlatform(x, baseY, width, height, range, speed, phase = 0, icy = false) {
+        add3DPlatform(x, baseY, width, height, icy);
+        const plat = platforms[platforms.length - 1];
+        const group = platforms3D[platforms3D.length - 1];
+        animatedPlatforms.push({ plat: plat, group: group, center: baseY, range: range, speed: speed, phase: phase });
+    }
+
+    // A horizontal gust zone that nudges airborne players sideways (Wind Peaks level type).
+    function add3DWindZone(x, width, force) {
+        windZones.push({ x1: x, x2: x + width, force: force });
+
+        const group = new THREE.Group();
+        const streakMat = new THREE.MeshBasicMaterial({ color: 0xeafcff, transparent: true, opacity: 0.35 });
+        for (let i = 0; i < 5; i++) {
+            const streak = new THREE.Mesh(new THREE.BoxGeometry(46, 5, 5), streakMat);
+            streak.position.set(x + Math.random() * width, 140 + Math.random() * 320, (arenaHeight / 2) + (Math.random() - 0.5) * 100);
+            group.add(streak);
+        }
+        group.userData.x1 = x;
+        group.userData.x2 = x + width;
+        group.userData.dir = force >= 0 ? 1 : -1;
+        scene.add(group);
+        windZones3D.push(group);
     }
 
     function add3DSpikes(hx, hw, color = 0xff3838) {
@@ -1289,6 +1741,38 @@ function setupPlatformerLevel(resetPositions = true) {
         goalGroup.position.set(gx + 30, gy, arenaHeight / 2);
         scene.add(goalGroup);
         goalMesh = goalGroup;
+    }
+
+    // Checkered-flag finish line, used by the racing level instead of the trophy cup goal.
+    function createFinishLineMesh(gx, gy) {
+        winGoal = { x: gx, y: gy, w: 60, h: 90 };
+
+        const group = new THREE.Group();
+
+        const poleGeo = new THREE.CylinderGeometry(4, 4, 140, 8);
+        const poleMat = new THREE.MeshToonMaterial({ color: 0x333333 });
+        const pole = new THREE.Mesh(poleGeo, poleMat);
+        pole.position.y = 70;
+        group.add(pole);
+
+        const flagGroup = new THREE.Group();
+        const squareSize = 12;
+        for (let row = 0; row < 3; row++) {
+            for (let col = 0; col < 4; col++) {
+                const isBlack = (row + col) % 2 === 0;
+                const sqGeo = new THREE.BoxGeometry(squareSize, squareSize, 2);
+                const sqMat = new THREE.MeshBasicMaterial({ color: isBlack ? 0x111111 : 0xffffff });
+                const sq = new THREE.Mesh(sqGeo, sqMat);
+                sq.position.set(col * squareSize, row * squareSize, 0);
+                flagGroup.add(sq);
+            }
+        }
+        flagGroup.position.set(6, 120, 8);
+        group.add(flagGroup);
+
+        group.position.set(gx + 30, gy, arenaHeight / 2);
+        scene.add(group);
+        goalMesh = group;
     }
 
     if (currentLevel === 11) {
@@ -1392,6 +1876,158 @@ function setupPlatformerLevel(resetPositions = true) {
 
         for (let i = 0; i < 20; i++) spawnPlatformerCoin();
     }
+    else if (currentLevel === 15) {
+        chicken.mesh.visible = false;
+        // LEVEL 15: ELEVATOR SHAFT — ride oscillating lifts up through a deep chasm
+        add3DPlatform(0, 150, 400, 500);
+        add3DMovingPlatform(500, 240, 180, 30, 60, 0.0015, 0);
+        add3DPlatform(780, 330, 180, 30);
+        add3DMovingPlatform(1060, 420, 180, 30, 60, 0.0015, 1.2);
+        add3DPlatform(1340, 320, 180, 30);
+        add3DMovingPlatform(1620, 240, 200, 30, 60, 0.0015, 2.4);
+        add3DPlatform(1920, 350, 180, 30);
+        add3DMovingPlatform(2200, 440, 180, 30, 60, 0.0015, 0.6);
+        add3DPlatform(2480, 520, 180, 30);
+        add3DMovingPlatform(2760, 420, 200, 30, 60, 0.0015, 1.8);
+        add3DPlatform(3060, 320, 180, 30);
+        add3DMovingPlatform(3340, 430, 180, 30, 60, 0.0015, 3.0);
+        add3DPlatform(3620, 520, 180, 30);
+        add3DPlatform(3880, 620, 400, 900);
+
+        add3DSpikes(400, 3480, 0x1e3a8a); // deep chasm below the shaft
+
+        createGoalMesh(4050, 620);
+
+        for (let i = 0; i < 18; i++) spawnPlatformerCoin();
+    }
+    else if (currentLevel === 16) {
+        chicken.mesh.visible = false;
+        // LEVEL 16: FROZEN FALLS — slippery ice platforms that carry your momentum
+        add3DPlatform(0, 150, 350, 500);
+        add3DPlatform(450, 260, 120, 30, true);
+        add3DPlatform(670, 220, 120, 30, true);
+        add3DPlatform(890, 340, 120, 30, true);
+        add3DPlatform(1110, 450, 150, 30, true);
+        add3DPlatform(1360, 360, 120, 30, true);
+        add3DPlatform(1580, 260, 120, 30, true);
+        add3DPlatform(1800, 350, 140, 30, true);
+        add3DPlatform(2040, 460, 120, 30, true);
+        add3DPlatform(2260, 360, 120, 30, true);
+        add3DPlatform(2480, 260, 120, 30, true);
+        add3DPlatform(2700, 380, 150, 30, true);
+        add3DPlatform(2950, 480, 120, 30, true);
+        add3DPlatform(3170, 380, 120, 30, true);
+        add3DPlatform(3390, 280, 120, 30, true);
+        add3DPlatform(3610, 400, 140, 30, true);
+        add3DPlatform(3850, 500, 400, 900);
+
+        add3DSpikes(350, 3500, 0x60a5fa); // icy blue chasm
+
+        createGoalMesh(4000, 500);
+
+        for (let i = 0; i < 18; i++) spawnPlatformerCoin();
+    }
+    else if (currentLevel === 17) {
+        chicken.mesh.visible = false;
+        // LEVEL 17: WIND PEAKS — gusts push you sideways mid-jump across the long gaps
+        add3DPlatform(0, 150, 300, 500);
+        add3DPlatform(400, 250, 90, 30);
+        add3DPlatform(580, 350, 90, 30);
+        add3DPlatform(760, 450, 90, 30);
+        add3DPlatform(940, 320, 100, 30);
+        add3DPlatform(1140, 200, 90, 30);
+        add3DPlatform(1320, 300, 90, 30);
+        add3DPlatform(1500, 420, 120, 30);
+        add3DPlatform(1720, 520, 90, 30);
+        add3DPlatform(1900, 400, 90, 30);
+        add3DPlatform(2080, 280, 90, 30);
+        add3DPlatform(2260, 180, 100, 30);
+        add3DPlatform(2460, 300, 90, 30);
+        add3DPlatform(2640, 420, 90, 30);
+        add3DPlatform(2820, 520, 110, 30);
+        add3DPlatform(3030, 400, 90, 30);
+        add3DPlatform(3210, 280, 90, 30);
+        add3DPlatform(3390, 380, 90, 30);
+        add3DPlatform(3570, 480, 100, 30);
+        add3DPlatform(3800, 580, 450, 900);
+
+        add3DSpikes(300, 3500, 0x0ea5a4);
+
+        add3DWindZone(900, 260, -1.4);   // headwind slows your run across this gap
+        add3DWindZone(1880, 220, 1.6);   // tailwind boost
+        add3DWindZone(2780, 260, -1.6);  // strong headwind near the summit
+        add3DWindZone(3550, 260, 1.8);   // final tailwind push to the goal
+
+        createGoalMesh(3980, 580);
+
+        for (let i = 0; i < 20; i++) spawnPlatformerCoin();
+    }
+    else if (currentLevel === 18) {
+        chicken.mesh.visible = false;
+        // LEVEL 18: THE OVERLORD'S GAUNTLET — elevators, ice, and wind, all at once
+        add3DPlatform(0, 150, 300, 500);
+        add3DPlatform(380, 240, 100, 30, true);
+        add3DMovingPlatform(560, 320, 140, 30, 70, 0.0016, 0);
+        add3DPlatform(820, 420, 100, 30);
+        add3DPlatform(1000, 300, 100, 30, true);
+        add3DMovingPlatform(1200, 220, 140, 30, 70, 0.0015, 1.5);
+        add3DPlatform(1460, 340, 100, 30);
+        add3DPlatform(1650, 460, 110, 30);
+        add3DMovingPlatform(1860, 380, 150, 30, 80, 0.0017, 2.8);
+        add3DPlatform(2120, 260, 100, 30, true);
+        add3DPlatform(2300, 180, 100, 30, true);
+        add3DMovingPlatform(2500, 300, 150, 30, 80, 0.0016, 0.9);
+        add3DPlatform(2760, 420, 110, 30);
+        add3DPlatform(2960, 520, 100, 30);
+        add3DMovingPlatform(3160, 420, 150, 30, 70, 0.0018, 3.4);
+        add3DPlatform(3420, 320, 100, 30, true);
+        add3DPlatform(3620, 460, 120, 30);
+        add3DPlatform(3850, 580, 450, 900);
+
+        add3DSpikes(300, 3550, 0x7f1d1d); // deep crimson doom-pit
+
+        add3DWindZone(700, 220, -1.5);
+        add3DWindZone(1750, 240, 1.5);
+        add3DWindZone(2650, 240, -1.7);
+        add3DWindZone(3500, 220, 1.7);
+
+        createGoalMesh(4000, 580);
+
+        for (let i = 0; i < 22; i++) spawnPlatformerCoin();
+    }
+    else if (currentLevel === 19) {
+        // LEVEL 19: RIVAL SPRINT — a low, fast hurdle track. Race the chicken to the finish line!
+        chicken.mesh.visible = chickenEnabled;
+        chicken.x = 0;
+        chicken.z = arenaHeight / 2;
+        raceRivalSpeed = chickenEnabled ? chickenSpeed * 1.3 : 0;
+
+        add3DPlatform(0, 100, 350, 500);
+        add3DPlatform(430, 100, 160, 30);
+        add3DPlatform(670, 120, 160, 30);
+        add3DPlatform(910, 90, 160, 30);
+        add3DPlatform(1150, 130, 160, 30);
+        add3DPlatform(1390, 100, 160, 30);
+        add3DPlatform(1630, 140, 160, 30);
+        add3DPlatform(1870, 100, 160, 30);
+        add3DPlatform(2110, 110, 160, 30);
+        add3DPlatform(2350, 90, 160, 30);
+        add3DPlatform(2590, 130, 160, 30);
+        add3DPlatform(2830, 100, 160, 30);
+        add3DPlatform(3070, 120, 160, 30);
+        add3DPlatform(3310, 100, 160, 30);
+        add3DPlatform(3550, 110, 160, 30);
+        add3DPlatform(3800, 100, 450, 900);
+
+        add3DSpikes(350, 3480, 0xdc2626); // fall off the track and you're out of the race
+
+        add3DWindZone(600, 2400, 2.0);    // a steady tailwind down the back straight
+        add3DWindZone(3300, 300, -1.6);   // one last headwind gauntlet before the line
+
+        createFinishLineMesh(3980, 100);
+
+        for (let i = 0; i < 16; i++) spawnPlatformerCoin();
+    }
     
     if(touchControlsEnabled && gameStarted) {
         document.getElementById("btnJump").style.display = "flex";
@@ -1405,8 +2041,12 @@ function spawnCoin(){
     if(coins.length >= maxCoins) return;
 
     if (currentLevel < 11) {
-        let cx = Math.random() * (arenaWidth - 60) + 30;
-        let cz = Math.random() * (arenaHeight - 60) + 30;
+        let cx, cz, tries = 0;
+        do {
+            cx = Math.random() * (arenaWidth - 60) + 30;
+            cz = Math.random() * (arenaHeight - 60) + 30;
+            tries++;
+        } while (pointNearMazeWalls(cx, cz, 20) && tries < 10);
         let isLucky = Math.random() < 0.08;
         
         coins.push({ x: cx, y: 15, z: cz, size: isLucky ? 32 : 24, value: isLucky ? 5 : 1 });
@@ -1447,22 +2087,25 @@ function spawnPlatformerCoin() {
 // --- POWER UP SPARK SPONSOR ENGINE ---
 function spawnPowerUp() {
     if(!gameStarted || gamePaused) return;
-    let maxPowerUps = currentLevel >= 11 ? 5 : 2;
+    let maxPowerUps = currentLevel >= 11 ? 5 : 3;
     if(powerUps.length >= maxPowerUps) return; 
 
-    // Weighted selection pool for power ups
-    let rand = Math.random();
-    let type = 'magnet';
-    if (rand > 0.75) type = 'speed';
-    else if (rand > 0.5) type = 'double';
-    else if (rand > 0.25) type = 'forcefield';
+    // Selection pool for power ups - some types only make sense for the current level type
+    let pool = ['magnet', 'double', 'forcefield', 'speed', 'coinrain', 'vacuum', 'levelrush'];
+    if (currentLevel < 11) pool.push('frost');   // slows the hostile chicken - open world only
+    else pool.push('megajump');                  // higher jumps - platformer gauntlet only
+    let type = pool[Math.floor(Math.random() * pool.length)];
 
     let cx, cy, cz;
 
     if (currentLevel < 11) {
-        cx = Math.random() * (arenaWidth - 60) + 30;
+        let tries = 0;
+        do {
+            cx = Math.random() * (arenaWidth - 60) + 30;
+            cz = Math.random() * (arenaHeight - 60) + 30;
+            tries++;
+        } while (pointNearMazeWalls(cx, cz, 20) && tries < 10);
         cy = 15;
-        cz = Math.random() * (arenaHeight - 60) + 30;
     } else {
         if(platforms.length === 0) return;
         let plat = platforms[Math.floor(Math.random() * platforms.length)];
@@ -1475,7 +2118,11 @@ function spawnPowerUp() {
 
     // Distinctive 3D base mesh configurations
     let geo = new THREE.SphereGeometry(12, 12, 12);
-    let matColor = type === 'magnet' ? 0x00d2ff : (type === 'double' ? 0xff00ff : (type === 'speed' ? 0xffe600 : 0x00ffcc));
+    const powerUpColors = {
+        magnet: 0x00d2ff, double: 0xff00ff, forcefield: 0x00ffcc, speed: 0xffe600,
+        coinrain: 0xffcc00, frost: 0x99e6ff, vacuum: 0x8844ff, levelrush: 0xff6600, megajump: 0xff3fa4
+    };
+    let matColor = powerUpColors[type] || 0xffffff;
     let mat = new THREE.MeshStandardMaterial({ color: matColor, roughness: 0.2, metalness: 0.6 });
     let mesh = new THREE.Mesh(geo, mat);
 
@@ -1500,6 +2147,39 @@ function spawnPowerUp() {
         let innerMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
         let innerMesh = new THREE.Mesh(innerGeo, innerMat);
         innerMesh.rotation.z = Math.PI / 8;
+        mesh.add(innerMesh);
+    } else if (type === 'coinrain') {
+        // Cluster of tiny mini-coins to signal an instant coin bonus
+        for(let k = 0; k < 4; k++) {
+            let miniGeo = new THREE.CylinderGeometry(3, 3, 1.5, 8);
+            let miniMat = new THREE.MeshBasicMaterial({ color: 0xfff2b0 });
+            let mini = new THREE.Mesh(miniGeo, miniMat);
+            mini.position.set((Math.random()-0.5)*10, (Math.random()-0.5)*10, (Math.random()-0.5)*10);
+            mesh.add(mini);
+        }
+    } else if (type === 'frost') {
+        let innerGeo = new THREE.OctahedronGeometry(7, 0);
+        let innerMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
+        let innerMesh = new THREE.Mesh(innerGeo, innerMat);
+        mesh.add(innerMesh);
+    } else if (type === 'vacuum') {
+        let innerGeo = new THREE.TorusGeometry(6, 1.5, 8, 16);
+        let innerMat = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
+        let innerMesh = new THREE.Mesh(innerGeo, innerMat);
+        mesh.add(innerMesh);
+        let inner2 = new THREE.Mesh(new THREE.TorusGeometry(3, 1, 8, 16), innerMat);
+        inner2.rotation.x = Math.PI / 2;
+        mesh.add(inner2);
+    } else if (type === 'levelrush') {
+        let innerGeo = new THREE.ConeGeometry(6, 18, 4);
+        let innerMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        let innerMesh = new THREE.Mesh(innerGeo, innerMat);
+        mesh.add(innerMesh);
+    } else if (type === 'megajump') {
+        let innerGeo = new THREE.ConeGeometry(6, 18, 4);
+        let innerMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+        let innerMesh = new THREE.Mesh(innerGeo, innerMat);
+        innerMesh.rotation.x = Math.PI; // points downward like a spring
         mesh.add(innerMesh);
     }
 
@@ -1590,9 +2270,36 @@ function collectPowerUps(p) {
             if(pu.type === 'double') p.doubleCoinsTimer = 600;
             if(pu.type === 'forcefield') p.forceFieldTimer = 600; 
             if(pu.type === 'speed') p.speedBoostTimer = 480;
+            if(pu.type === 'frost') chickenFrozenTimer = 400;
+            if(pu.type === 'megajump') p.megaJumpTimer = 480;
+
+            // Instant bonuses - applied immediately rather than as a timed buff
+            let instantGain = 0;
+            if(pu.type === 'coinrain') {
+                instantGain = 6 + Math.floor(Math.random() * 5); // 6-10 bonus coins
+            } else if (pu.type === 'levelrush') {
+                instantGain = 4 + Math.floor(Math.random() * 4); // 4-7 bonus progress/coins
+            } else if (pu.type === 'vacuum') {
+                // Instantly collect every coin currently on the field
+                for (let k = coins.length - 1; k >= 0; k--) {
+                    instantGain += (coins[k].value || 1);
+                    scene.remove(coins3D[k]);
+                    coins3D.splice(k, 1);
+                    coins.splice(k, 1);
+                }
+                if (p.doubleCoinsTimer > 0) instantGain *= 2;
+            }
+            if (instantGain > 0) {
+                p.coins += instantGain;
+                if (currentLevel < 11) coinsCollectedThisLevel += instantGain;
+            }
 
             if (particlesEnabled) {
-                let pColor = pu.type === 'magnet' ? 0x00d2ff : (pu.type === 'double' ? 0xff00ff : (pu.type === 'speed' ? 0xffe600 : 0x00ffcc));
+                const powerUpParticleColors = {
+                    magnet: 0x00d2ff, double: 0xff00ff, forcefield: 0x00ffcc, speed: 0xffe600,
+                    coinrain: 0xffcc00, frost: 0x99e6ff, vacuum: 0x8844ff, levelrush: 0xff6600, megajump: 0xff3fa4
+                };
+                let pColor = powerUpParticleColors[pu.type] || 0xffffff;
                 for(let j=0; j<12; j++) {
                     const pGeo = new THREE.SphereGeometry(2.5, 4, 4);
                     const pMat = new THREE.MeshBasicMaterial({ color: pColor });
@@ -1612,6 +2319,23 @@ function collectPowerUps(p) {
             scene.remove(powerUps3D[i]);
             powerUps3D.splice(i, 1);
             powerUps.splice(i, 1);
+
+            // If an instant bonus pushed us over the line, advance to the next level
+            if (currentLevel < 11 && coinsCollectedThisLevel >= coinsNeededForNextLevel) {
+                currentLevel++;
+                coinsCollectedThisLevel = 0;
+                coinsNeededForNextLevel = 10 + (currentLevel - 1) * 5;
+                levelUpTimer = 90;
+
+                rebuildEnvironment();
+                if (currentLevel >= 11) {
+                    setupPlatformerLevel(true);
+                } else {
+                    clearLevelObjects();
+                }
+                return;
+            }
+            updateUI();
         }
     }
 }
@@ -1657,11 +2381,11 @@ function checkHazardsAndGoals(p, isP2) {
     }
 
     if (currentLevel >= 11 && p.x > winGoal.x && p.x < winGoal.x + winGoal.w && p.y > winGoal.y && p.y < winGoal.y + winGoal.h) {
-        if (currentLevel === 14) {
+        if (currentLevel === 19) {
             gamePaused = true;
             showWinScreen(multiplayer 
-                ? (isP2 ? 'PLAYER 2 CONQUERED THE GAUNTLET OVERLORD! 🎉' : 'PLAYER 1 CONQUERED THE GAUNTLET OVERLORD! 🎉')
-                : 'YOU CONQUERED ALL 14 GAUNTLET LEVELS! YOU ARE A MASTER! 🎉');
+                ? (isP2 ? 'PLAYER 2 WON THE RACE AND CONQUERED THE GAUNTLET! 🎉' : 'PLAYER 1 WON THE RACE AND CONQUERED THE GAUNTLET! 🎉')
+                : 'YOU OUTRAN THE RIVAL AND CONQUERED ALL 19 LEVELS! YOU ARE A MASTER! 🎉');
         } else {
             gamePaused = true;
             currentLevel++;
@@ -1680,6 +2404,8 @@ function resetPlatformerPosition(p) {
     p.x = 80;
     p.y = 400;
     p.vy = 0;
+    p.vx = 0;
+    p.onIce = false;
 }
 
 // --- MOVEMENT ENGINE PROCESSING LOOP ---
@@ -1692,6 +2418,8 @@ function update(){
     if(player.forceFieldTimer > 0) player.forceFieldTimer--;
     if(player.speedBoostTimer > 0) player.speedBoostTimer--;
     if(player.stingTimer > 0) player.stingTimer--;
+    if(player.megaJumpTimer > 0) player.megaJumpTimer--;
+    if(chickenFrozenTimer > 0) chickenFrozenTimer--;
     
     // Toggle 3D mesh shield visible nodes dynamically
     if(player.mesh && player.mesh.userData.shieldMesh) {
@@ -1704,6 +2432,7 @@ function update(){
         if(player2.forceFieldTimer > 0) player2.forceFieldTimer--;
         if(player2.speedBoostTimer > 0) player2.speedBoostTimer--;
         if(player2.stingTimer > 0) player2.stingTimer--;
+        if(player2.megaJumpTimer > 0) player2.megaJumpTimer--;
         if(player2.mesh && player2.mesh.userData.shieldMesh) {
             player2.mesh.userData.shieldMesh.visible = (player2.forceFieldTimer > 0);
         }
@@ -1719,7 +2448,9 @@ function update(){
     if(player.doubleCoinsTimer > 0) p1Txt += `✨ 2x Coins: ${Math.ceil(player.doubleCoinsTimer/60)}s `;
     if(player.forceFieldTimer > 0) p1Txt += `🛡️ Shield: ${Math.ceil(player.forceFieldTimer/60)}s `;
     if(player.speedBoostTimer > 0) p1Txt += `⚡ Speed: ${Math.ceil(player.speedBoostTimer/60)}s `;
-    if(player.stingTimer > 0) p1Txt += `🐝 Stung: ${Math.ceil(player.stingTimer/60)}s`;
+    if(player.stingTimer > 0) p1Txt += `🐝 Stung: ${Math.ceil(player.stingTimer/60)}s `;
+    if(player.megaJumpTimer > 0) p1Txt += `🦘 Mega Jump: ${Math.ceil(player.megaJumpTimer/60)}s `;
+    if(chickenFrozenTimer > 0) p1Txt += `❄️ Chicken Slowed: ${Math.ceil(chickenFrozenTimer/60)}s`;
     document.getElementById("p1PowerUps").innerHTML = p1Txt;
 
     let p2Txt = "";
@@ -1728,7 +2459,8 @@ function update(){
         if(player2.doubleCoinsTimer > 0) p2Txt += `✨ 2x Coins: ${Math.ceil(player2.doubleCoinsTimer/60)}s `;
         if(player2.forceFieldTimer > 0) p2Txt += `🛡️ Shield: ${Math.ceil(player2.forceFieldTimer/60)}s `;
         if(player2.speedBoostTimer > 0) p2Txt += `⚡ Speed: ${Math.ceil(player2.speedBoostTimer/60)}s `;
-        if(player2.stingTimer > 0) p2Txt += `🐝 Stung: ${Math.ceil(player2.stingTimer/60)}s`;
+        if(player2.stingTimer > 0) p2Txt += `🐝 Stung: ${Math.ceil(player2.stingTimer/60)}s `;
+        if(player2.megaJumpTimer > 0) p2Txt += `🦘 Mega Jump: ${Math.ceil(player2.megaJumpTimer/60)}s`;
         document.getElementById("p2PowerUps").innerHTML = p2Txt;
     }
 
@@ -1738,10 +2470,17 @@ function update(){
         // P1 Controls (WASD)
         let p1Moving = false;
         let p1Spd = getSpeed(player);
+        let p1OldX = player.x, p1OldZ = player.z;
         if(keys["w"]) { player.z -= p1Spd; p1Moving = true; player.mesh.rotation.y = Math.PI; }
         if(keys["s"]) { player.z += p1Spd; p1Moving = true; player.mesh.rotation.y = 0; }
         if(keys["a"]) { player.x -= p1Spd; p1Moving = true; player.mesh.rotation.y = -Math.PI/2; }
         if(keys["d"]) { player.x += p1Spd; p1Moving = true; player.mesh.rotation.y = Math.PI/2; }
+
+        // Hedge maze collision (only present on maze-type levels) - resolved per axis so players can slide along walls
+        if(mazeWalls.length){
+            if(collidesMazeWall(player.x, p1OldZ, player.size/2)) player.x = p1OldX;
+            if(collidesMazeWall(player.x, player.z, player.size/2)) player.z = p1OldZ;
+        }
         
         if (p1Moving) {
             player.walk += 0.25;
@@ -1759,10 +2498,17 @@ function update(){
         if(multiplayer) {
             let p2Moving = false;
             let p2Spd = getSpeed(player2);
+            let p2OldX = player2.x, p2OldZ = player2.z;
             if(keys["arrowup"]) { player2.z -= p2Spd; p2Moving = true; player2.mesh.rotation.y = Math.PI; }
             if(keys["arrowdown"]) { player2.z += p2Spd; p2Moving = true; player2.mesh.rotation.y = 0; }
             if(keys["arrowleft"]) { player2.x -= p2Spd; p2Moving = true; player2.mesh.rotation.y = -Math.PI/2; }
             if(keys["arrowright"]) { player2.x += p2Spd; p2Moving = true; player2.mesh.rotation.y = Math.PI/2; }
+
+            // Hedge maze collision for player 2
+            if(mazeWalls.length){
+                if(collidesMazeWall(player2.x, p2OldZ, player2.size/2)) player2.x = p2OldX;
+                if(collidesMazeWall(player2.x, player2.z, player2.size/2)) player2.z = p2OldZ;
+            }
             
             if (p2Moving) {
                 player2.walk += 0.25;
@@ -1791,6 +2537,7 @@ function update(){
             if(difficulty === 'hard') {
                 currentChickenSpeed = Math.min(player.speed * 0.85 + (currentLevel - 1) * 0.3, 7.5);
             }
+            if(chickenFrozenTimer > 0) currentChickenSpeed *= 0.4; // ❄️ Frost power-up slows the chase
 
             chicken.x += Math.cos(angle) * currentChickenSpeed;
             chicken.z += Math.sin(angle) * currentChickenSpeed;
@@ -1810,6 +2557,8 @@ function update(){
             }
         }
     } else {
+        updateAnimatedPlatforms();
+        updateRaceRival();
         processPlatformerPhysics(player, "a", "d", "w", false);
         collectCoins(player);
         checkHazardsAndGoals(player, false);
@@ -1822,17 +2571,63 @@ function update(){
     }
 }
 
+// Advances any oscillating "elevator" platforms (Elevator Shaft / Overlord's Gauntlet levels).
+// Vertical carry of a standing player happens for free since processPlatformerPhysics reads
+// plat.y fresh every frame when checking/snapping to the ground.
+function updateAnimatedPlatforms() {
+    const t = performance.now();
+    for (const ap of animatedPlatforms) {
+        const offset = Math.sin(t * ap.speed + ap.phase) * ap.range;
+        ap.plat.y = ap.center + offset;
+        ap.group.position.y = ap.plat.y;
+    }
+}
+
+// Drives the rival chicken racer on the "Rival Sprint" racing level (19). The rival just
+// runs straight for the finish line at a fixed pace — reach it before the rival does!
+function updateRaceRival() {
+    if (currentLevel !== 19 || raceRivalSpeed <= 0) return;
+
+    chicken.x += raceRivalSpeed;
+    chicken.z = arenaHeight / 2;
+    chicken.mesh.position.set(chicken.x, Math.abs(Math.sin(performance.now() * 0.01)) * 6, chicken.z);
+    chicken.mesh.rotation.y = Math.PI / 2;
+
+    const pct = Math.min(100, Math.max(0, Math.round((chicken.x / winGoal.x) * 100)));
+    const raceTxt = ` 🐔 Rival: ${pct}% to the finish!`;
+    document.getElementById("p1PowerUps").innerHTML += raceTxt;
+    if (multiplayer) document.getElementById("p2PowerUps").innerHTML += raceTxt;
+
+    if (chicken.x > winGoal.x) {
+        alert("The rival chicken sprinted across the finish line first! Let's race again.");
+        setupPlatformerLevel(true);
+    }
+}
+
 function processPlatformerPhysics(p, leftKey, rightKey, jumpKey, isP2) {
     let oldX = p.x;
     let moving = false;
 
     let curSpd = getSpeed(p);
-    if (keys[leftKey]) { p.x -= curSpd; moving = true; p.mesh.rotation.y = -Math.PI/2; }
-    if (keys[rightKey]) { p.x += curSpd; moving = true; p.mesh.rotation.y = Math.PI/2; }
+
+    if (p.onIce) {
+        // Frozen Falls / Overlord's Gauntlet: momentum-based, slippery control
+        if (keys[leftKey]) { p.vx -= 0.55; moving = true; p.mesh.rotation.y = -Math.PI/2; }
+        if (keys[rightKey]) { p.vx += 0.55; moving = true; p.mesh.rotation.y = Math.PI/2; }
+        p.vx *= 0.965; // gentle friction so momentum carries for a bit rather than stopping instantly
+        let maxIceSpeed = curSpd * 1.6;
+        p.vx = Math.max(-maxIceSpeed, Math.min(maxIceSpeed, p.vx));
+        p.x += p.vx;
+    } else {
+        p.vx = 0;
+        if (keys[leftKey]) { p.x -= curSpd; moving = true; p.mesh.rotation.y = -Math.PI/2; }
+        if (keys[rightKey]) { p.x += curSpd; moving = true; p.mesh.rotation.y = Math.PI/2; }
+    }
 
     for (let plat of platforms) {
         if (p.x < plat.x + plat.w && p.x + 30 > plat.x && p.y < plat.y && p.y > plat.y - plat.h) {
             p.x = oldX;
+            p.vx = 0;
         }
     }
 
@@ -1840,6 +2635,7 @@ function processPlatformerPhysics(p, leftKey, rightKey, jumpKey, isP2) {
     p.y += p.vy;
 
     let grounded = false;
+    let standingPlat = null;
     for (let plat of platforms) {
         if (p.x < plat.x + plat.w && p.x + 30 > plat.x) {
             if (p.y <= plat.y && p.y >= plat.y - 40) {
@@ -1847,6 +2643,7 @@ function processPlatformerPhysics(p, leftKey, rightKey, jumpKey, isP2) {
                     p.y = plat.y;
                     p.vy = 0;
                     grounded = true;
+                    standingPlat = plat;
                 }
             }
         }
@@ -1854,8 +2651,17 @@ function processPlatformerPhysics(p, leftKey, rightKey, jumpKey, isP2) {
 
     if (isP2) p2Grounded = grounded; else p1Grounded = grounded;
 
+    // Wind Peaks / Overlord's Gauntlet: gusts nudge the player sideways while airborne
+    if (!grounded && windZones.length) {
+        for (let wz of windZones) {
+            if (p.x > wz.x1 && p.x < wz.x2) p.x += wz.force;
+        }
+    }
+
+    p.onIce = grounded && !!(standingPlat && standingPlat.icy);
+
     if (keys[jumpKey] && grounded) {
-        p.vy = 14;
+        p.vy = (p.megaJumpTimer > 0) ? 20 : 14; // 🦘 Mega Jump power-up boosts jump height
         if (isP2) p2Grounded = false; else p1Grounded = false;
     }
 
@@ -1934,6 +2740,7 @@ function updateParticles() {
 // --- DYNAMIC CAMERA & GRAPHICS RENDER LOOP ---
 function renderLoop(){
     update();
+    updateRace();
     updateParticles();
 
     coins3D.forEach(cMesh => { cMesh.rotation.z += 0.04; });
@@ -1949,6 +2756,17 @@ function renderLoop(){
             bee.position.z = Math.sin(t + off) * 22;
             bee.position.y = 14 + Math.sin(t * 2 + off) * 6;
             bee.rotation.y = t + off;
+        });
+    });
+
+    // Drift the visual streaks inside wind gust zones (Wind Peaks / Overlord's Gauntlet)
+    windZones3D.forEach(group => {
+        const dir = group.userData.dir;
+        const x1 = group.userData.x1, x2 = group.userData.x2;
+        group.children.forEach(streak => {
+            streak.position.x += dir * 3.2;
+            if (dir > 0 && streak.position.x > x2) streak.position.x = x1;
+            if (dir < 0 && streak.position.x < x1) streak.position.x = x2;
         });
     });
 
@@ -1976,7 +2794,23 @@ function renderLoop(){
         player2.mesh.userData.shieldMesh.rotation.x += 0.01;
     }
 
-    if (currentLevel < 11) {
+    if (raceActive || raceFinished) {
+        // Racing chase camera: stay directly behind the car, close to the road,
+        // and look forward along the track instead of from a high side angle.
+        const rx = racePlayerCar ? racePlayerCar.x : 0;
+        const rz = racePlayerCar ? racePlayerCar.z : RACE_TRACK_CENTER_Z;
+
+        const raceCamX = rx - 105;
+        const raceCamY = 72;
+        const raceCamZ = rz + 92;
+
+        // Smooth the camera so lane changes and acceleration do not jerk the view.
+        camera.position.x += (raceCamX - camera.position.x) * 0.12;
+        camera.position.y += (raceCamY - camera.position.y) * 0.12;
+        camera.position.z += (raceCamZ - camera.position.z) * 0.12;
+
+        camera.lookAt(rx + 180, 22, rz);
+    } else if (currentLevel < 11) {
         let targetX = player.x;
         let targetZ = player.z;
         if(multiplayer) {
@@ -2001,6 +2835,376 @@ function renderLoop(){
 }
 
 renderLoop();
+
+// ==================================================================
+// --- RACE MODE ENGINE (separate car-racing mode from the main menu) ---
+// ==================================================================
+
+function placeLabel(place) {
+    if (place === 1) return '1st';
+    if (place === 2) return '2nd';
+    if (place === 3) return '3rd';
+    return place + 'th';
+}
+
+function openRaceTrackSelect() {
+    startScreen.style.display = 'none';
+    document.getElementById('raceTrackSelect').style.display = 'flex';
+    renderRaceTrackList();
+}
+
+function renderRaceTrackList() {
+    const listEl = document.getElementById('raceTrackList');
+    listEl.innerHTML = '';
+    raceTracks.forEach((track, i) => {
+        const unlocked = i < raceUnlockedTracks;
+        const best = raceBestResults[i];
+        const row = document.createElement('button');
+        row.className = 'menuButton';
+        row.style.width = '100%';
+        row.style.fontSize = '20px';
+        row.style.textAlign = 'left';
+        if (unlocked) {
+            const sub = best ? `Best: ${placeLabel(best.place)} — ${best.time.toFixed(1)}s` : 'Not raced yet';
+            row.innerHTML = `🏁 ${track.name}<div class="raceTrackBest">${sub}</div>`;
+            row.onclick = () => { document.getElementById('raceTrackSelect').style.display = 'none'; buildRaceTrack(i); };
+        } else {
+            row.innerHTML = `🔒 ${track.name}<div class="raceTrackBest">Finish the previous track to unlock</div>`;
+            row.disabled = true;
+            row.style.opacity = '0.55';
+            row.style.cursor = 'default';
+        }
+        listEl.appendChild(row);
+    });
+}
+
+function pickObstacleLanes() {
+    const blockTwo = Math.random() < 0.3;
+    const lanes = [0, 1, 2];
+    for (let i = lanes.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [lanes[i], lanes[j]] = [lanes[j], lanes[i]];
+    }
+    return blockTwo ? lanes.slice(0, 2) : lanes.slice(0, 1);
+}
+
+function clearRaceObjects() {
+    if (racePlayerCar && racePlayerCar.mesh) scene.remove(racePlayerCar.mesh);
+    racePlayerCar = null;
+    raceRivalCars.forEach(r => scene.remove(r.mesh));
+    raceRivalCars = [];
+    raceObstacles3D.forEach(o => scene.remove(o.mesh));
+    raceObstacles3D = [];
+    raceBoosts3D.forEach(b => scene.remove(b.mesh));
+    raceBoosts3D = [];
+    raceRoadMeshes.forEach(m => scene.remove(m));
+    raceRoadMeshes = [];
+    trees3D.forEach(t => scene.remove(t));
+    trees3D = [];
+}
+
+function buildRaceTrack(index) {
+    if (index < 0 || index >= raceTracks.length) return;
+    clearRaceObjects();
+    raceTrackIndex = index;
+    const track = raceTracks[index];
+    const theme = levelThemes[track.themeIndex % levelThemes.length];
+
+    renderer.setClearColor(theme.skyBottom, 1);
+    scene.background = new THREE.Color(theme.skyBottom);
+
+    // Hide the normal forest world/characters while racing
+    groundMesh.visible = false;
+    player.mesh.visible = false;
+    player2.mesh.visible = false;
+    chicken.mesh.visible = false;
+
+    const roadWidth = 300;
+    const roadGeo = new THREE.BoxGeometry(track.length + 800, 10, roadWidth);
+    const roadMat = new THREE.MeshToonMaterial({ color: 0x4a4a52 });
+    const road = new THREE.Mesh(roadGeo, roadMat);
+    road.position.set(track.length / 2, -5, RACE_TRACK_CENTER_Z);
+    road.receiveShadow = true;
+    scene.add(road);
+    raceRoadMeshes.push(road);
+
+    const grassGeo = new THREE.BoxGeometry(track.length + 900, 8, 2000);
+    const grassMat = new THREE.MeshToonMaterial({ color: theme.ground });
+    const grass = new THREE.Mesh(grassGeo, grassMat);
+    grass.position.set(track.length / 2, -9, RACE_TRACK_CENTER_Z);
+    grass.receiveShadow = true;
+    scene.add(grass);
+    raceRoadMeshes.push(grass);
+
+    for (let x = 0; x < track.length + 400; x += 90) {
+        [(RACE_LANES[0] + RACE_LANES[1]) / 2, (RACE_LANES[1] + RACE_LANES[2]) / 2].forEach(dz => {
+            const dash = new THREE.Mesh(new THREE.BoxGeometry(40, 1, 6), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+            dash.position.set(x, 0.6, RACE_TRACK_CENTER_Z + dz);
+            scene.add(dash);
+            raceRoadMeshes.push(dash);
+        });
+    }
+
+    for (let x = 100; x < track.length + 400; x += 260) {
+        create3DTree(x, RACE_TRACK_CENTER_Z - 220, theme);
+        create3DTree(x + 60, RACE_TRACK_CENTER_Z + 220, theme);
+    }
+
+    const startLine = new THREE.Mesh(new THREE.BoxGeometry(12, 1, roadWidth), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+    startLine.position.set(0, 1, RACE_TRACK_CENTER_Z);
+    scene.add(startLine);
+    raceRoadMeshes.push(startLine);
+
+    const stripeW = roadWidth / 6;
+    for (let i = 0; i < 6; i++) {
+        const stripe = new THREE.Mesh(new THREE.BoxGeometry(14, 2, stripeW), new THREE.MeshBasicMaterial({ color: i % 2 === 0 ? 0x111111 : 0xffffff }));
+        stripe.position.set(track.length, 1.2, RACE_TRACK_CENTER_Z - roadWidth / 2 + stripeW * i + stripeW / 2);
+        scene.add(stripe);
+        raceRoadMeshes.push(stripe);
+    }
+
+    raceObstacles3D = [];
+    const obstacleSpacing = track.length / (track.obstacles + 1);
+    for (let i = 1; i <= track.obstacles; i++) {
+        const x = obstacleSpacing * i + (Math.random() * 40 - 20);
+        pickObstacleLanes().forEach(lane => {
+            const mesh = create3DBarrel();
+            mesh.position.set(x, 12, RACE_TRACK_CENTER_Z + RACE_LANES[lane]);
+            raceObstacles3D.push({ x, lane, mesh, hitBy: new Set() });
+        });
+    }
+
+    raceBoosts3D = [];
+    const boostSpacing = track.length / (track.boosts + 1);
+    for (let i = 1; i <= track.boosts; i++) {
+        const x = boostSpacing * i + (Math.random() * 50 - 25) + 35;
+        const lane = Math.floor(Math.random() * 3);
+        const mesh = create3DBoostPad();
+        mesh.position.set(x, 1, RACE_TRACK_CENTER_Z + RACE_LANES[lane]);
+        raceBoosts3D.push({ x, lane, mesh, used: false });
+    }
+
+    let playerColorHex = parseInt((player.color || '#ff3333').replace('#', '0x'));
+    if (isNaN(playerColorHex)) playerColorHex = 0xff3333;
+    const playerMesh = create3DCar(playerColorHex);
+    racePlayerCar = {
+        x: -40, lane: 1, z: RACE_TRACK_CENTER_Z + RACE_LANES[1], speed: 0,
+        maxSpeed: 6.4 + (player.speedLevel - 1) * 0.25, mesh: playerMesh,
+        finished: false, finishTime: 0, boostTimer: 0, laneCooldown: 0
+    };
+
+    raceRivalCars = track.rivals.map((r, i) => {
+        const lane = i % 3;
+        const mesh = create3DCar(r.color);
+        return {
+            x: -40 - (i + 1) * 55, lane, z: RACE_TRACK_CENTER_Z + RACE_LANES[lane],
+            speed: 0, baseSpeed: r.baseSpeed, mesh, name: r.name, color: r.color,
+            finished: false, finishTime: 0, phase: Math.random() * Math.PI * 2,
+            laneCooldown: 60 + Math.random() * 60
+        };
+    });
+
+    raceElapsed = 0;
+    raceFinished = false;
+    raceCountdown = 180;
+    raceActive = true;
+    racePaused = false;
+
+    document.getElementById('raceTrackNameDisplay').textContent = track.name;
+    document.getElementById('raceProgressFill').style.width = '0%';
+    document.getElementById('raceHud').style.display = 'block';
+    document.getElementById('raceQuitButton').style.display = 'block';
+    document.getElementById('raceResultScreen').style.display = 'none';
+    const overlay = document.getElementById('raceCountdownOverlay');
+    overlay.style.display = 'flex';
+    document.getElementById('raceCountdownText').textContent = '3';
+
+    if (touchControlsEnabled) {
+        document.getElementById('touchControls').style.display = 'block';
+        document.getElementById('btnJump').style.display = 'none';
+        document.getElementById('btnUp').textContent = '🚗💨';
+        document.getElementById('btnDown').textContent = '🛑';
+    }
+}
+
+function spawnRaceImpactParticles(x, z) {
+    if (!particlesEnabled) return;
+    for (let j = 0; j < 10; j++) {
+        const pMesh = new THREE.Mesh(new THREE.SphereGeometry(3, 4, 4), new THREE.MeshBasicMaterial({ color: 0xff9933 }));
+        pMesh.position.set(x, 14, z);
+        scene.add(pMesh);
+        walkParticles.push({ mesh: pMesh, vx: (Math.random() - 0.5) * 6, vy: Math.random() * 5, vz: (Math.random() - 0.5) * 6, life: 25 });
+    }
+}
+
+function updateRaceHud() {
+    const track = raceTracks[raceTrackIndex];
+    const p = racePlayerCar;
+    const pct = Math.max(0, Math.min(100, (p.x / track.length) * 100));
+    document.getElementById('raceProgressFill').style.width = pct + '%';
+
+    const allX = [p.x, ...raceRivalCars.map(r => r.x)].sort((a, b) => b - a);
+    const place = allX.indexOf(p.x) + 1;
+    document.getElementById('racePlace').textContent = placeLabel(place);
+    document.getElementById('raceTimer').textContent = raceElapsed.toFixed(1) + 's';
+    document.getElementById('raceSpeed').textContent = Math.round(p.speed * 18) + ' km/h';
+}
+
+function finishRace(place) {
+    raceActive = false;
+    const coinsAward = [10, 6, 3, 1][Math.min(place - 1, 3)] || 1;
+    player.coins += coinsAward;
+
+    const prevBest = raceBestResults[raceTrackIndex];
+    if (!prevBest || place < prevBest.place || (place === prevBest.place && racePlayerCar.finishTime < prevBest.time)) {
+        raceBestResults[raceTrackIndex] = { place, time: racePlayerCar.finishTime };
+    }
+    raceUnlockedTracks = Math.min(raceTracks.length, Math.max(raceUnlockedTracks, raceTrackIndex + 2));
+    saveGameData();
+    updateUI();
+
+    document.getElementById('raceResultTitle').textContent = place === 1 ? '🏆 1ST PLACE!' : `${placeLabel(place)} PLACE`;
+    document.getElementById('raceResultDetail').textContent = `Time: ${racePlayerCar.finishTime.toFixed(1)}s   •   +${coinsAward} 🪙`;
+    document.getElementById('raceNextTrackButton').style.display = (raceTrackIndex + 1 < raceTracks.length) ? 'inline-block' : 'none';
+    document.getElementById('raceHud').style.display = 'none';
+    document.getElementById('raceQuitButton').style.display = 'none';
+    document.getElementById('raceCountdownOverlay').style.display = 'none';
+    document.getElementById('touchControls').style.display = 'none';
+    document.getElementById('raceResultScreen').style.display = 'flex';
+}
+
+function updateRace() {
+    if (!raceActive || racePaused) return;
+
+    if (raceCountdown > 0) {
+        raceCountdown--;
+        const secs = Math.ceil(raceCountdown / 60);
+        document.getElementById('raceCountdownText').textContent = secs > 0 ? secs : 'GO!';
+        if (raceCountdown === 0) document.getElementById('raceCountdownOverlay').style.display = 'none';
+        return;
+    }
+
+    raceElapsed += 1 / 60;
+    const track = raceTracks[raceTrackIndex];
+    const p = racePlayerCar;
+
+    if (!p.finished) {
+        if (keys['w'] || keys['arrowup']) {
+            p.speed = Math.min(p.speed + 0.14, p.boostTimer > 0 ? p.maxSpeed * 1.4 : p.maxSpeed);
+        } else if (keys['s'] || keys['arrowdown']) {
+            p.speed = Math.max(p.speed - 0.22, 0);
+        } else {
+            p.speed = Math.max(p.speed - 0.05, 0);
+        }
+        if (p.boostTimer > 0) p.boostTimer--;
+
+        if (p.laneCooldown > 0) p.laneCooldown--;
+        if (p.laneCooldown <= 0) {
+            if ((keys['a'] || keys['arrowleft']) && p.lane > 0) { p.lane--; p.laneCooldown = 18; }
+            else if ((keys['d'] || keys['arrowright']) && p.lane < 2) { p.lane++; p.laneCooldown = 18; }
+        }
+
+        const targetZ = RACE_TRACK_CENTER_Z + RACE_LANES[p.lane];
+        p.z += (targetZ - p.z) * 0.18;
+        p.x += p.speed;
+
+        raceObstacles3D.forEach(o => {
+            if (!o.hitBy.has(p) && o.lane === p.lane && p.x > o.x - 18 && p.x < o.x + 18) {
+                o.hitBy.add(p);
+                p.speed *= 0.35;
+                spawnRaceImpactParticles(p.x, p.z);
+            }
+        });
+        raceBoosts3D.forEach(b => {
+            if (!b.used && b.lane === p.lane && p.x > b.x - 20 && p.x < b.x + 20) {
+                b.used = true;
+                p.boostTimer = 90;
+                b.mesh.visible = false;
+            }
+        });
+
+        p.mesh.position.set(p.x, 0, p.z);
+        p.mesh.rotation.z = (targetZ - p.z) * -0.01;
+
+        if (p.x >= track.length) { p.finished = true; p.finishTime = raceElapsed; }
+    }
+
+    raceRivalCars.forEach(r => {
+        if (r.finished) return;
+        let targetSpeed = r.baseSpeed + Math.sin((raceElapsed + r.phase) * 0.7) * 0.35;
+        const gap = p.x - r.x;
+        if (gap > 220) targetSpeed += 0.6;
+        else if (gap < -220) targetSpeed -= 0.5;
+        r.speed += (targetSpeed - r.speed) * 0.05;
+        r.x += Math.max(r.speed, 0);
+
+        raceObstacles3D.forEach(o => {
+            if (!o.hitBy.has(r) && o.lane === r.lane && r.x > o.x - 18 && r.x < o.x + 18) {
+                o.hitBy.add(r);
+                r.speed *= 0.35;
+                spawnRaceImpactParticles(r.x, r.z);
+            }
+        });
+
+        r.laneCooldown--;
+        if (r.laneCooldown <= 0 && Math.random() < 0.01) {
+            r.lane = Math.max(0, Math.min(2, r.lane + (Math.random() < 0.5 ? -1 : 1)));
+            r.laneCooldown = 90;
+        }
+        const rTargetZ = RACE_TRACK_CENTER_Z + RACE_LANES[r.lane];
+        r.z += (rTargetZ - r.z) * 0.12;
+        r.mesh.position.set(r.x, 0, r.z);
+
+        if (r.x >= track.length) { r.finished = true; r.finishTime = raceElapsed; }
+    });
+
+    updateRaceHud();
+
+    if (p.finished && !raceFinished) {
+        raceFinished = true;
+        const place = 1 + raceRivalCars.filter(r => r.finished && r.finishTime <= p.finishTime).length;
+        finishRace(place);
+    }
+}
+
+function exitRaceToTrackSelect() {
+    raceActive = false;
+    racePaused = false;
+    raceFinished = false;
+    clearRaceObjects();
+    groundMesh.visible = true;
+    player.mesh.visible = true;
+    player2.mesh.visible = false;
+    chicken.mesh.visible = false;
+    document.getElementById('raceHud').style.display = 'none';
+    document.getElementById('raceResultScreen').style.display = 'none';
+    document.getElementById('raceCountdownOverlay').style.display = 'none';
+    document.getElementById('raceQuitButton').style.display = 'none';
+    document.getElementById('touchControls').style.display = 'none';
+    document.getElementById('btnUp').textContent = '▲';
+    document.getElementById('btnDown').textContent = '▼';
+    openRaceTrackSelect();
+}
+
+function exitRaceToMainMenu() {
+    raceActive = false;
+    racePaused = false;
+    raceFinished = false;
+    clearRaceObjects();
+    groundMesh.visible = true;
+    player.mesh.visible = true;
+    player2.mesh.visible = false;
+    chicken.mesh.visible = false;
+    document.getElementById('raceHud').style.display = 'none';
+    document.getElementById('raceResultScreen').style.display = 'none';
+    document.getElementById('raceCountdownOverlay').style.display = 'none';
+    document.getElementById('raceQuitButton').style.display = 'none';
+    document.getElementById('raceTrackSelect').style.display = 'none';
+    document.getElementById('touchControls').style.display = 'none';
+    document.getElementById('btnUp').textContent = '▲';
+    document.getElementById('btnDown').textContent = '▼';
+    startScreen.style.display = 'flex';
+}
 
 // --- UPGRADE SHOP ACTION IMPLEMENTATIONS ---
 function buySpeed(p){
@@ -2045,7 +3249,8 @@ function updateUI(){
     document.getElementById("speedLevel2").textContent = player2.speedLevel;
 
     const prefix = translations[currentLanguage]?.level || "Level";
-    document.getElementById("levelDisplay").textContent = `${prefix} ${currentLevel} (${coinsCollectedThisLevel}/${coinsNeededForNextLevel} 🪙)`;
+    const typeName = getLevelTypeName(currentLevel);
+    document.getElementById("levelDisplay").textContent = `${prefix} ${currentLevel} — ${typeName} (${coinsCollectedThisLevel}/${coinsNeededForNextLevel} 🪙)`;
     
     // Auto-save changes dynamically whenever data/UI alterations hit the engine
     saveGameData();
@@ -2090,6 +3295,209 @@ function animate() {
     // 3. Render WebGL Scene
     renderer.render(scene, camera);
 }
+
+// --- DEBUG TERMINAL (F7) ---
+let debugTerminalOpen = false;
+const debugTerminalEl = document.getElementById("debugTerminal");
+const debugTerminalOutputEl = document.getElementById("debugTerminalOutput");
+const debugTerminalInputEl = document.getElementById("debugTerminalInput");
+let debugTerminalHistory = [];
+let debugTerminalHistoryPos = -1;
+
+function debugTermPrint(text, cls){
+    const line = document.createElement("div");
+    if(cls) line.className = cls;
+    line.textContent = text;
+    debugTerminalOutputEl.appendChild(line);
+    debugTerminalOutputEl.scrollTop = debugTerminalOutputEl.scrollHeight;
+}
+
+function toggleDebugTerminal(force){
+    debugTerminalOpen = (force !== undefined) ? force : !debugTerminalOpen;
+    debugTerminalEl.style.display = debugTerminalOpen ? "flex" : "none";
+    if(debugTerminalOpen){
+        if(debugTerminalOutputEl.childElementCount === 0){
+            debugTermPrint("Gooblet Forest debug console. Type 'help' for a list of commands.", "term-ok");
+        }
+        // Prevent held movement keys from sticking while the console is open
+        keys = {};
+        setTimeout(() => debugTerminalInputEl.focus(), 0);
+    } else {
+        debugTerminalInputEl.blur();
+    }
+}
+
+function resolvePlayerArg(arg){
+    if(!arg) return null;
+    const a = arg.toLowerCase();
+    if(a === "p1" || a === "player1" || a === "1") return player;
+    if(a === "p2" || a === "player2" || a === "2") return player2;
+    return null;
+}
+
+const debugCommands = {
+    help(){
+        debugTermPrint([
+            "Available commands:",
+            "  help                          - show this list",
+            "  clear                         - clear the console",
+            "  coins <p1|p2> <amount>        - add coins to a player",
+            "  setcoins <p1|p2> <amount>     - set a player's coin total",
+            "  speed <p1|p2> <amount>        - add to a player's move speed",
+            "  level <n>                     - jump to level n (1-10 forest/maze, 11-19 gauntlet)",
+            "  god <p1|p2> <on|off>          - toggle temporary invincibility",
+            "  freezechicken <seconds>       - freeze the chasing chicken",
+            "  tp <p1|p2> <x> <z>            - teleport a player",
+            "  toggle <music|particles|night> - toggle a game setting",
+            "  state                         - print current game state"
+        ].join("\n"));
+    },
+    clear(){
+        debugTerminalOutputEl.innerHTML = "";
+    },
+    coins(args){
+        const p = resolvePlayerArg(args[0]);
+        const amt = parseInt(args[1], 10);
+        if(!p || isNaN(amt)){ debugTermPrint("Usage: coins <p1|p2> <amount>", "term-err"); return; }
+        p.coins += amt;
+        updateUI();
+        debugTermPrint(`OK: ${args[0]} now has ${p.coins} coins.`, "term-ok");
+    },
+    setcoins(args){
+        const p = resolvePlayerArg(args[0]);
+        const amt = parseInt(args[1], 10);
+        if(!p || isNaN(amt)){ debugTermPrint("Usage: setcoins <p1|p2> <amount>", "term-err"); return; }
+        p.coins = amt;
+        updateUI();
+        debugTermPrint(`OK: ${args[0]} coins set to ${p.coins}.`, "term-ok");
+    },
+    speed(args){
+        const p = resolvePlayerArg(args[0]);
+        const amt = parseFloat(args[1]);
+        if(!p || isNaN(amt)){ debugTermPrint("Usage: speed <p1|p2> <amount>", "term-err"); return; }
+        p.speed += amt;
+        debugTermPrint(`OK: ${args[0]} speed is now ${p.speed.toFixed(2)}.`, "term-ok");
+    },
+    level(args){
+        if(!gameStarted){ debugTermPrint("Start a game first.", "term-err"); return; }
+        const n = parseInt(args[0], 10);
+        if(isNaN(n) || n < 1){ debugTermPrint("Usage: level <n>", "term-err"); return; }
+        currentLevel = n;
+        coinsCollectedThisLevel = 0;
+        coinsNeededForNextLevel = 10 + (currentLevel - 1) * 5;
+        levelUpTimer = 90;
+        rebuildEnvironment();
+        if(currentLevel >= 11){
+            setupPlatformerLevel(true);
+        } else {
+            clearLevelObjects();
+        }
+        updateUI();
+        debugTermPrint(`OK: jumped to level ${currentLevel} (${getLevelTypeName(currentLevel)}).`, "term-ok");
+    },
+    god(args){
+        const p = resolvePlayerArg(args[0]);
+        const on = (args[1] || "on").toLowerCase() !== "off";
+        if(!p){ debugTermPrint("Usage: god <p1|p2> <on|off>", "term-err"); return; }
+        p.forceFieldTimer = on ? 999999 : 0;
+        debugTermPrint(`OK: ${args[0]} invincibility ${on ? "ON" : "OFF"}.`, "term-ok");
+    },
+    freezechicken(args){
+        const secs = parseFloat(args[0]);
+        if(isNaN(secs)){ debugTermPrint("Usage: freezechicken <seconds>", "term-err"); return; }
+        chickenFrozenTimer = Math.max(0, secs) * 60;
+        debugTermPrint(`OK: chicken frozen for ${secs}s.`, "term-ok");
+    },
+    tp(args){
+        const p = resolvePlayerArg(args[0]);
+        const x = parseFloat(args[1]);
+        const z = parseFloat(args[2]);
+        if(!p || isNaN(x) || isNaN(z)){ debugTermPrint("Usage: tp <p1|p2> <x> <z>", "term-err"); return; }
+        p.x = x;
+        p.z = z;
+        debugTermPrint(`OK: ${args[0]} teleported to (${x}, ${z}).`, "term-ok");
+    },
+    toggle(args){
+        const what = (args[0] || "").toLowerCase();
+        if(what === "music"){ toggleMusic(); }
+        else if(what === "particles"){ toggleParticles(); }
+        else if(what === "night"){ toggleNightMode(); }
+        else { debugTermPrint("Usage: toggle <music|particles|night>", "term-err"); return; }
+        debugTermPrint(`OK: toggled ${what}.`, "term-ok");
+    },
+    state(){
+        debugTermPrint([
+            `gameStarted=${gameStarted} gamePaused=${gamePaused} multiplayer=${multiplayer}`,
+            `currentLevel=${currentLevel} (${getLevelTypeName(currentLevel)}) coins=${coinsCollectedThisLevel}/${coinsNeededForNextLevel}`,
+            `player1: coins=${player.coins} speed=${player.speed.toFixed(2)} pos=(${player.x.toFixed(0)}, ${player.z.toFixed(0)})`,
+            `player2: coins=${player2.coins} speed=${player2.speed.toFixed(2)} pos=(${player2.x.toFixed(0)}, ${player2.z.toFixed(0)})`
+        ].join("\n"));
+    }
+};
+
+function runDebugCommand(raw){
+    const trimmed = raw.trim();
+    if(!trimmed) return;
+    debugTermPrint("> " + trimmed, "term-cmd");
+    const parts = trimmed.split(/\s+/);
+    const cmdName = parts[0].toLowerCase();
+    const args = parts.slice(1);
+    const cmd = debugCommands[cmdName];
+    if(!cmd){
+        debugTermPrint(`Unknown command: "${cmdName}". Type "help" for a list.`, "term-err");
+        return;
+    }
+    try {
+        cmd(args);
+    } catch(err){
+        debugTermPrint("Error running command: " + err.message, "term-err");
+    }
+}
+
+debugTerminalInputEl.addEventListener("keydown", e => {
+    if(e.key === "F7"){
+        e.preventDefault();
+        e.stopPropagation();
+        toggleDebugTerminal(false);
+        return;
+    }
+    // Stop game movement keys from firing while typing in the console
+    e.stopPropagation();
+    if(e.key === "Enter"){
+        const val = debugTerminalInputEl.value;
+        if(val.trim()){
+            debugTerminalHistory.push(val);
+            debugTerminalHistoryPos = debugTerminalHistory.length;
+        }
+        runDebugCommand(val);
+        debugTerminalInputEl.value = "";
+    } else if(e.key === "Escape"){
+        toggleDebugTerminal(false);
+    } else if(e.key === "ArrowUp"){
+        e.preventDefault();
+        if(debugTerminalHistoryPos > 0){
+            debugTerminalHistoryPos--;
+            debugTerminalInputEl.value = debugTerminalHistory[debugTerminalHistoryPos] || "";
+        }
+    } else if(e.key === "ArrowDown"){
+        e.preventDefault();
+        if(debugTerminalHistoryPos < debugTerminalHistory.length - 1){
+            debugTerminalHistoryPos++;
+            debugTerminalInputEl.value = debugTerminalHistory[debugTerminalHistoryPos] || "";
+        } else {
+            debugTerminalHistoryPos = debugTerminalHistory.length;
+            debugTerminalInputEl.value = "";
+        }
+    }
+});
+debugTerminalInputEl.addEventListener("keyup", e => e.stopPropagation());
+
+addEventListener("keydown", e => {
+    if(e.key === "F7"){
+        e.preventDefault();
+        toggleDebugTerminal();
+    }
+});
     
 </script>
 </body>
