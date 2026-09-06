@@ -249,6 +249,61 @@ body{
 }
 .settingButton:hover{ background:#58a84f; }
 
+
+/* --- GAME MODE FOLDER MENU --- */
+#gameModeFolders{
+    width:min(900px,92vw);
+    display:grid;
+    grid-template-columns:repeat(2,minmax(240px,1fr));
+    gap:18px;
+    margin-top:18px;
+}
+.gameFolder{
+    min-height:145px;
+    padding:22px;
+    border:none;
+    border-radius:26px;
+    cursor:pointer;
+    background:rgba(255,255,255,0.96);
+    color:#3d7c38;
+    font-family:'Fredoka',sans-serif;
+    box-shadow:0 8px 0 #5fb553, 0 14px 28px rgba(0,0,0,0.16);
+    transition:transform .15s, box-shadow .15s;
+    text-align:left;
+}
+.gameFolder:hover{ transform:translateY(-4px) scale(1.015); box-shadow:0 12px 0 #5fb553, 0 18px 32px rgba(0,0,0,0.18); }
+.gameFolder:active{ transform:translateY(4px); box-shadow:0 4px 0 #5fb553; }
+.gameFolderIcon{ font-size:42px; display:block; margin-bottom:8px; }
+.gameFolderTitle{ font-size:28px; font-weight:700; display:block; }
+.gameFolderDescription{ font-size:16px; color:#648060; display:block; margin-top:4px; }
+.gameModePanel{
+    width:min(760px,92vw);
+    max-height:72vh;
+    overflow-y:auto;
+    background:rgba(255,255,255,0.96);
+    border-radius:28px;
+    padding:24px;
+    box-shadow:0 12px 34px rgba(0,0,0,0.28);
+    border:5px solid #7dd86e;
+    display:none;
+    flex-direction:column;
+    align-items:center;
+}
+.gameModePanelTitle{ font-size:38px; color:#4f9a46; margin:0 0 5px; }
+.gameModePanelSub{ font-size:17px; color:#648060; margin-bottom:16px; text-align:center; }
+.gameModeButtonGrid{
+    width:100%;
+    display:grid;
+    grid-template-columns:repeat(2,minmax(220px,1fr));
+    gap:12px;
+}
+.folderBackButton{ margin-top:18px; width:220px; font-size:22px; }
+@media (max-width:650px){
+    #gameModeFolders{ grid-template-columns:1fr; }
+    .gameModeButtonGrid{ grid-template-columns:1fr; }
+    .gameFolder{ min-height:120px; }
+}
+
 /* --- RACE MODE STYLES --- */
 #raceHud{
     position:absolute;
@@ -447,6 +502,154 @@ body{
     font-family: 'Courier New', monospace;
     font-size: 14px;
 }
+
+/* --- WORLD SAVE SYSTEM --- */
+#worldSaveControls{
+    position:absolute;
+    top:auto;
+    right:15px;
+    bottom:15px;
+    left:auto;
+    transform:none;
+    display:none;
+    flex-direction:row;
+    gap:10px;
+    z-index:25;
+}
+.worldTopButton{
+    border:none;
+    border-radius:16px;
+    padding:11px 16px;
+    cursor:pointer;
+    background:rgba(255,255,255,.94);
+    color:#3d7c38;
+    font:700 17px 'Fredoka',sans-serif;
+    box-shadow:0 5px 0 #5fb553;
+}
+.worldTopButton:active{transform:translateY(3px);box-shadow:0 2px 0 #5fb553;}
+
+#worlds-modal{
+    position:absolute;
+    inset:0;
+    background:rgba(20,40,20,.94);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:450;
+}
+#worlds-modal.open{display:flex;}
+.worlds-panel{
+    width:720px;
+    max-width:92vw;
+    max-height:85vh;
+    overflow:hidden;
+    background:white;
+    border:5px solid #7dd86e;
+    border-radius:28px;
+    box-shadow:0 14px 35px rgba(0,0,0,.35);
+    padding:24px;
+}
+.worlds-title{
+    margin:0 0 6px;
+    text-align:center;
+    color:#4f9a46;
+    font-size:38px;
+}
+.worlds-sub{
+    text-align:center;
+    color:#5b7958;
+    margin-bottom:18px;
+    font-size:17px;
+}
+.world-create-row{
+    display:flex;
+    gap:10px;
+    margin-bottom:18px;
+}
+#newWorldName{
+    flex:1;
+    min-width:0;
+    border:3px solid #9bd791;
+    border-radius:14px;
+    padding:12px 14px;
+    outline:none;
+    font:18px 'Fredoka',sans-serif;
+    color:#2c5f2a;
+}
+.world-primary-btn,.world-secondary-btn{
+    border:none;
+    border-radius:14px;
+    padding:12px 16px;
+    cursor:pointer;
+    font:700 17px 'Fredoka',sans-serif;
+}
+.world-primary-btn{background:#66bb5a;color:white;box-shadow:0 4px 0 #4f9a46;}
+.world-secondary-btn{background:#eef9eb;color:#4f9a46;}
+#worlds-list{
+    max-height:50vh;
+    overflow-y:auto;
+    display:flex;
+    flex-direction:column;
+    gap:10px;
+}
+.world-entry{
+    display:flex;
+    align-items:center;
+    gap:12px;
+    background:#f4fbf2;
+    border:3px solid #c5e8bf;
+    border-radius:18px;
+    padding:12px;
+}
+.world-entry-icon{font-size:32px;width:44px;text-align:center;}
+.world-entry-info{flex:1;min-width:0;}
+.world-entry-name{font-size:21px;font-weight:700;color:#2c5f2a;word-break:break-word;}
+.world-entry-meta{font-size:14px;color:#6a8468;margin-top:2px;}
+.world-active-tag{color:#4f9a46;font-size:14px;}
+.world-entry-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
+.world-action-btn{
+    border:none;
+    border-radius:12px;
+    padding:9px 11px;
+    cursor:pointer;
+    font-size:16px;
+    background:white;
+    box-shadow:0 2px 6px rgba(0,0,0,.12);
+}
+.world-action-btn:hover{transform:translateY(-1px);}
+.worlds-empty{
+    text-align:center;
+    padding:30px 10px;
+    color:#698565;
+    font-size:18px;
+}
+#save-toast{
+    position:absolute;
+    left:50%;
+    bottom:28px;
+    transform:translate(-50%,20px);
+    background:rgba(30,55,28,.95);
+    color:white;
+    padding:12px 18px;
+    border-radius:15px;
+    font-size:17px;
+    z-index:600;
+    opacity:0;
+    pointer-events:none;
+    transition:.2s;
+    box-shadow:0 8px 20px rgba(0,0,0,.25);
+}
+#save-toast.show{opacity:1;transform:translate(-50%,0);}
+@media(max-width:700px){
+    #worldSaveControls{right:10px;bottom:10px;max-width:calc(100vw - 20px);flex-wrap:wrap;justify-content:flex-end;}
+    .worlds-panel{padding:16px;}
+    .world-entry{align-items:flex-start;}
+    .world-entry-actions{width:100%;}
+    .world-entry{flex-wrap:wrap;}
+    .world-entry-icon{width:auto;}
+    .world-entry-info{min-width:calc(100% - 60px);}
+}
+
 </style>
 </head>
 <body>
@@ -462,23 +665,68 @@ body{
 
     <div id="subtitle">
         <span id="subtitleText">3D v1.7.0</span>
-        <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:20px;">
-            <button id="easyButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy')">Easy 🌱</button>
-            <button id="easyMediumButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'easy-medium')">Easy Medium 🐤</button>
-            <button id="mediumButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'medium')">Medium 🐔</button>
-            <button id="hardButton" class="menuButton" style="width:180px; font-size:24px;" onclick="startGame(false,'hard')">Hard ⚠️</button>
+
+        <div id="gameModeFolders">
+            <button class="gameFolder" onclick="openGameFolder('adventure')">
+                <span class="gameFolderIcon">🌲</span>
+                <span class="gameFolderTitle">Adventure</span>
+                <span class="gameFolderDescription">Forest levels and the full single-player campaign</span>
+            </button>
+            <button class="gameFolder" onclick="openGameFolder('race')">
+                <span class="gameFolderIcon">🏎️</span>
+                <span class="gameFolderTitle">Race Mode</span>
+                <span class="gameFolderDescription">Choose a racing track and compete against rivals</span>
+            </button>
+            <button class="gameFolder" onclick="openGameFolder('multiplayer')">
+                <span class="gameFolderIcon">👥</span>
+                <span class="gameFolderTitle">Multiplayer</span>
+                <span class="gameFolderDescription">Play together with Player 2 at different difficulties</span>
+            </button>
+            <button class="gameFolder" onclick="openGameFolder('extras')">
+                <span class="gameFolderIcon">✨</span>
+                <span class="gameFolderTitle">Extras</span>
+                <span class="gameFolderDescription">Settings, external games and extra tools</span>
+            </button>
         </div>
-        <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:10px;">
-            <button id="raceModeButton" class="menuButton" style="width:220px; font-size:26px; background:#fff2d9; color:#c0392b; box-shadow:0 8px 0 #e67e22;" onclick="openRaceTrackSelect()">🏎️ Race Mode</button>
+
+        <div id="gameFolderPanel-adventure" class="gameModePanel">
+            <h2 class="gameModePanelTitle">🌲 Adventure</h2>
+            <div class="gameModePanelSub">Choose your difficulty.</div>
+            <div class="gameModeButtonGrid">
+                <button id="easyButton" class="menuButton" onclick="startGame(false,'easy')">Easy 🌱</button>
+                <button id="easyMediumButton" class="menuButton" onclick="startGame(false,'easy-medium')">Easy Medium 🐤</button>
+                <button id="mediumButton" class="menuButton" onclick="startGame(false,'medium')">Medium 🐔</button>
+                <button id="hardButton" class="menuButton" onclick="startGame(false,'hard')">Hard ⚠️</button>
+            </div>
+            <button class="menuButton folderBackButton" onclick="closeGameFolders()">← Back</button>
         </div>
-        <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:10px;">
-            <button id="mpMediumButton" class="menuButton" style="width:250px; font-size:24px;" onclick="startGame(true,'medium')">Multiplayer Medium</button>
-            <button id="mpHardButton" class="menuButton" style="width:250px; font-size:24px;" onclick="startGame(true,'hard')">Multiplayer Hard</button>
-            <button class="menuButton" id="settingsButton" onclick="openSettings()">Settings ⚙️</button>
+
+        <div id="gameFolderPanel-race" class="gameModePanel">
+            <h2 class="gameModePanelTitle">🏎️ Race Mode</h2>
+            <div class="gameModePanelSub">Pick a track and race against the rivals.</div>
+            <button id="raceModeButton" class="menuButton" style="width:260px; font-size:26px; background:#fff2d9; color:#c0392b; box-shadow:0 8px 0 #e67e22;" onclick="openRaceTrackSelect()">Choose Track</button>
+            <button class="menuButton folderBackButton" onclick="closeGameFolders()">← Back</button>
         </div>
-        <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center; margin-top:10px;">
-            <a href="https://vavstorage.github.io/mpy" target="_blank" rel="noopener" class="menuButton" style="width:180px; font-size:22px; text-decoration:none; display:flex; align-items:center; justify-content:center;">MPY</a>
-            <a href="https://vavstorage.github.io/game" target="_blank" rel="noopener" class="menuButton" style="width:180px; font-size:22px; text-decoration:none; display:flex; align-items:center; justify-content:center;">Game</a>
+
+        <div id="gameFolderPanel-multiplayer" class="gameModePanel">
+            <h2 class="gameModePanelTitle">👥 Multiplayer</h2>
+            <div class="gameModePanelSub">Player 1 uses the normal controls and Player 2 uses the second control set.</div>
+            <div class="gameModeButtonGrid">
+                <button id="mpMediumButton" class="menuButton" onclick="startGame(true,'medium')">Multiplayer Medium</button>
+                <button id="mpHardButton" class="menuButton" onclick="startGame(true,'hard')">Multiplayer Hard</button>
+            </div>
+            <button class="menuButton folderBackButton" onclick="closeGameFolders()">← Back</button>
+        </div>
+
+        <div id="gameFolderPanel-extras" class="gameModePanel">
+            <h2 class="gameModePanelTitle">✨ Extras</h2>
+            <div class="gameModePanelSub">Game settings and extra links.</div>
+            <div class="gameModeButtonGrid">
+                <button class="menuButton" id="settingsButton" onclick="openSettings()">Settings ⚙️</button>
+                <a href="https://vavstorage.github.io/mpy" target="_blank" rel="noopener" class="menuButton" style="text-decoration:none; display:flex; align-items:center; justify-content:center;">MPY</a>
+                <a href="https://vavstorage.github.io/game" target="_blank" rel="noopener" class="menuButton" style="text-decoration:none; display:flex; align-items:center; justify-content:center;">Game</a>
+            </div>
+            <button class="menuButton folderBackButton" onclick="closeGameFolders()">← Back</button>
         </div>
     </div>
 </div>
@@ -625,6 +873,29 @@ body{
     </div>
 </div>
 
+
+<div id="worldSaveControls">
+    <button id="worldsBtn" class="worldTopButton">🌍 Worlds</button>
+    <button id="saveBtn" class="worldTopButton">💾 Save</button>
+</div>
+
+<div id="save-toast"></div>
+
+<div id="worlds-modal">
+    <div class="worlds-panel">
+        <h2 class="worlds-title">🌍 Saved Worlds</h2>
+        <div class="worlds-sub">Create separate saves for different playthroughs.</div>
+        <div class="world-create-row">
+            <input id="newWorldName" maxlength="40" placeholder="New world name...">
+            <button id="createWorldBtn" class="world-primary-btn">Create World</button>
+        </div>
+        <div id="worlds-list"></div>
+        <div style="display:flex;justify-content:center;margin-top:16px;">
+            <button id="close-worlds-menu" class="world-secondary-btn">Close</button>
+        </div>
+    </div>
+</div>
+
 <div id="gameContainer"></div>
 
 <script>
@@ -690,6 +961,13 @@ let nightModeEnabled = false;
 let beeSwarms = [];
 let titleClickCount = 0;
 let titleClickResetTimer = null;
+
+let activeWorldId = null;
+let worlds = [];
+const WORLDS_KEY = 'gooblet_forest_worlds_v1';
+const AUTOSAVE_INTERVAL_MS = 90000;
+let worldAutosaveTimer = null;
+let worldSaveToastTimer = null;
 
 let currentLevel = 1;
 let coinsCollectedThisLevel = 0;
@@ -880,6 +1158,20 @@ const translations = {
     fr:{ title:'Forêt Gooblet 3D', subtitle:'Mignonnes aventures en forêt 🌿', settings:'Paramètres ⚙️', music:'Musique :', particles:'Particules :', fullscreen:'Plein écran', fullscreenButton:'Basculer plein écran', toggleMusic:'Activer musique', toggleParticles:'Activer particules', back:'Retour', p1shop:'Boutique J1', p2shop:'Boutique J2', menu:'Menu', easy:'Facile 🌱', easyMedium:'Moyen Facile 🐤', medium:'Moyen 🐔', hard:'Difficile ⚠️', mpMedium:'Multijoueur Moyen', mpHard:'Multijoueur Difficile', language:'Langue', level:'Niveau', touch:'Contrôles tactiles :', toggleTouch:'Basculer tactile' },
     jp:{ title:'グーブレットの森 3D', subtitle:'かわいい森 of 冒険 🌿', settings:'設定 ⚙️', music:'音楽:', particles:'パーティクル:', fullscreen:'フルスクリーン', fullscreenButton:'フルスクリーン切替', toggleMusic:'音楽を切替', toggleParticles:'パーティクル切替', back:'戻る', p1shop:'P1ショップ', p2shop:'P2ショップ', menu:'メニュー', easy:'かんたん 🌱', easyMedium:'かんたんふつう 🐤', medium:'ふつう 🐔', hard:'むずかしい ⚠️', mpMedium:'マルチプレイヤー 普通', mpHard:'マルチプレイヤー 難しい', language:'言語', level:'レベル', touch:'タッチコントロール:', toggleTouch:'タッチ切替' }
 };
+
+function openGameFolder(folderName){
+    const folders = document.getElementById('gameModeFolders');
+    if(folders) folders.style.display = 'none';
+    document.querySelectorAll('.gameModePanel').forEach(panel => panel.style.display = 'none');
+    const panel = document.getElementById('gameFolderPanel-' + folderName);
+    if(panel) panel.style.display = 'flex';
+}
+
+function closeGameFolders(){
+    document.querySelectorAll('.gameModePanel').forEach(panel => panel.style.display = 'none');
+    const folders = document.getElementById('gameModeFolders');
+    if(folders) folders.style.display = 'grid';
+}
 
 function setLanguage(lang){
     currentLanguage = lang;
@@ -1341,6 +1633,15 @@ function saveGameData() {
     
     // Fallback mirror for direct offline execution (file:// protocol)
     try { localStorage.setItem("gooblet_forest_save", jsonStr); } catch(e){}
+    // Keep the active named world in sync with the legacy save state too.
+    if(typeof getActiveWorld === 'function' && activeWorldId){
+        const world = getActiveWorld();
+        if(world && typeof buildWorldSaveData === 'function'){
+            world.data = buildWorldSaveData();
+            world.updatedAt = Date.now();
+            persistWorlds();
+        }
+    }
 }
 
 function loadGameData() {
@@ -1416,6 +1717,327 @@ player.mesh = create3DGooblet(parseInt(player.color.replace('#', '0x')));
 player2.mesh = create3DGooblet(parseInt(player2.color.replace('#', '0x')));
 chicken.mesh = create3DChicken();
 
+
+// ===============================================================
+// WORLD SAVE SYSTEM — adapted from the supplied save-system.zip
+// ===============================================================
+const worldsModal = document.getElementById('worlds-modal');
+const worldsListEl = document.getElementById('worlds-list');
+const newWorldNameInput = document.getElementById('newWorldName');
+const saveToastEl = document.getElementById('save-toast');
+
+function showWorldToast(msg){
+    if(!saveToastEl) return;
+    saveToastEl.textContent = msg;
+    saveToastEl.classList.add('show');
+    clearTimeout(worldSaveToastTimer);
+    worldSaveToastTimer = setTimeout(() => saveToastEl.classList.remove('show'), 2600);
+}
+function escapeWorldHtml(str){
+    const div = document.createElement('div');
+    div.textContent = String(str);
+    return div.innerHTML;
+}
+function formatWorldTime(ts){
+    if(!ts) return 'never played';
+    const mins = Math.floor((Date.now()-ts)/60000);
+    if(mins < 1) return 'just now';
+    if(mins < 60) return `${mins}m ago`;
+    const hrs = Math.floor(mins/60);
+    if(hrs < 24) return `${hrs}h ago`;
+    return `${Math.floor(hrs/24)}d ago`;
+}
+function loadWorldsFromStorage(){
+    try{
+        const raw = localStorage.getItem(WORLDS_KEY);
+        worlds = raw ? JSON.parse(raw) : [];
+        if(!Array.isArray(worlds)) worlds = [];
+    }catch(e){
+        console.error('Could not read saved worlds:', e);
+        worlds = [];
+    }
+}
+function persistWorlds(){
+    try{
+        localStorage.setItem(WORLDS_KEY, JSON.stringify(worlds));
+    }catch(e){
+        console.error('Could not save worlds:', e);
+        showWorldToast('⚠️ Could not save. Browser storage may be full.');
+    }
+}
+function getActiveWorld(){
+    return worlds.find(w => w.id === activeWorldId) || null;
+}
+
+function buildWorldSaveData(){
+    return {
+        version: 1,
+        level: currentLevel,
+        coinsCollectedThisLevel,
+        coinsNeededForNextLevel,
+        levelUpTimer,
+        difficulty,
+        multiplayer,
+        gameStarted,
+
+        player: {
+            x: player.x, y: player.y, z: player.z,
+            coins: player.coins, speed: player.speed, speedLevel: player.speedLevel,
+            speedCost: player.speedCost, color: player.color, rainbowSkin: player.rainbowSkin
+        },
+        player2: {
+            x: player2.x, y: player2.y, z: player2.z,
+            coins: player2.coins, speed: player2.speed, speedLevel: player2.speedLevel,
+            speedCost: player2.speedCost, color: player2.color, rainbowSkin: player2.rainbowSkin
+        },
+
+        raceUnlockedTracks,
+        raceBestResults,
+
+        settings: {
+            musicEnabled, particlesEnabled, touchControlsEnabled,
+            currentLanguage, nightModeEnabled
+        },
+
+        savedAt: Date.now()
+    };
+}
+
+function applyWorldSaveData(data){
+    if(!data) return;
+
+    // Player progression
+    if(data.player){
+        Object.assign(player, {
+            x: data.player.x ?? 200,
+            y: data.player.y ?? 0,
+            z: data.player.z ?? 300,
+            coins: data.player.coins ?? 0,
+            speed: data.player.speed ?? 5,
+            speedLevel: data.player.speedLevel ?? 1,
+            speedCost: data.player.speedCost ?? 10,
+            color: data.player.color ?? '#9cff8f',
+            rainbowSkin: data.player.rainbowSkin ?? false
+        });
+    }
+    if(data.player2){
+        Object.assign(player2, {
+            x: data.player2.x ?? 500,
+            y: data.player2.y ?? 0,
+            z: data.player2.z ?? 350,
+            coins: data.player2.coins ?? 0,
+            speed: data.player2.speed ?? 5,
+            speedLevel: data.player2.speedLevel ?? 1,
+            speedCost: data.player2.speedCost ?? 10,
+            color: data.player2.color ?? '#7fd8ff',
+            rainbowSkin: data.player2.rainbowSkin ?? false
+        });
+    }
+
+    currentLevel = Math.max(1, Number(data.level) || 1);
+    coinsCollectedThisLevel = Math.max(0, Number(data.coinsCollectedThisLevel) || 0);
+    coinsNeededForNextLevel = Math.max(1, Number(data.coinsNeededForNextLevel) || (10 + (currentLevel-1)*5));
+    levelUpTimer = Number(data.levelUpTimer) || 0;
+
+    if(Array.isArray(data.raceBestResults)) raceBestResults = data.raceBestResults;
+    if(Number.isFinite(data.raceUnlockedTracks)) raceUnlockedTracks = Math.max(1, Math.min(raceTracks.length, data.raceUnlockedTracks));
+
+    if(data.settings){
+        if(data.settings.musicEnabled !== undefined) musicEnabled = data.settings.musicEnabled;
+        if(data.settings.particlesEnabled !== undefined) particlesEnabled = data.settings.particlesEnabled;
+        if(data.settings.touchControlsEnabled !== undefined) touchControlsEnabled = data.settings.touchControlsEnabled;
+        if(data.settings.currentLanguage) currentLanguage = data.settings.currentLanguage;
+        if(data.settings.nightModeEnabled !== undefined) nightModeEnabled = data.settings.nightModeEnabled;
+    }
+
+    // Refresh meshes when skins have changed.
+    if(player.mesh && player.mesh.userData && player.mesh.userData.bodyMesh){
+        player.mesh.userData.bodyMesh.material.color.set(parseInt(player.color.replace('#','0x')));
+    }
+    if(player2.mesh && player2.mesh.userData && player2.mesh.userData.bodyMesh){
+        player2.mesh.userData.bodyMesh.material.color.set(parseInt(player2.color.replace('#','0x')));
+    }
+
+    updateUI();
+    setLanguage(currentLanguage);
+}
+
+function createWorldFromCurrentGame(name){
+    const now = Date.now();
+    const world = {
+        id: 'world_' + now + '_' + Math.random().toString(36).slice(2,7),
+        name: name || `World ${worlds.length+1}`,
+        createdAt: now,
+        updatedAt: now,
+        data: buildWorldSaveData()
+    };
+    worlds.push(world);
+    activeWorldId = world.id;
+    persistWorlds();
+    renderWorldsList();
+    showWorldToast(`🌍 Created "${world.name}"`);
+    return world;
+}
+
+function saveActiveWorld(){
+    let world = getActiveWorld();
+    if(!world){
+        // Make saving from a new game useful: create a world from current state.
+        world = createWorldFromCurrentGame(`World ${worlds.length+1}`);
+    }
+    world.data = buildWorldSaveData();
+    world.updatedAt = Date.now();
+    persistWorlds();
+    renderWorldsList();
+    showWorldToast(`💾 Saved "${world.name}"`);
+}
+
+function loadWorldIntoGame(id){
+    const world = worlds.find(w => w.id === id);
+    if(!world) return;
+
+    activeWorldId = world.id;
+    const data = world.data || {};
+
+    // Start the correct mode first so the appropriate scene is built.
+    if(data.modeType === 'race'){
+        closeWorldsMenu();
+        buildRaceTrack(Number(data.raceTrackIndex) || 0);
+        world.updatedAt = Date.now();
+        persistWorlds();
+        showWorldToast(`🌍 Loaded "${world.name}"`);
+        return;
+    }
+
+    const mode = data.difficulty || 'easy';
+    const isMP = !!data.multiplayer;
+    startGame(isMP, mode);
+
+    // startGame resets the level/positions; apply the saved snapshot after it.
+    currentLevel = Math.max(1, Number(data.level) || 1);
+    rebuildEnvironment();
+    if(currentLevel >= 11) setupPlatformerLevel(true);
+    else clearLevelObjects();
+
+    applyWorldSaveData(data);
+
+    player.mesh.visible = true;
+    player2.mesh.visible = isMP;
+    if(isMP) player2Card.style.display = 'block';
+    else player2Card.style.display = 'none';
+
+    // Position meshes from the saved state.
+    player.mesh.position.set(player.x, player.y, player.z);
+    player2.mesh.position.set(player2.x, player2.y, player2.z);
+
+    closeWorldsMenu();
+    if(gameStarted && !raceActive) showWorldToast(`🌍 Loaded "${world.name}"`);
+    world.updatedAt = Date.now();
+    persistWorlds();
+}
+
+function renderWorldsList(){
+    if(!worldsListEl) return;
+    const sorted = [...worlds].sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
+
+    if(!sorted.length){
+        worldsListEl.innerHTML = '<div class="worlds-empty">No worlds yet — create one above to get started!</div>';
+        return;
+    }
+
+    worldsListEl.innerHTML = sorted.map(w => {
+        const d = w.data || {};
+        const modeText = d.difficulty ? ` · ${escapeWorldHtml(d.difficulty)}` : '';
+        return `<div class="world-entry" data-id="${escapeWorldHtml(w.id)}">
+            <div class="world-entry-icon">🌳</div>
+            <div class="world-entry-info">
+                <div class="world-entry-name">${escapeWorldHtml(w.name)}${w.id===activeWorldId ? ' <span class="world-active-tag">● Active</span>' : ''}</div>
+                <div class="world-entry-meta">Level ${d.level||1}${modeText} · P1 🪙 ${d.player?.coins ?? 0} · ${formatWorldTime(w.updatedAt)}</div>
+            </div>
+            <div class="world-entry-actions">
+                <button class="world-action-btn world-play-btn" data-id="${escapeWorldHtml(w.id)}" title="Load">▶️</button>
+                <button class="world-action-btn world-rename-btn" data-id="${escapeWorldHtml(w.id)}" title="Rename">✏️</button>
+                <button class="world-action-btn world-delete-btn" data-id="${escapeWorldHtml(w.id)}" title="Delete">🗑️</button>
+            </div>
+        </div>`;
+    }).join('');
+
+    worldsListEl.querySelectorAll('.world-play-btn').forEach(btn => btn.addEventListener('click', ()=>loadWorldIntoGame(btn.dataset.id)));
+    worldsListEl.querySelectorAll('.world-rename-btn').forEach(btn => btn.addEventListener('click', ()=>{
+        const world = worlds.find(w=>w.id===btn.dataset.id);
+        if(!world) return;
+        const n = prompt('Rename world:', world.name);
+        if(n && n.trim()){
+            world.name = n.trim().slice(0,40);
+            world.updatedAt = Date.now();
+            persistWorlds();
+            renderWorldsList();
+        }
+    }));
+    worldsListEl.querySelectorAll('.world-delete-btn').forEach(btn => btn.addEventListener('click', ()=>{
+        const world = worlds.find(w=>w.id===btn.dataset.id);
+        if(!world) return;
+        if(!confirm(`Delete "${world.name}"? This can't be undone.`)) return;
+        worlds = worlds.filter(w=>w.id!==world.id);
+        if(activeWorldId===world.id) activeWorldId = null;
+        persistWorlds();
+        renderWorldsList();
+        showWorldToast(`🗑️ Deleted "${world.name}"`);
+    }));
+}
+
+function openWorldsMenu(){
+    renderWorldsList();
+    worldsModal.classList.add('open');
+    gamePaused = true;
+}
+function closeWorldsMenu(){
+    worldsModal.classList.remove('open');
+    if(gameStarted && !raceActive) gamePaused = false;
+}
+
+function maybeAutoSave(){
+    if(gameStarted && !raceActive && activeWorldId){
+        const world = getActiveWorld();
+        if(world){
+            world.data = buildWorldSaveData();
+            world.updatedAt = Date.now();
+            persistWorlds();
+            showWorldToast(`💾 Autosaved "${world.name}"`);
+        }
+    }
+}
+
+// Create/load the menu-world state on first use.
+loadWorldsFromStorage();
+
+document.getElementById('worldsBtn').addEventListener('click', openWorldsMenu);
+document.getElementById('saveBtn').addEventListener('click', saveActiveWorld);
+document.getElementById('close-worlds-menu').addEventListener('click', closeWorldsMenu);
+document.getElementById('createWorldBtn').addEventListener('click', ()=>{
+    const name = (newWorldNameInput.value || '').trim() || `World ${worlds.length+1}`;
+    newWorldNameInput.value = '';
+    createWorldFromCurrentGame(name);
+    // Stay in the list so the new world is visible.
+    openWorldsMenu();
+});
+newWorldNameInput.addEventListener('keydown', e=>{
+    if(e.key==='Enter'){e.preventDefault();document.getElementById('createWorldBtn').click();}
+});
+
+setInterval(maybeAutoSave, AUTOSAVE_INTERVAL_MS);
+
+window.addEventListener('beforeunload', ()=>{
+    if(gameStarted && activeWorldId){
+        const world = getActiveWorld();
+        if(world){
+            world.data = buildWorldSaveData();
+            world.updatedAt = Date.now();
+            persistWorlds();
+        }
+    }
+});
+
 function startGame(isMultiplayer, mode){
     multiplayer = isMultiplayer;
     difficulty = mode;
@@ -1433,6 +2055,7 @@ function startGame(isMultiplayer, mode){
     if(mode === 'hard') chickenSpeed = 4.2;
 
     startScreen.style.display = "none";
+    document.getElementById("worldSaveControls").style.display = "flex";
     ui.style.display = "flex";
     document.getElementById("levelDisplay").style.display = "block";
 
@@ -1579,6 +2202,8 @@ function triggerPartyMode(){
 }
 
 function returnToMenu(){
+    maybeAutoSave();
+    document.getElementById("worldSaveControls").style.display = "none";
     ui.style.display = "none";
     document.getElementById("levelDisplay").style.display = "none";
     shopButton1.style.display = "none";
@@ -2907,6 +3532,7 @@ function buildRaceTrack(index) {
     if (index < 0 || index >= raceTracks.length) return;
     clearRaceObjects();
     raceTrackIndex = index;
+    if(activeWorldId){ const w=getActiveWorld(); if(w){ w.data = buildWorldSaveData(); w.data.modeType = "race"; w.data.raceTrackIndex = index; w.updatedAt=Date.now(); persistWorlds(); } }
     const track = raceTracks[index];
     const theme = levelThemes[track.themeIndex % levelThemes.length];
 
@@ -3061,6 +3687,7 @@ function finishRace(place) {
     }
     raceUnlockedTracks = Math.min(raceTracks.length, Math.max(raceUnlockedTracks, raceTrackIndex + 2));
     saveGameData();
+    if(activeWorldId){ const w=getActiveWorld(); if(w){ w.data=buildWorldSaveData(); w.updatedAt=Date.now(); persistWorlds(); } }
     updateUI();
 
     document.getElementById('raceResultTitle').textContent = place === 1 ? '🏆 1ST PLACE!' : `${placeLabel(place)} PLACE`;
