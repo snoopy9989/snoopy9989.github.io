@@ -37,16 +37,15 @@ install,
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-width: 7.5rem;
-  background-color: #01875f;
+  min-width: 6.5rem;
+  background-color: #0b57d0;
   color: #ffffff;
   border: none;
-  border-radius: 8px;
+  border-radius: 999px;
   padding: 0.55rem 1.5rem;
   font-family: inherit;
   font-size: 0.9rem;
   font-weight: 600;
-  letter-spacing: 0.01em;
   line-height: 1.25;
   text-decoration: none;
   cursor: pointer;
@@ -55,21 +54,28 @@ install,
 
 install:hover,
 .open:hover {
-  background-color: #016e4d;
+  background-color: #0842a0;
+}
+
+@media (prefers-color-scheme: dark) {
+  install,
+  .open {
+    background-color: #a8c7fa;
+    color: #062e6f;
+  }
+
+  install:hover,
+  .open:hover {
+    background-color: #bdd5fb;
+  }
 }
 
 install:focus-visible,
 .open:focus-visible {
-  outline: 3px solid #01875f;
+  outline: 3px solid var(--accent);
   outline-offset: 2px;
 }
 
-@media (max-width: 30rem) {
-  install,
-  .open {
-    width: 100%;
-  }
-}
 
 
 </style>
