@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Little Apps</title>
+<meta name="theme-color" content="#f3f4f6">
+<!-- While <install> is in origin trial, add your token:
+<meta http-equiv="origin-trial" content="YOUR_TOKEN"> -->
+<style>
+  :root{--bg:#f3f4f6;--panel:#fff;--ink:#16181d;--muted:#5d6572;--line:#dfe2e8;--accent:#0b6bcb;color-scheme:light dark}
+  @media(prefers-color-scheme:dark){:root{--bg:#12151a;--panel:#1b1f26;--ink:#eceff4;--muted:#a1a9b6;--line:#2b313b;--accent:#6aa9ff}}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif;
+       padding:env(safe-area-inset-top,0) 0 env(safe-area-inset-bottom,0)}
+  main{max-width:42rem;margin:0 auto;padding:2.5rem 1.25rem 4rem}
+  h1{font-size:2.2rem;margin:0 0 .25rem;letter-spacing:-.02em}
+  .sub{color:var(--muted);margin:0 0 1.5rem}
+  .notice{display:none;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--accent);
+          padding:.75rem 1rem;margin:0 0 1.5rem;font-size:.95rem}
+  .notice.show{display:block}
+  ul{list-style:none;margin:0;padding:0;background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden}
+  .app{display:grid;grid-template-columns:64px 1fr auto;gap:1rem;align-items:center;padding:1rem}
+  .app+.app{border-top:1px solid var(--line)}
+  .app img{width:64px;height:64px;border-radius:14px;display:block}
+  .info h2{font-size:1.05rem;margin:0}
+  .info p{margin:.15rem 0 0;color:var(--muted);font-size:.92rem}
+  .action{display:grid;justify-items:end;gap:.25rem}
+  .msg{font-size:.8rem;color:var(--muted);min-height:1.2em;max-width:16rem;text-align:right}
+  .open{color:var(--accent);font-weight:600;text-decoration:none;padding:.4rem .9rem;border:1px solid var(--line);border-radius:999px}
+  .open:hover{border-color:var(--accent)}
+  a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+  @media(max-width:30rem){.app{grid-template-columns:56px 1fr}.app img{width:56px;height:56px}.action{grid-column:2;justify-items:start}.msg{text-align:left}}
+</style>
+</head>
+<body>
+<main>
+  <h1>Little Apps</h1>
+  <p class="sub">Install apps straight from this page.</p>
+  <div id="unsupported" class="notice">This browser doesn't support the <code>&lt;install&gt;</code> element yet, so each app shows an Open link instead.</div>
+  <ul id="list"></ul>
+</main>
+
+<script>
+  // Add more apps here. Each needs the app's address; the page finds its manifest automatically.
+  const APPS = [
+    {
+      name: "Gooblet Forest 3D",
+      tag: "3D adventure, race mode and two-player multiplayer.",
+      url: "https://snoopy9989.github.io/",
+      icon: "🌲", color: "#2f7d4f"
+    }
+  ];
+
+  // Used only if an app's page doesn't link a manifest we can read.
+  const MANIFEST_GUESSES = ["manifest.webmanifest", "manifest.json"];
+
+  const tile = (emoji, color) => "data:image/svg+xml," + encodeURIComponent(
+    `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" fill="${color}"/>` +
+    `<text x="32" y="44" font-size="34" text-anchor="middle">${emoji}</text></svg>`);
+
+  async function getJson(u) {
+    const r = await fetch(u, { credentials: "omit", redirect: "error" });
+    if (!r.ok) throw new Error(r.status);
+    return { json: await r.json(), url: u };
+  }
+
+  // Look for <link rel="manifest"> on the app's page, then try common file names.
+  async function findManifest(appUrl) {
+    try {
+      const html = await (await fetch(appUrl, { credentials: "omit" })).text();
+      const href = new DOMParser().parseFromString(html, "text/html").querySelector('link[rel~="manifest"]')?.getAttribute("href");
+      if (href) return await getJson(new URL(href, appUrl).href);
+    } catch {}
+    for (const g of MANIFEST_GUESSES) {
+      try { return await getJson(new URL(g, appUrl).href); } catch {}
+    }
+    return null;
+  }
+
+  // The manifest ID is the manifest's "id" resolved against its start_url, or the start_url itself.
+  function manifestId(m, manifestUrl) {
+    const start = new URL(m.start_url || ".", manifestUrl);
+    return m.id ? new URL(m.id, start.origin).href : start.href.split("#")[0];
+  }
+
+  const supported = !(document.createElement("install") instanceof HTMLUnknownElement);
+  if (!supported) document.getElementById("unsupported").classList.add("show");
+
+  for (const app of APPS) {
+    const li = document.createElement("li");
+    li.className = "app";
+    li.innerHTML = `
+      <img alt="" src="${tile(app.icon, app.color)}">
+      <div class="info"><h2></h2><p></p></div>
+      <div class="action"><span class="slot"></span><span class="msg" role="status"></span></div>`;
+    li.querySelector("h2").textContent = app.name;
+    li.querySelector("p").textContent = app.tag;
+    const slot = li.querySelector(".slot"), msg = li.querySelector(".msg");
+    document.getElementById("list").append(li);
+
+    const open = document.createElement("a");
+    open.className = "open"; open.href = app.url; open.target = "_blank"; open.rel = "noopener"; open.textContent = "Open";
+
+    (async () => {
+      if (!supported) { slot.append(open); return; }
+      msg.textContent = "Checking app…";
+      const found = await findManifest(app.url);
+      if (!found) {
+        slot.append(open);
+        msg.textContent = "No readable manifest found, so it can't be installed from here.";
+        return;
+      }
+      // <install> renders the browser's own button; the Open link is its fallback content.
+      const el = document.createElement("install");
+      el.setAttribute("manifest", found.url);
+      el.setAttribute("manifestid", manifestId(found.json, found.url));
+      el.append(open);
+      el.addEventListener("promptaction", () => { msg.textContent = "Installing…"; });
+      el.addEventListener("promptdismiss", () => { msg.textContent = "Cancelled"; });
+      slot.append(el);
+      msg.textContent = "";
+    })();
+  }
+  addEventListener("appinstalled", () => {
+    document.querySelectorAll(".msg").forEach(m => { if (m.textContent === "Installing…") m.textContent = "Installed"; });
+  });
+</script>
+</body>
+</html>
