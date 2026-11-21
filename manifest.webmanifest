@@ -1,9 +1,9 @@
 {
-  "id": "/",
+  "id": "/game.html",
   "name": "Gooblet Forest 3D",
   "short_name": "Gooblet",
   "description": "3D adventure, race mode and two-player multiplayer.",
-  "start_url": "./",
+  "start_url": "game.html",
   "scope": "./",
   "display": "standalone",
   "orientation": "any",

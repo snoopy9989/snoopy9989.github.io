@@ -1,6 +1,6 @@
 // Bump this when you ship changes so old caches get cleaned up.
-const CACHE = 'gooblet-v1';
-const SHELL = ['./', 'game.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
+const CACHE = 'gooblet-v2';
+const SHELL = ['game.html', 'manifest.webmanifest', 'favicon.png', 'icon-192.png', 'icon-512.png', 'Forest_Ambience.mp3'];
 
 self.addEventListener('install', event => {
   event.waitUntil(
@@ -36,7 +36,7 @@ self.addEventListener('fetch', event => {
         return res;
       })
       .catch(() =>
-        caches.match(req).then(hit => hit || (req.mode === 'navigate' ? caches.match('index.html') : undefined))
+        caches.match(req).then(hit => hit || (req.mode === 'navigate' ? caches.match('game.html') : undefined))
       )
   );
 });
