@@ -1,6 +1,6 @@
 // Bump this when you ship changes so old caches get cleaned up.
 const CACHE = 'gooblet-v1';
-const SHELL = ['./', 'index.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
+const SHELL = ['./', 'game.html', 'manifest.webmanifest', 'icon-192.png', 'icon-512.png'];
 
 self.addEventListener('install', event => {
   event.waitUntil(
