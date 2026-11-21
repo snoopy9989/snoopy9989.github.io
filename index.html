@@ -8,7 +8,8 @@
 
 <link rel="icon" type="image/png" href="/favicon.png">    
 
-<link rel="manifest" href="manifest.webmanifest">      
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#12301f">      
 
 <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
 
@@ -4127,6 +4128,10 @@ addEventListener("keydown", e => {
         toggleDebugTerminal();
     }
 });
+
+<script>
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js');
+</script>
     
 </script>
 </body>
