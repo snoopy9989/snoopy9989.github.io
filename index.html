@@ -78,9 +78,64 @@ install:focus-visible,
 
 
 
+
+/* ===== Forced Chrome update gate ===== */
+#updateGate{
+  display:none;position:fixed;inset:0;z-index:99999;background:var(--bg);color:var(--ink);
+  flex-direction:column;align-items:center;justify-content:center;text-align:center;
+  padding:calc(1.5rem + env(safe-area-inset-top,0px)) 1.5rem calc(1.5rem + env(safe-area-inset-bottom,0px));
+}
+#updateGate h1{font-size:1.9rem;margin:0 0 .5rem}
+#updateGate p{max-width:30rem;margin:.25rem 0;color:var(--muted)}
+#updateGate .ver{margin-top:.75rem;font-size:.85rem}
+#updateGate .btns{display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center;margin-top:1.5rem}
+#updateGate a.open,#updateGate button.open{font-size:.95rem}
+#updateGate button.open{font-family:inherit}
+html.outdated #updateGate{display:flex}
+html.outdated main{display:none}
 </style>
+<script>
+  // Forces Chromium browsers older than Chrome 158 to update before using this page.
+  (function () {
+    var MIN = 158, v = 0, i;
+    try {
+      var brands = (navigator.userAgentData && navigator.userAgentData.brands) || [];
+      for (i = 0; i < brands.length; i++) {
+        if (brands[i].brand === "Chromium") v = parseInt(brands[i].version, 10) || 0;
+      }
+    } catch (e) {}
+    if (!v) {
+      var m = /(?:Chrome|CriOS)\/(\d+)/.exec(navigator.userAgent);
+      if (m) v = parseInt(m[1], 10);
+    }
+    // v === 0 means not a Chrome/Chromium browser (Firefox, Safari...), so it is left alone.
+    var preview = /[?&]preview-update\b/.test(location.search);
+    if ((v && v < MIN) || preview) {
+      window.GOOBLET_OUTDATED = true;
+      window.GOOBLET_CHROME_VERSION = v;
+      document.documentElement.classList.add("outdated");
+    }
+  })();
+</script>
 </head>
 <body>
+<div id="updateGate" role="alertdialog" aria-modal="true" aria-labelledby="updateGateTitle">
+  <h1 id="updateGateTitle">Please update Chrome</h1>
+  <p>This page needs <strong>Chrome 158</strong> or newer to install Gooblet Forest 3D.</p>
+  <p class="ver" id="updateGateVer"></p>
+  <p>To update: open Chrome's menu (&#8942;) &rarr; Help &rarr; About Google Chrome, then relaunch the browser.</p>
+  <div class="btns">
+    <a class="open" href="https://www.google.com/chrome/" target="_blank" rel="noopener">Get the latest Chrome</a>
+    <button class="open" type="button" onclick="location.reload()">I've updated, check again</button>
+  </div>
+</div>
+<script>
+  if (window.GOOBLET_OUTDATED) {
+    document.getElementById("updateGateVer").textContent = window.GOOBLET_CHROME_VERSION
+      ? "Your version: Chrome " + window.GOOBLET_CHROME_VERSION : "";
+  }
+</script>
+
 <main>
   <h1>install gooblet forest 3d</h1>
   <p class="sub">Install apps straight from this page.</p>
@@ -132,9 +187,9 @@ install:focus-visible,
   }
 
   const supported = !(document.createElement("install") instanceof HTMLUnknownElement);
-  if (!supported) document.getElementById("unsupported").classList.add("show");
+  if (!supported && !window.GOOBLET_OUTDATED) document.getElementById("unsupported").classList.add("show");
 
-  for (const app of APPS) {
+  for (const app of (window.GOOBLET_OUTDATED ? [] : APPS)) {
     const li = document.createElement("li");
     li.className = "app";
     li.innerHTML = `
