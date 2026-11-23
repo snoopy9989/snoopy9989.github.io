@@ -692,6 +692,56 @@ body{
     transition:width 0.25s linear;
 }
 #installLoaderPct{ margin-top:12px; font-size:18px; opacity:0.85; }
+
+/* ===== SEASONAL THEMES ===== */
+.settingsPanel{ max-height:92vh; overflow-y:auto; }
+.seasonBtn{ margin:0; padding:8px 12px; font-size:18px; }
+.seasonBtn.active{ outline:4px solid #ffd54a; outline-offset:1px; }
+
+body[data-season]{ background:var(--s-bg); }
+body[data-season] #startScreen{ background:var(--s-start); }
+body[data-season] #gameTitle{ text-shadow:0 4px 0 var(--s-tshadow), 0 8px 20px rgba(0,0,0,0.25); }
+body[data-season] #gameTitle::before, body[data-season] #gameTitle::after{ font-size:0.7em; }
+body[data-season] #subtitle{ color:var(--s-sub); }
+body[data-season] .menuButton{ color:var(--s-main); box-shadow:0 8px 0 var(--s-dark); }
+body[data-season] .menuButton:active{ box-shadow:0 3px 0 var(--s-dark); }
+body[data-season] .gameFolder{ color:var(--s-main); box-shadow:0 8px 0 var(--s-dark), 0 14px 28px rgba(0,0,0,0.16); }
+body[data-season] .gameFolder:hover{ box-shadow:0 12px 0 var(--s-dark), 0 18px 32px rgba(0,0,0,0.18); }
+body[data-season] .gameFolder:active{ box-shadow:0 4px 0 var(--s-dark); }
+body[data-season] .gameFolderDescription, body[data-season] .gameModePanelSub{ color:var(--s-soft); }
+body[data-season] .gameModePanel, body[data-season] .settingsPanel, body[data-season] .playerCard,
+body[data-season] #levelDisplay, body[data-season] .shop, body[data-season] .worlds-panel{ border-color:var(--s-border); }
+body[data-season] .gameModePanelTitle, body[data-season] .settingsTitle, body[data-season] .shop h2{ color:var(--s-main); }
+body[data-season] .settingRow, body[data-season] .playerCard, body[data-season] #levelDisplay{ color:var(--s-text); }
+body[data-season] .shopButton{ background:var(--s-btn); box-shadow:0 5px 0 var(--s-dark); }
+body[data-season] #menuButton{ background:var(--s-btn2); }
+body[data-season] .shopItem, body[data-season] .settingButton{ background:var(--s-btn); }
+body[data-season] .shopItem:hover, body[data-season] .settingButton:hover{ filter:brightness(0.92); }
+
+body[data-season="christmas"] #gameTitle::before{ content:"🎄 "; }
+body[data-season="christmas"] #gameTitle::after{ content:" 🎅"; }
+body[data-season="winter"] #gameTitle::before{ content:"❄️ "; }
+body[data-season="winter"] #gameTitle::after{ content:" ⛄"; }
+body[data-season="spring"] #gameTitle::before{ content:"🌸 "; }
+body[data-season="spring"] #gameTitle::after{ content:" 🐇"; }
+body[data-season="summer"] #gameTitle::before{ content:"☀️ "; }
+body[data-season="summer"] #gameTitle::after{ content:" 🦋"; }
+body[data-season="autumn"] #gameTitle::before{ content:"🍂 "; }
+body[data-season="autumn"] #gameTitle::after{ content:" 🍁"; }
+body[data-season="halloween"] #gameTitle::before{ content:"🎃 "; }
+body[data-season="halloween"] #gameTitle::after{ content:" 👻"; }
+
+/* falling things on the start screen */
+body[data-season] .leaf{ background:var(--s-leaf); }
+body[data-season="christmas"] .leaf, body[data-season="winter"] .leaf{
+    width:14px; height:14px; border-radius:50%; opacity:0.85; box-shadow:0 0 8px rgba(255,255,255,0.8);
+}
+body[data-season="spring"] .leaf{ width:26px; height:26px; border-radius:80% 0 80% 0; opacity:0.6; }
+body[data-season="autumn"] .leaf{ width:42px; height:42px; opacity:0.5; }
+body[data-season="summer"] .leaf, body[data-season="halloween"] .leaf{
+    width:18px; height:18px; border-radius:50%; opacity:0.55; animation-direction:reverse;
+    box-shadow:0 0 10px var(--s-leaf);
+}
 </style>
 </head>
 <body>
@@ -764,7 +814,7 @@ body{
     <div id="gameTitle" onclick="handleTitleClick()">Gooblet Forest 3D</div>
 
     <div id="subtitle">
-        <span id="subtitleText">3D v2.0.0</span>
+        <span id="subtitleText">3D v2.0</span>
 
         <div id="gameModeFolders">
             <button class="gameFolder" onclick="openGameFolder('adventure')">
@@ -902,6 +952,20 @@ body{
         <div class="settingRow">
             <span>🌙 Night Mode:</span> <span id="nightModeStatus">OFF</span><br>
             <button class="settingButton" onclick="toggleNightMode()">Toggle Night Mode</button>
+        </div>
+        <div class="settingRow">
+            <span>🎄 Season:</span> <span id="seasonStatus">Auto 📅</span><br>
+            <div style="display:flex; flex-wrap:wrap; gap:6px; justify-content:center; margin-top:8px;">
+                <button class="settingButton seasonBtn" data-season="auto" onclick="setSeason('auto')">Auto 📅</button>
+                <button class="settingButton seasonBtn" data-season="off" onclick="setSeason('off')">Off 🚫</button>
+                <button class="settingButton seasonBtn" data-season="spring" onclick="setSeason('spring')">🌸 Spring</button>
+                <button class="settingButton seasonBtn" data-season="summer" onclick="setSeason('summer')">☀️ Summer</button>
+                <button class="settingButton seasonBtn" data-season="autumn" onclick="setSeason('autumn')">🍂 Autumn</button>
+                <button class="settingButton seasonBtn" data-season="winter" onclick="setSeason('winter')">❄️ Winter</button>
+                <button class="settingButton seasonBtn" data-season="christmas" onclick="setSeason('christmas')">🎄 Christmas</button>
+                <button class="settingButton seasonBtn" data-season="halloween" onclick="setSeason('halloween')">🎃 Halloween</button>
+            </div>
+            <div style="font-size:14px; margin-top:6px; opacity:0.75;">Auto turns on Halloween (Oct 20 – Nov 1) and Christmas (Dec 1 – Jan 6). Applies when you start a game or race.</div>
         </div>
         <div class="settingRow">
             <span id="languageLabel">Language</span><br><br>
@@ -1058,6 +1122,8 @@ let particlesEnabled = true;
 let touchControlsEnabled = false;
 let currentLanguage = 'en';
 let nightModeEnabled = false;
+let seasonSetting = 'auto';   // auto | off | spring | summer | autumn | winter | christmas | halloween
+let activeSeasonKey = null;   // the season that is actually showing right now (or null)
 let beeSwarms = [];
 let titleClickCount = 0;
 let titleClickResetTimer = null;
@@ -1154,7 +1220,358 @@ const levelThemes = [
 
 function getTheme() {
     const index = (currentLevel - 1) % levelThemes.length;
-    return levelThemes[index];
+    return seasonizeTheme(levelThemes[index]);
+}
+
+// =====================================================================
+// SEASONAL THEMES
+// Each season re-colours the sky / ground / trees, tints the lights, adds fog,
+// drops weather particles (snow, petals, leaves...), restyles the menus and
+// decorates the trees (Christmas = ornaments, stars & presents, Halloween = pumpkins).
+// =====================================================================
+const SEASON_ORDER = ['auto','off','spring','summer','autumn','winter','christmas','halloween'];
+const SEASON_LABELS = {
+    auto:'Auto 📅', off:'OFF', spring:'Spring 🌸', summer:'Summer ☀️', autumn:'Autumn 🍂',
+    winter:'Winter ❄️', christmas:'Christmas 🎄', halloween:'Halloween 🎃'
+};
+
+const SEASONS = {
+    spring: {
+        skyBottom:0xc8ecff, skyTop:0xe8f7ff, ground:0x8ddb72, trunk:0x7a4d27, leaves:0xffb7d5, leafParticle:0xffc9de,
+        leafPalette:[0xffb7d5,0xffc9de,0xff9ec4,0xf8d9ff,0xb8e986],
+        amb:0xffffff, sun:0xfff6e8, tree:'round', fx:'petals', fog:null,
+        css:{ bg:'#ffc9de', start:'radial-gradient(circle at top,#fff5fa,#ffd3e5 60%,#ffb0cf)', main:'#c8427a', dark:'#f08db4',
+              tshadow:'#e0699b', sub:'#fff5fa', soft:'#9a6a80', border:'#ffa6c9', text:'#7a2f52', btn:'#e867a0', btn2:'#f08db4', leaf:'#ffb7d5' }
+    },
+    summer: {
+        skyBottom:0x8fdcff, skyTop:0xbfeaff, ground:0x5fc447, trunk:0x7a4d27, leaves:0x2e9d3a, leafParticle:0xfff3a8,
+        amb:0xfffbe8, sun:0xffeeb0, tree:'round', fx:'pollen', fog:null,
+        css:{ bg:'#8fdcff', start:'radial-gradient(circle at top,#d8f4ff,#7fd0ff 60%,#4fb6f0)', main:'#e08a00', dark:'#f2b84b',
+              tshadow:'#e09a1a', sub:'#f0fbff', soft:'#6b7f8a', border:'#ffd166', text:'#8a5300', btn:'#f5a524', btn2:'#f2b84b', leaf:'#fff3a8' }
+    },
+    autumn: {
+        skyBottom:0xf6c98b, skyTop:0xffe0b3, ground:0xa88b3a, trunk:0x5c3d24, leaves:0xd35400, leafParticle:0xe67e22,
+        leafPalette:[0xd35400,0xe67e22,0xf1c40f,0xc0392b,0x9c4a1a],
+        amb:0xffe6c8, sun:0xffc27a, tree:'round', fx:'leaves', fog:null,
+        css:{ bg:'#f0b46a', start:'radial-gradient(circle at top,#ffe3b0,#f0a24a 60%,#c8642b)', main:'#b3541b', dark:'#8a3f12',
+              tshadow:'#8a3f12', sub:'#fff2df', soft:'#8a6a4a', border:'#e08a3c', text:'#6e3410', btn:'#d9722b', btn2:'#c8642b', leaf:'#d35400' }
+    },
+    winter: {
+        skyBottom:0xc9e1f2, skyTop:0xe6f3fb, ground:0xdbe8f3, trunk:0x4d3a2a, leaves:0x2d6a4f, leafParticle:0xffffff,
+        amb:0xdfeaff, sun:0xf2f6ff, tree:'pine', fx:'snow', fog:[800, 2600],
+        css:{ bg:'#cfe6f5', start:'radial-gradient(circle at top,#f4fbff,#bfdcf0 60%,#8fbbe0)', main:'#2f6fa8', dark:'#7fb0d8',
+              tshadow:'#6aa0cc', sub:'#f4fbff', soft:'#5f7f9a', border:'#a8d0ee', text:'#1f4a72', btn:'#4a90c8', btn2:'#6aa8d8', leaf:'#ffffff' }
+    },
+    christmas: {
+        skyBottom:0x2a4a7a, skyTop:0x16294a, ground:0xd4e3f2, trunk:0x5a3a22, leaves:0x1f7a3a, leafParticle:0xffffff,
+        amb:0xc8d8ff, sun:0xffe9c4, tree:'pine', fx:'snow', fog:[800, 2800],
+        css:{ bg:'#173a63', start:'radial-gradient(circle at top,#2f6aa3,#173a63 60%,#0e2542)', main:'#c0272d', dark:'#1f7a3a',
+              tshadow:'#a01f25', sub:'#eaf4ff', soft:'#6a7f94', border:'#d0373d', text:'#1f5e34', btn:'#2e9b4f', btn2:'#c0272d', leaf:'#ffffff' }
+    },
+    halloween: {
+        skyBottom:0x2a1a45, skyTop:0x140a24, ground:0x4a3a5e, trunk:0x1a1118, leaves:0x6a35a0, leafParticle:0xff8c1a,
+        amb:0x9d86d6, sun:0xff9a4d, tree:'round', fx:'embers', fog:[500, 2000],
+        css:{ bg:'#2a1640', start:'radial-gradient(circle at top,#5b2a86,#2a1640 60%,#140a24)', main:'#d9600a', dark:'#6a2fa0',
+              tshadow:'#d9600a', sub:'#f1e3ff', soft:'#7d6a92', border:'#ff8c1a', text:'#4a1f7a', btn:'#e8760f', btn2:'#7a3fb0', leaf:'#ff8c1a' }
+    }
+};
+
+// Which season is showing? "auto" switches on for Halloween and Christmas by the real date.
+function resolveSeasonKey() {
+    if (seasonSetting === 'off') return null;
+    if (seasonSetting !== 'auto') return SEASONS[seasonSetting] ? seasonSetting : null;
+    const d = new Date(), m = d.getMonth() + 1, day = d.getDate();
+    if ((m === 10 && day >= 20) || (m === 11 && day === 1)) return 'halloween';
+    if (m === 12 || (m === 1 && day <= 6)) return 'christmas';
+    return null;
+}
+
+// Re-colours a level theme with the active season. Dark "night" levels stay dark.
+function seasonizeTheme(base) {
+    const s = activeSeasonKey && SEASONS[activeSeasonKey];
+    if (!s) return base;
+    const hsl = {};
+    new THREE.Color(base.skyBottom).getHSL(hsl);
+    const night = hsl.l < 0.2;
+    const dim = (hex, m) => night ? new THREE.Color(hex).multiplyScalar(m).getHex() : hex;
+    return {
+        skyTop: dim(s.skyTop, 0.4),
+        skyBottom: dim(s.skyBottom, 0.4),
+        ground: dim(s.ground, 0.75),
+        trunk: s.trunk,
+        leaves: s.leaves,
+        leafParticle: s.leafParticle,
+        leafPalette: s.leafPalette || null
+    };
+}
+
+// Fog matches the sky so the edges of the world melt away softly.
+function syncSeasonScene(theme) {
+    const s = activeSeasonKey && SEASONS[activeSeasonKey];
+    if (s && s.fog) scene.fog = new THREE.Fog(theme.skyBottom, s.fog[0], s.fog[1]);
+    else scene.fog = null;
+}
+
+// ---------- shared meshes for decorated trees (built once, reused by every tree) ----------
+const toonMatCache = {};
+function cachedToon(hex) {
+    return toonMatCache[hex] || (toonMatCache[hex] = new THREE.MeshToonMaterial({ color: hex }));
+}
+const seasonTwinkle = [];   // ornament/star materials that gently pulse
+function seasonGeo() {
+    if (seasonGeo.cache) return seasonGeo.cache;
+    const tierDefs = [[74, 90, 95], [58, 80, 140], [40, 70, 185]];   // radius, height, centre-y
+    const G = {
+        trunk: new THREE.CylinderGeometry(9, 13, 70, 8),
+        tiers: tierDefs.map(([r, h, y]) => ({
+            r, h, y,
+            geo: new THREE.ConeGeometry(r, h, 10),
+            cap: new THREE.ConeGeometry(r * 0.64, h * 0.6, 10)
+        })),
+        orn: new THREE.SphereGeometry(5.5, 6, 6),
+        star: new THREE.OctahedronGeometry(11),
+        giftBox: new THREE.BoxGeometry(24, 20, 24),
+        ribA: new THREE.BoxGeometry(25, 21, 5),
+        ribB: new THREE.BoxGeometry(5, 21, 25),
+        pumpkin: new THREE.SphereGeometry(20, 10, 8),
+        stem: new THREE.BoxGeometry(5, 9, 5),
+        eye: new THREE.BoxGeometry(5, 6, 2),
+        mouth: new THREE.BoxGeometry(14, 4, 2),
+        glowMat: new THREE.MeshBasicMaterial({ color: 0xffe066 })
+    };
+    G.ornMats = [0xff3b3b, 0xffd54a, 0x4aa3ff, 0xff7ad9].map((hex, i) => ({
+        mat: new THREE.MeshBasicMaterial({ color: hex }), base: new THREE.Color(hex), phase: i * 1.7
+    }));
+    G.starMat = { mat: new THREE.MeshBasicMaterial({ color: 0xffe066 }), base: new THREE.Color(0xffe066), phase: 0 };
+    seasonTwinkle.push(...G.ornMats, G.starMat);
+    seasonGeo.cache = G;
+    return G;
+}
+
+function buildPineTree(group, theme, decorated) {
+    const G = seasonGeo();
+    const trunk = new THREE.Mesh(G.trunk, cachedToon(theme.trunk));
+    trunk.position.y = 35;
+    trunk.castShadow = true;
+    group.add(trunk);
+
+    const leafMat = cachedToon(theme.leaves);
+    const snowMat = cachedToon(0xf4f9ff);
+    G.tiers.forEach(t => {
+        const tier = new THREE.Mesh(t.geo, leafMat);
+        tier.position.y = t.y;
+        tier.castShadow = true;
+        group.add(tier);
+        const cap = new THREE.Mesh(t.cap, snowMat);      // snow on every branch layer
+        cap.position.y = t.y + t.h * 0.2 + 2;
+        group.add(cap);
+    });
+
+    if (decorated) {
+        [0, 0, 1, 1, 2].forEach(i => {                   // ornaments
+            const t = G.tiers[i];
+            const f = 0.1 + Math.random() * 0.26, ang = Math.random() * Math.PI * 2;
+            const rad = t.r * (1 - f) + 3;
+            const o = new THREE.Mesh(G.orn, G.ornMats[Math.floor(Math.random() * G.ornMats.length)].mat);
+            o.position.set(Math.cos(ang) * rad, t.y - t.h / 2 + f * t.h, Math.sin(ang) * rad);
+            group.add(o);
+        });
+        const star = new THREE.Mesh(G.star, G.starMat.mat);   // golden star on top
+        star.position.y = 226;
+        star.scale.y = 1.5;
+        group.add(star);
+    }
+}
+
+function addPresent(group) {
+    const G = seasonGeo();
+    const colors = [0xd62828, 0x2a9d8f, 0xf4a261, 0x3a86ff];
+    const ribbon = Math.random() < 0.5 ? 0xffd54a : 0xffffff;
+    const g = new THREE.Group();
+    g.add(new THREE.Mesh(G.giftBox, cachedToon(colors[Math.floor(Math.random() * colors.length)])));
+    g.add(new THREE.Mesh(G.ribA, cachedToon(ribbon)));
+    g.add(new THREE.Mesh(G.ribB, cachedToon(ribbon)));
+    g.position.set((Math.random() < 0.5 ? -1 : 1) * (38 + Math.random() * 22), 10, -10 + Math.random() * 40);
+    g.rotation.y = Math.random() * Math.PI;
+    group.add(g);
+}
+
+function addPumpkin(group) {
+    const G = seasonGeo();
+    const g = new THREE.Group();
+    const body = new THREE.Mesh(G.pumpkin, cachedToon(0xff7a00));
+    body.scale.y = 0.8;
+    g.add(body);
+    const stem = new THREE.Mesh(G.stem, cachedToon(0x2e7d32));
+    stem.position.y = 17;
+    g.add(stem);
+    [[-7, 4, 19.5], [7, 4, 19.5]].forEach(p => {
+        const eye = new THREE.Mesh(G.eye, G.glowMat);
+        eye.position.set(p[0], p[1], p[2]);
+        g.add(eye);
+    });
+    const mouth = new THREE.Mesh(G.mouth, G.glowMat);
+    mouth.position.set(0, -6, 19);
+    g.add(mouth);
+    g.position.set((Math.random() < 0.5 ? -1 : 1) * (45 + Math.random() * 20), 16, -10 + Math.random() * 35);
+    g.rotation.y = (Math.random() - 0.5) * 0.7;
+    group.add(g);
+}
+
+let seasonPumpkinCounter = 0;
+
+// ---------- weather particles (snow / petals / leaves / pollen / embers) ----------
+const FX_TYPES = {
+    snow:   { count: 900, size: 7,  colors: [0xffffff, 0xeaf4ff],                     vy: [-95, -55], sway: 22, drift: 0  },
+    petals: { count: 420, size: 9,  colors: [0xffc9de, 0xffffff, 0xffb7d5],           vy: [-55, -30], sway: 40, drift: 28 },
+    leaves: { count: 380, size: 10, colors: [0xd35400, 0xe67e22, 0xf1c40f, 0xc0392b], vy: [-70, -40], sway: 45, drift: 36 },
+    pollen: { count: 260, size: 6,  colors: [0xfff3a8, 0xffffff, 0xffe066],           vy: [6, 18],    sway: 18, drift: 8  },
+    embers: { count: 320, size: 6,  colors: [0xff8c1a, 0xffb347, 0xb36bff],           vy: [25, 55],   sway: 20, drift: 0  }
+};
+const FX_BOX = { w: 1500, h: 620, d: 1200 };
+let seasonFx = null;
+const fxDir = new THREE.Vector3(), fxFocus = new THREE.Vector3();
+
+function makeFxSprite() {
+    const c = document.createElement('canvas');
+    c.width = c.height = 64;
+    const ctx = c.getContext('2d');
+    const grad = ctx.createRadialGradient(32, 32, 0, 32, 32, 30);
+    grad.addColorStop(0, 'rgba(255,255,255,1)');
+    grad.addColorStop(0.55, 'rgba(255,255,255,0.9)');
+    grad.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 64, 64);
+    return new THREE.CanvasTexture(c);
+}
+let fxSprite = null;
+
+function setupSeasonFx() {
+    if (seasonFx) {
+        scene.remove(seasonFx.points);
+        seasonFx.points.geometry.dispose();
+        seasonFx.points.material.dispose();
+        seasonFx = null;
+    }
+    const s = activeSeasonKey && SEASONS[activeSeasonKey];
+    if (!s || !s.fx) return;
+    const cfg = FX_TYPES[s.fx];
+    const n = cfg.count;
+    const pos = new Float32Array(n * 3), col = new Float32Array(n * 3);
+    const vel = new Float32Array(n), phase = new Float32Array(n);
+    const c = new THREE.Color();
+    for (let i = 0; i < n; i++) {
+        c.setHex(cfg.colors[Math.floor(Math.random() * cfg.colors.length)]);
+        col[i * 3] = c.r; col[i * 3 + 1] = c.g; col[i * 3 + 2] = c.b;
+        vel[i] = cfg.vy[0] + Math.random() * (cfg.vy[1] - cfg.vy[0]);
+        phase[i] = Math.random() * Math.PI * 2;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    if (!fxSprite) fxSprite = makeFxSprite();
+    const mat = new THREE.PointsMaterial({
+        size: cfg.size, map: fxSprite, vertexColors: true, transparent: true, opacity: 0.9,
+        depthWrite: false, alphaTest: 0.05, fog: false
+    });
+    const points = new THREE.Points(geo, mat);
+    points.frustumCulled = false;
+    scene.add(points);
+    seasonFx = { points, cfg, vel, phase, seeded: false, last: performance.now() };
+}
+
+function wrapAround(v, min, size) {
+    return ((v - min) % size + size) % size + min;
+}
+
+function updateSeasonFx() {
+    // twinkle the Christmas lights
+    if (seasonTwinkle.length && activeSeasonKey === 'christmas') {
+        const tt = performance.now() * 0.003;
+        seasonTwinkle.forEach(o => {
+            o.mat.color.copy(o.base).multiplyScalar(0.6 + 0.4 * Math.sin(tt * 2 + o.phase));
+        });
+    }
+    if (!seasonFx) return;
+    seasonFx.points.visible = particlesEnabled;    // the Particles setting also turns the weather off
+    if (!particlesEnabled) return;
+
+    const now = performance.now();
+    const dt = Math.min(0.05, (now - seasonFx.last) / 1000);
+    seasonFx.last = now;
+
+    // The weather lives in a box around wherever the camera is looking.
+    camera.getWorldDirection(fxDir);
+    fxFocus.copy(camera.position).addScaledVector(fxDir, 650);
+
+    const cfg = seasonFx.cfg, vel = seasonFx.vel, phase = seasonFx.phase;
+    const attr = seasonFx.points.geometry.attributes.position, a = attr.array, n = vel.length;
+    const x0 = fxFocus.x - FX_BOX.w / 2, z0 = fxFocus.z - FX_BOX.d / 2, y0 = fxFocus.y - 150;
+    const t = now * 0.001;
+    for (let i = 0; i < n; i++) {
+        const k = i * 3;
+        if (!seasonFx.seeded) {
+            a[k] = x0 + Math.random() * FX_BOX.w;
+            a[k + 1] = y0 + Math.random() * FX_BOX.h;
+            a[k + 2] = z0 + Math.random() * FX_BOX.d;
+        } else {
+            a[k]     += (Math.sin(t * 0.8 + phase[i]) * cfg.sway + cfg.drift) * dt;
+            a[k + 1] += vel[i] * dt;
+            a[k + 2] += Math.cos(t * 0.6 + phase[i]) * cfg.sway * 0.5 * dt;
+        }
+        a[k]     = wrapAround(a[k], x0, FX_BOX.w);
+        a[k + 1] = wrapAround(a[k + 1], y0, FX_BOX.h);
+        a[k + 2] = wrapAround(a[k + 2], z0, FX_BOX.d);
+    }
+    seasonFx.seeded = true;
+    attr.needsUpdate = true;
+}
+
+// ---------- start-screen flakes + settings buttons ----------
+function buildSeasonStartFlakes() {
+    document.querySelectorAll('#startScreen .seasonExtra').forEach(e => e.remove());
+    if (!activeSeasonKey) return;
+    const host = document.getElementById('startScreen');
+    for (let i = 0; i < 16; i++) {
+        const d = document.createElement('div');
+        d.className = 'leaf seasonExtra';
+        d.style.left = (Math.random() * 96) + '%';
+        d.style.animationDuration = (8 + Math.random() * 9) + 's';
+        d.style.animationDelay = (-Math.random() * 14) + 's';
+        host.insertBefore(d, host.firstChild);
+    }
+}
+
+function applySeason() {
+    activeSeasonKey = resolveSeasonKey();
+    const s = activeSeasonKey ? SEASONS[activeSeasonKey] : null;
+
+    ambientLight.color.setHex(s ? s.amb : 0xffffff);
+    dirLight.color.setHex(s ? s.sun : 0xffffff);
+
+    const b = document.body;
+    if (s) {
+        b.dataset.season = activeSeasonKey;
+        for (const k in s.css) b.style.setProperty('--s-' + k, s.css[k]);
+    } else {
+        b.removeAttribute('data-season');
+    }
+
+    let label = SEASON_LABELS[seasonSetting] || 'OFF';
+    if (seasonSetting === 'auto') label = activeSeasonKey ? 'Auto 📅 · ' + SEASON_LABELS[activeSeasonKey] : 'Auto 📅 (nothing on today)';
+    const statusEl = document.getElementById('seasonStatus');
+    if (statusEl) statusEl.textContent = label;
+    document.querySelectorAll('.seasonBtn').forEach(btn => btn.classList.toggle('active', btn.dataset.season === seasonSetting));
+
+    buildSeasonStartFlakes();
+    setupSeasonFx();
+}
+
+function setSeason(key) {
+    if (!SEASON_ORDER.includes(key)) return;
+    seasonSetting = key;
+    applySeason();
+    saveGameData();
 }
 
 // --- LEVEL TYPE HELPERS ---
@@ -1327,29 +1744,42 @@ scene.add(groundMesh);
 
 function create3DTree(x, z, theme) {
     const group = new THREE.Group();
-    
-    const trunkGeo = new THREE.CylinderGeometry(10, 14, 180, 8);
-    const trunkMat = new THREE.MeshToonMaterial({ color: theme.trunk });
-    const trunk = new THREE.Mesh(trunkGeo, trunkMat);
-    trunk.position.y = 90;
-    trunk.castShadow = true;
-    group.add(trunk);
+    const season = activeSeasonKey ? SEASONS[activeSeasonKey] : null;
 
-    const leavesMat = new THREE.MeshToonMaterial({ color: theme.leaves });
-    const leafTop = new THREE.Mesh(new THREE.SphereGeometry(50, 8, 8), leavesMat);
-    leafTop.position.y = 180;
-    leafTop.castShadow = true;
-    group.add(leafTop);
+    if (season && season.tree === 'pine') {
+        // Winter / Christmas: snowy pine trees (Christmas adds ornaments, a star and presents)
+        buildPineTree(group, theme, activeSeasonKey === 'christmas');
+    } else {
+        const trunkGeo = new THREE.CylinderGeometry(10, 14, 180, 8);
+        const trunkMat = new THREE.MeshToonMaterial({ color: theme.trunk });
+        const trunk = new THREE.Mesh(trunkGeo, trunkMat);
+        trunk.position.y = 90;
+        trunk.castShadow = true;
+        group.add(trunk);
 
-    const leafL = new THREE.Mesh(new THREE.SphereGeometry(40, 8, 8), leavesMat);
-    leafL.position.set(-30, 150, 0);
-    leafL.castShadow = true;
-    group.add(leafL);
+        // Spring blossoms / autumn colours: each tree picks its own shade from the season palette
+        const leafColor = theme.leafPalette
+            ? theme.leafPalette[Math.floor(Math.random() * theme.leafPalette.length)]
+            : theme.leaves;
+        const leavesMat = new THREE.MeshToonMaterial({ color: leafColor });
+        const leafTop = new THREE.Mesh(new THREE.SphereGeometry(50, 8, 8), leavesMat);
+        leafTop.position.y = 180;
+        leafTop.castShadow = true;
+        group.add(leafTop);
 
-    const leafR = new THREE.Mesh(new THREE.SphereGeometry(40, 8, 8), leavesMat);
-    leafR.position.set(30, 150, 0);
-    leafR.castShadow = true;
-    group.add(leafR);
+        const leafL = new THREE.Mesh(new THREE.SphereGeometry(40, 8, 8), leavesMat);
+        leafL.position.set(-30, 150, 0);
+        leafL.castShadow = true;
+        group.add(leafL);
+
+        const leafR = new THREE.Mesh(new THREE.SphereGeometry(40, 8, 8), leavesMat);
+        leafR.position.set(30, 150, 0);
+        leafR.castShadow = true;
+        group.add(leafR);
+    }
+
+    if (activeSeasonKey === 'christmas') addPresent(group);
+    if (activeSeasonKey === 'halloween' && (seasonPumpkinCounter++ % 2 === 0)) addPumpkin(group);
 
     group.position.set(x, 0, z);
     scene.add(group);
@@ -1362,6 +1792,7 @@ function rebuildEnvironment() {
     // Set Sky/Background Canvas clear Color
     renderer.setClearColor(theme.skyBottom, 1);
     scene.background = new THREE.Color(theme.skyBottom);
+    syncSeasonScene(theme);
     groundMat.color.setHex(theme.ground);
 
     // Clear old elements
@@ -1721,6 +2152,7 @@ function saveGameData() {
         touchControlsEnabled: touchControlsEnabled,
         currentLanguage: currentLanguage,
         nightModeEnabled: nightModeEnabled,
+        seasonSetting: seasonSetting,
         player: { coins: player.coins, speed: player.speed, speedLevel: player.speedLevel, speedCost: player.speedCost, color: player.color, rainbowSkin: player.rainbowSkin },
         player2: { coins: player2.coins, speed: player2.speed, speedLevel: player2.speedLevel, speedCost: player2.speedCost, color: player2.color, rainbowSkin: player2.rainbowSkin },
         raceUnlockedTracks: raceUnlockedTracks,
@@ -1772,6 +2204,7 @@ function loadGameData() {
             if (data.touchControlsEnabled !== undefined) touchControlsEnabled = data.touchControlsEnabled;
             if (data.currentLanguage) currentLanguage = data.currentLanguage;
             if (data.nightModeEnabled !== undefined) nightModeEnabled = data.nightModeEnabled;
+            if (SEASON_ORDER.includes(data.seasonSetting)) seasonSetting = data.seasonSetting;
             
             if (data.player) {
                 player.coins = data.player.coins ?? 0;
@@ -3555,6 +3988,8 @@ function renderLoop(){
         camera.lookAt(targetX, targetY - 40, arenaHeight / 2);
     }
 
+    updateSeasonFx();
+
     renderer.render(scene, camera);
     requestAnimationFrame(renderLoop);
 }
@@ -3634,10 +4069,11 @@ function buildRaceTrack(index) {
     raceTrackIndex = index;
     if(activeWorldId){ const w=getActiveWorld(); if(w){ w.data = buildWorldSaveData(); w.data.modeType = "race"; w.data.raceTrackIndex = index; w.updatedAt=Date.now(); persistWorlds(); } }
     const track = raceTracks[index];
-    const theme = levelThemes[track.themeIndex % levelThemes.length];
+    const theme = seasonizeTheme(levelThemes[track.themeIndex % levelThemes.length]);
 
     renderer.setClearColor(theme.skyBottom, 1);
     scene.background = new THREE.Color(theme.skyBottom);
+    syncSeasonScene(theme);
 
     // Hide the normal forest world/characters while racing
     groundMesh.visible = false;
@@ -3995,6 +4431,7 @@ document.getElementById("particleStatus").textContent = particlesEnabled ? "ON" 
 document.getElementById("touchStatus").textContent = touchControlsEnabled ? "ON" : "OFF";
 document.getElementById("nightModeStatus").textContent = nightModeEnabled ? "ON" : "OFF";
 applyNightMode();
+applySeason();
 setLanguage(currentLanguage);
 
 updateUI();
@@ -4076,6 +4513,7 @@ const debugCommands = {
             "  freezechicken <seconds>       - freeze the chasing chicken",
             "  tp <p1|p2> <x> <z>            - teleport a player",
             "  toggle <music|particles|night> - toggle a game setting",
+            "  season <name>                 - auto|off|spring|summer|autumn|winter|christmas|halloween",
             "  state                         - print current game state"
         ].join("\n"));
     },
@@ -4151,6 +4589,12 @@ const debugCommands = {
         else if(what === "night"){ toggleNightMode(); }
         else { debugTermPrint("Usage: toggle <music|particles|night>", "term-err"); return; }
         debugTermPrint(`OK: toggled ${what}.`, "term-ok");
+    },
+    season(args){
+        const k = (args[0] || "").toLowerCase();
+        if(!SEASON_ORDER.includes(k)){ debugTermPrint("Usage: season <" + SEASON_ORDER.join("|") + ">", "term-err"); return; }
+        setSeason(k);
+        debugTermPrint(`OK: season set to ${k}. It shows up on the next level, race or new game.`, "term-ok");
     },
     state(){
         debugTermPrint([
