@@ -146,13 +146,22 @@ html.outdated main{display:none}
 <script>
   // Add more apps here. Each needs the app's address; the page finds its manifest automatically.
   const APPS = [
-    {
-      name: "Gooblet Forest 3D",
-      tag: "this is a large update you will have to reinstall it via here. you can use it offline.",
-      url: "https://snoopy9989.github.io/game.html",
-      icon: "🌲", color: "#2f7d4f"
-    }
-  ];
+  {
+    name: "Gooblet Forest 3D",
+    tag: "this is a large update you will have to reinstall it via here. you can use it offline.",
+    url: "https://snoopy9989.github.io/game",
+    icon: "🌲",
+    color: "#2f7d4f"
+  },
+  {
+    name: "TAG ESCAPE",
+    tag: "Collect coins, avoid the taggers, and reach the green exit across 100 levels.",
+    url: "https://nickyserver.github.io/",
+    icon: "⚡",
+    color: "#d97706"
+  }
+];
+
 
   // Used only if an app's page doesn't link a manifest we can read.
   const MANIFEST_GUESSES = ["manifest.webmanifest", "manifest.json"];
